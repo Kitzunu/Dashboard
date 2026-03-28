@@ -52,8 +52,10 @@ export default function Layout() {
     <div className="layout">
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <span className="brand-icon">⚔</span>
-          <div>
+          <span className="brand-icon">
+            <img src="../../img/icon.png" alt="image" width="38" height="auto"></img>
+          </span>
+           <div>
             <div className="brand-name">AzerothCore</div>
             <div className="brand-sub">Dashboard</div>
           </div>
