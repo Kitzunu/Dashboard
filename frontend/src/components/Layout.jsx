@@ -7,6 +7,7 @@ import ServersPage from './ServersPage.jsx';
 import PlayersPage from './PlayersPage.jsx';
 import DBQueryPage from './DBQueryPage.jsx';
 import BansPage from './BansPage.jsx';
+import TicketsPage from './TicketsPage.jsx';
 
 const GM_LABELS = {
   1: 'Moderator',
@@ -18,6 +19,7 @@ const GM_LABELS = {
 const NAV = [
   { id: 'console', label: '🖥 Console', minLevel: 1 },
   { id: 'players', label: '👥 Players', minLevel: 1 },
+  { id: 'tickets', label: '🎫 Tickets', minLevel: 1 },
   { id: 'bans',    label: '🔨 Bans',    minLevel: 2 },
   { id: 'servers', label: '⚙ Servers',  minLevel: 3 },
   { id: 'dbquery', label: '🗄 DB Query', minLevel: 3 },
@@ -31,9 +33,11 @@ export default function Layout() {
     worldserver: { running: false },
     authserver: { running: false },
   });
-  const [playerCount, setPlayerCount] = useState(null);
+  const [playerCount, setPlayerCount]   = useState(null);
+  const [ticketCount, setTicketCount]   = useState(null);
   const [toasts, setToasts] = useState([]);
-  const toastId = useRef(0);
+  const toastId        = useRef(0);
+  const worldRunningRef = useRef(false); // tracks live world status for polling closure
 
   useEffect(() => {
     api.getServerStatus()
@@ -50,22 +54,36 @@ export default function Layout() {
     return () => disconnectSocket();
   }, [auth.token]);
 
-  // Poll player count every 30s
+  // Keep ref in sync so the polling closure always sees the current running state
+  useEffect(() => {
+    worldRunningRef.current = serverStatus.worldserver.running;
+    if (!serverStatus.worldserver.running) setPlayerCount(0);
+  }, [serverStatus.worldserver.running]);
+
+  // Poll player count every 30s — skip DB call and force 0 when world is offline
   useEffect(() => {
     const fetchCount = () => {
+      if (!worldRunningRef.current) { setPlayerCount(0); return; }
       api.getPlayerCount()
         .then((d) => setPlayerCount(d.count))
-        .catch(() => {});
+        .catch(() => setPlayerCount(0));
     };
     fetchCount();
     const interval = setInterval(fetchCount, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  // Clear count when world goes offline
+  // Poll ticket count every 60s
   useEffect(() => {
-    if (!serverStatus.worldserver.running) setPlayerCount(0);
-  }, [serverStatus.worldserver.running]);
+    const fetchTicketCount = () => {
+      api.getTicketCount()
+        .then((d) => setTicketCount(d.count))
+        .catch(() => {});
+    };
+    fetchTicketCount();
+    const interval = setInterval(fetchTicketCount, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Toast listener
   useEffect(() => {
@@ -107,6 +125,11 @@ export default function Layout() {
                   {playerCount}
                 </span>
               )}
+              {item.id === 'tickets' && ticketCount != null && (
+                <span className={`nav-badge ${ticketCount > 0 ? 'nav-badge-warn' : ''}`}>
+                  {ticketCount}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -129,6 +152,7 @@ export default function Layout() {
       <main className="main-content">
         {page === 'console' && <ConsolePage socket={socket} auth={auth} />}
         {page === 'players' && <PlayersPage auth={auth} serverStatus={serverStatus} />}
+        {page === 'tickets' && <TicketsPage />}
         {page === 'bans'    && <BansPage />}
         {page === 'servers' && <ServersPage serverStatus={serverStatus} setServerStatus={setServerStatus} />}
         {page === 'dbquery' && <DBQueryPage />}

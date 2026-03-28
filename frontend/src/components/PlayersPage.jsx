@@ -68,23 +68,60 @@ function KickModal({ name, onConfirm, onClose }) {
   );
 }
 
-function BanModal({ name, onConfirm, onClose }) {
+function BanModal({ player, onConfirm, onClose }) {
+  const [type, setType]         = useState('character');
   const [duration, setDuration] = useState('1d');
-  const [reason, setReason] = useState('');
+  const [reason, setReason]     = useState('');
+
+  // The actual target value for each ban type
+  const targets = {
+    character: player.name,
+    account:   player.username || '',
+    ip:        player.last_ip  || '',
+  };
+
+  const valid = reason.trim() && targets[type];
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Ban <span className="player-name-em">{name}</span></h3>
+        <h3>Ban <span className="player-name-em">{player.name}</span></h3>
+
+        <div className="form-group">
+          <label>Ban type</label>
+          <div className="ban-type-tabs">
+            {['character', 'account', 'ip'].map((t) => (
+              <button
+                key={t}
+                type="button"
+                className={`ban-type-tab ${type === t ? 'active' : ''}`}
+                onClick={() => setType(t)}
+              >
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label>Target</label>
+          <input type="text" value={targets[type] || '—'} readOnly className="input-readonly" />
+          {!targets[type] && (
+            <small className="text-warn">No {type} info available for this player</small>
+          )}
+        </div>
+
         <div className="form-group">
           <label>Duration</label>
           <input
             type="text"
             value={duration}
             onChange={(e) => setDuration(e.target.value)}
-            placeholder="e.g. 1d, 7d, 1m, -1 (permanent)"
+            placeholder="e.g. 1h, 1d, 7d, 30d, -1 for permanent"
           />
           <small>Examples: 1h, 1d, 7d, 30d, -1 for permanent</small>
         </div>
+
         <div className="form-group">
           <label>Reason</label>
           <input
@@ -95,11 +132,12 @@ function BanModal({ name, onConfirm, onClose }) {
             autoFocus
           />
         </div>
+
         <div className="modal-actions">
           <button
             className="btn btn-danger"
-            onClick={() => onConfirm(duration, reason)}
-            disabled={!reason.trim()}
+            onClick={() => onConfirm(type, targets[type], duration.trim(), reason.trim())}
+            disabled={!valid}
           >
             Ban
           </button>
@@ -155,10 +193,10 @@ export default function PlayersPage({ auth, serverStatus }) {
     }
   };
 
-  const handleBan = async (duration, reason) => {
+  const handleBan = async (type, target, duration, reason) => {
     try {
-      await api.banPlayer(banTarget, duration, reason);
-      toast(`Banned ${banTarget} for ${duration}`);
+      await api.banPlayer(banTarget.name, duration, reason, type, target);
+      toast(`${type.charAt(0).toUpperCase() + type.slice(1)} ban issued: "${target}" for ${duration}`);
       setBanTarget(null);
       setTimeout(loadPlayers, 1500);
     } catch (err) {
@@ -248,7 +286,7 @@ export default function PlayersPage({ auth, serverStatus }) {
                             </button>
                             <button
                               className="btn btn-danger btn-xs"
-                              onClick={() => setBanTarget(p.name)}
+                              onClick={() => setBanTarget(p)}
                             >
                               Ban
                             </button>
@@ -273,7 +311,7 @@ export default function PlayersPage({ auth, serverStatus }) {
       )}
       {banTarget && (
         <BanModal
-          name={banTarget}
+          player={banTarget}
           onConfirm={handleBan}
           onClose={() => setBanTarget(null)}
         />

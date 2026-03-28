@@ -44,12 +44,23 @@ export const api = {
 
   getPlayers: () => request('GET', '/api/players'),
   kickPlayer: (name, reason) => request('POST', `/api/players/${encodeURIComponent(name)}/kick`, { reason }),
-  banPlayer: (name, duration, reason) =>
-    request('POST', `/api/players/${encodeURIComponent(name)}/ban`, { duration, reason }),
+  banPlayer: (name, duration, reason, type = 'character', target) =>
+    request('POST', `/api/players/${encodeURIComponent(name)}/ban`, { type, target: target || name, duration, reason }),
 
   dbQuery: (query, database) => request('POST', '/api/db/query', { query, database }),
 
   getPlayerCount: () => request('GET', '/api/players/count'),
+
+  getTickets:      ()        => request('GET',  '/api/tickets'),
+  getAllTickets:    ()        => request('GET',  '/api/tickets/all'),
+  getTicketCount:  ()        => request('GET',  '/api/tickets/count'),
+  closeTicket:     (id)          => request('POST', `/api/tickets/${id}/close`),
+  respondTicket:   (id, response) => request('POST', `/api/tickets/${id}/respond`, { response }),
+  commentTicket:   (id, comment)  => request('POST', `/api/tickets/${id}/comment`, { comment }),
+  assignTicket:    (id, gm)       => request('POST', `/api/tickets/${id}/assign`,  { gm }),
+  unassignTicket:  (id)      => request('POST', `/api/tickets/${id}/unassign`),
+  escalateTicket:  (id)      => request('POST', `/api/tickets/${id}/escalate`),
+  deescalateTicket:(id)      => request('POST', `/api/tickets/${id}/deescalate`),
 
   getBans: () => request('GET', '/api/bans'),
   banTarget: (type, target, duration, reason) =>

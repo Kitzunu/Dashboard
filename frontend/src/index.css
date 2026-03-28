@@ -525,15 +525,19 @@ input:focus, textarea:focus, select:focus { border-color: var(--gold-dim); }
   border-radius: 8px;
   padding: 28px;
   width: 380px;
+  max-height: 90vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
+.modal-wide { width: 480px; }
 
 .modal h3 { font-size: 16px; color: var(--text); }
 .player-name-em { color: var(--gold); }
 
-.modal-actions { display: flex; gap: 10px; margin-top: 4px; }
+.modal-actions { display: flex; gap: 10px; margin-top: 4px; flex-wrap: wrap; }
+.modal-actions-wrap { flex-wrap: wrap; }
 
 /* ── DB Query ────────────────────────────────────────────────── */
 .db-page { max-width: 100%; }
@@ -759,3 +763,131 @@ code {
   font-size: 12px;
   color: var(--text-dim);
 }
+
+/* ── Tickets ─────────────────────────────────────────────────── */
+.ticket-row { cursor: pointer; }
+.ticket-row:hover td { background: var(--surface2); }
+.ticket-row-expanded td { background: var(--surface2); }
+
+.ticket-desc-cell {
+  max-width: 320px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-dim);
+}
+
+.ticket-status-cell { white-space: nowrap; }
+
+.ticket-detail-row td { padding: 0; }
+.ticket-detail {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 14px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13px;
+}
+.ticket-detail strong { color: var(--text); }
+
+.ticket-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 4px 24px;
+  color: var(--text-dim);
+}
+
+.ticket-meta { color: var(--text-dim); }
+
+.ticket-full-desc {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+.ticket-full-desc p {
+  margin-top: 4px;
+  white-space: pre-wrap;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.ticket-actions-row,
+.ticket-comment-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.ticket-comment-input { flex: 1; width: auto; min-width: 200px; }
+
+.ticket-assigned-name {
+  color: var(--green);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.ticket-assign-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ticket-assign-input {
+  width: 160px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 5px 10px;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.ticket-assign-input:focus { border-color: var(--gold-dim); }
+
+.ticket-textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.ticket-textarea:focus { border-color: var(--gold-dim); }
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.checkbox-label input[type="checkbox"] { accent-color: var(--gold); width: 15px; height: 15px; }
+
+/* ── Badges ──────────────────────────────────────────────────── */
+.badge-warn     { background: rgba(232,168,56,0.12); border: 1px solid rgba(232,168,56,0.25); color: var(--warn); }
+.badge-info     { background: rgba(91,155,213,0.12); border: 1px solid rgba(91,155,213,0.25); color: var(--blue); }
+.badge-assigned { background: rgba(61,220,132,0.10); border: 1px solid rgba(61,220,132,0.25); color: var(--green); }
+
+/* ── Sidebar ticket badge (amber/gold for open tickets) ──────── */
+.nav-badge-warn { background: rgba(232,168,56,0.18); border-color: rgba(232,168,56,0.4); color: var(--warn); }
+
+/* ── Readonly input ──────────────────────────────────────────── */
+.input-readonly {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-dim);
+  cursor: default;
+}
+.text-warn { color: var(--warn); font-size: 12px; }
