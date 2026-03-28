@@ -31,33 +31,3 @@ src/**/*.js
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-
-# misc
-.nx/
-/.angular/cache
-src/coverage
-apps/keira/coverage
-/.sass-cache
-/connect.lock
-/coverage
-/libpeerconnection.log
-npm-debug.log
-testem.log
-/typings
-
-# e2e
-/e2e/*.js
-!/e2e/protractor.conf.js
-/e2e/*.map
-/e2e/tracing
-/e2e/screenshots
-/apps/keira-e2e/screenshots
-
-# System Files
-.DS_Store
-Thumbs.db
-
-
-.nx/cache
-
-.angular
