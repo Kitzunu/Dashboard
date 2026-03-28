@@ -52,5 +52,9 @@ export const api = {
   getPlayerCount: () => request('GET', '/api/players/count'),
 
   getBans: () => request('GET', '/api/bans'),
-  unbanAccount: (id) => request('DELETE', `/api/bans/${id}`),
+  banTarget: (type, target, duration, reason) =>
+    request('POST', '/api/bans', { type, target, duration, reason }),
+  unbanAccount:   (id)   => request('DELETE', `/api/bans/accounts/${id}`),
+  unbanCharacter: (guid) => request('DELETE', `/api/bans/characters/${guid}`),
+  unbanIp:        (ip)   => request('DELETE', `/api/bans/ips/${encodeURIComponent(ip)}`),
 };
