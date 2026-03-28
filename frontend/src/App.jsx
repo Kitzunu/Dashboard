@@ -39,6 +39,15 @@ export default function App() {
     localStorage.removeItem('ac_auth');
   };
 
+  useEffect(() => {
+    const handle = () => {
+      setAuth(null);
+      localStorage.removeItem('ac_auth');
+    };
+    window.addEventListener('auth-expired', handle);
+    return () => window.removeEventListener('auth-expired', handle);
+  }, []);
+
   return (
     <AuthContext.Provider value={{ auth, login, logout }}>
       {auth ? <Layout /> : <Login />}

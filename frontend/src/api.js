@@ -21,6 +21,9 @@ async function request(method, path, body) {
   });
 
   if (!res.ok) {
+    if (res.status === 401) {
+      window.dispatchEvent(new Event('auth-expired'));
+    }
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error || res.statusText);
   }

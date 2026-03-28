@@ -76,7 +76,6 @@ export default function ServersPage({ serverStatus, setServerStatus }) {
       const result = await api.stopServer(name);
       if (result.success) {
         flash(`Stop signal sent to ${name}`);
-        setServerStatus((prev) => ({ ...prev, [name]: { running: false } }));
       } else {
         flash(result.error, true);
       }

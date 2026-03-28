@@ -82,7 +82,15 @@ function startServer(serverName) {
 function stopServer(serverName) {
   const proc = processes[serverName];
   if (!proc) return { success: false, error: 'Server is not running' };
-  proc.kill();
+  if (serverName === 'worldserver') {
+    try {
+      proc.stdin.write('server shutdown 0\n');
+    } catch (err) {
+      proc.kill();
+    }
+  } else {
+    proc.kill();
+  }
   return { success: true };
 }
 
