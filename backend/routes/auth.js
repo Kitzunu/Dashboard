@@ -1,9 +1,18 @@
 const express = require('express');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 const { authPool } = require('../db');
 
 const router = express.Router();
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts — please try again in 15 minutes' },
+});
 
 // AzerothCore SRP6 constants (WoW SRP6)
 const N = BigInt('0x894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7');
@@ -30,7 +39,6 @@ function modPow(base, exp, mod) {
   return result;
 }
 
-// Compute SRP6 verifier from username, password, and salt (Buffer, little-endian)
 function computeVerifier(username, password, salt) {
   const h1 = crypto.createHash('sha1')
     .update(Buffer.from(`${username.toUpperCase()}:${password.toUpperCase()}`, 'utf8'))
@@ -45,14 +53,13 @@ function computeVerifier(username, password, salt) {
   return modPow(g, x, N);
 }
 
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required' });
   }
 
   try {
-    // Get account and highest GM level across all realms
     const [rows] = await authPool.query(
       `SELECT a.id, a.username, a.salt, a.verifier,
               COALESCE(MAX(aa.gmlevel), 0) AS gmlevel
@@ -69,7 +76,6 @@ router.post('/login', async (req, res) => {
 
     const account = rows[0];
 
-    // salt and verifier are stored as binary blobs (32 bytes, little-endian)
     const salt = Buffer.isBuffer(account.salt) ? account.salt : Buffer.from(account.salt, 'binary');
     const storedVerifier = Buffer.isBuffer(account.verifier) ? account.verifier : Buffer.from(account.verifier, 'binary');
 
@@ -86,7 +92,7 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign(
       { id: account.id, username: account.username, gmlevel: account.gmlevel },
-      process.env.JWT_SECRET || 'secret',
+      process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
 

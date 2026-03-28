@@ -36,7 +36,8 @@ export const api = {
 
   getServerStatus: () => request('GET', '/api/servers/status'),
   startServer: (name) => request('POST', `/api/servers/${name}/start`),
-  stopServer: (name) => request('POST', `/api/servers/${name}/stop`),
+  stopServer: (name, mode, delay) => request('POST', `/api/servers/${name}/stop`, { mode, delay }),
+  setAutoRestart: (name, enabled) => request('POST', `/api/servers/${name}/autorestart`, { enabled }),
   getServerLogs: (name) => request('GET', `/api/servers/${name}/logs`),
 
   sendCommand: (command) => request('POST', '/api/console/command', { command }),

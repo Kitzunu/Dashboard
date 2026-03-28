@@ -2,7 +2,75 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 
-function ServerCard({ name, displayName, status, onStart, onStop, busy }) {
+function StopModal({ name, onConfirm, onClose }) {
+  const isWorld = name === 'worldserver';
+  const [mode, setMode] = useState('exit');
+  const [delay, setDelay] = useState(60);
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>Stop <span className="player-name-em">{name}</span></h3>
+
+        {isWorld ? (
+          <div className="form-group">
+            <label>Stop method</label>
+            <div className="stop-options">
+              <label className="stop-option">
+                <input
+                  type="radio"
+                  name="stop-mode"
+                  value="exit"
+                  checked={mode === 'exit'}
+                  onChange={() => setMode('exit')}
+                />
+                <div>
+                  <strong>Server Exit</strong>
+                  <span>Saves state and exits immediately</span>
+                </div>
+              </label>
+              <label className="stop-option">
+                <input
+                  type="radio"
+                  name="stop-mode"
+                  value="shutdown"
+                  checked={mode === 'shutdown'}
+                  onChange={() => setMode('shutdown')}
+                />
+                <div>
+                  <strong>Server Shutdown</strong>
+                  <span>Notifies players and shuts down after a delay</span>
+                </div>
+              </label>
+            </div>
+            {mode === 'shutdown' && (
+              <div className="form-group" style={{ marginTop: 12 }}>
+                <label>Delay (seconds)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={delay}
+                  onChange={(e) => setDelay(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                />
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="modal-detail">The auth server will be terminated immediately.</p>
+        )}
+
+        <div className="modal-actions">
+          <button className="btn btn-danger" onClick={() => onConfirm(mode, delay)}>
+            Stop
+          </button>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ServerCard({ name, displayName, status, onStart, onStop, onAutoRestartToggle, busy }) {
   const isRunning = status.running;
   return (
     <div className={`server-card ${isRunning ? 'card-running' : 'card-stopped'}`}>
@@ -17,29 +85,30 @@ function ServerCard({ name, displayName, status, onStart, onStop, busy }) {
       </div>
       <div className="server-card-actions">
         {isRunning ? (
-          <button
-            className="btn btn-danger"
-            onClick={() => onStop(name)}
-            disabled={busy}
-          >
+          <button className="btn btn-danger" onClick={() => onStop(name)} disabled={busy}>
             Stop Server
           </button>
         ) : (
-          <button
-            className="btn btn-success"
-            onClick={() => onStart(name)}
-            disabled={busy}
-          >
+          <button className="btn btn-success" onClick={() => onStart(name)} disabled={busy}>
             Start Server
           </button>
         )}
       </div>
+      <label className="autorestart-toggle">
+        <input
+          type="checkbox"
+          checked={status.autoRestart || false}
+          onChange={(e) => onAutoRestartToggle(name, e.target.checked)}
+        />
+        <span>Auto-restart on crash</span>
+      </label>
     </div>
   );
 }
 
 export default function ServersPage({ serverStatus, setServerStatus }) {
   const [busy, setBusy] = useState(false);
+  const [stopTarget, setStopTarget] = useState(null);
 
   useEffect(() => {
     api.getServerStatus()
@@ -53,7 +122,7 @@ export default function ServersPage({ serverStatus, setServerStatus }) {
       const result = await api.startServer(name);
       if (result.success) {
         toast(`${name} starting…`);
-        setServerStatus((prev) => ({ ...prev, [name]: { running: true } }));
+        setServerStatus((prev) => ({ ...prev, [name]: { ...prev[name], running: true } }));
       } else {
         toast(result.error, 'error');
       }
@@ -64,13 +133,17 @@ export default function ServersPage({ serverStatus, setServerStatus }) {
     }
   };
 
-  const handleStop = async (name) => {
-    if (!window.confirm(`Stop ${name}? This will disconnect all connected players.`)) return;
+  const handleStopConfirm = async (mode, delay) => {
+    const name = stopTarget;
+    setStopTarget(null);
     setBusy(true);
     try {
-      const result = await api.stopServer(name);
+      const result = await api.stopServer(name, mode, delay);
       if (result.success) {
-        toast(`Stop signal sent to ${name}`);
+        const label = name === 'worldserver'
+          ? (mode === 'shutdown' ? `Shutdown in ${delay}s sent to ${name}` : `Exit sent to ${name}`)
+          : `Stop signal sent to ${name}`;
+        toast(label);
       } else {
         toast(result.error, 'error');
       }
@@ -78,6 +151,19 @@ export default function ServersPage({ serverStatus, setServerStatus }) {
       toast(err.message, 'error');
     } finally {
       setBusy(false);
+    }
+  };
+
+  const handleAutoRestartToggle = async (name, enabled) => {
+    try {
+      await api.setAutoRestart(name, enabled);
+      setServerStatus((prev) => ({
+        ...prev,
+        [name]: { ...prev[name], autoRestart: enabled },
+      }));
+      toast(`Auto-restart ${enabled ? 'enabled' : 'disabled'} for ${name}`);
+    } catch (err) {
+      toast(err.message, 'error');
     }
   };
 
@@ -94,7 +180,8 @@ export default function ServersPage({ serverStatus, setServerStatus }) {
           displayName="World Server"
           status={serverStatus.worldserver}
           onStart={handleStart}
-          onStop={handleStop}
+          onStop={setStopTarget}
+          onAutoRestartToggle={handleAutoRestartToggle}
           busy={busy}
         />
         <ServerCard
@@ -102,10 +189,19 @@ export default function ServersPage({ serverStatus, setServerStatus }) {
           displayName="Auth Server"
           status={serverStatus.authserver}
           onStart={handleStart}
-          onStop={handleStop}
+          onStop={setStopTarget}
+          onAutoRestartToggle={handleAutoRestartToggle}
           busy={busy}
         />
       </div>
+
+      {stopTarget && (
+        <StopModal
+          name={stopTarget}
+          onConfirm={handleStopConfirm}
+          onClose={() => setStopTarget(null)}
+        />
+      )}
     </div>
   );
 }

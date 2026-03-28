@@ -1,14 +1,20 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
-// Strip ANSI escape codes from server output
-const ANSI_RE = /\x1B\[[0-9;]*[mGKHF]/g;
-function stripAnsi(str) {
-  return str.replace(ANSI_RE, '');
+// Strip non-color escape sequences (cursor movement, mode setting, OSC, etc.)
+// but preserve SGR color codes (\x1B[...m) for frontend rendering.
+function processOutput(str) {
+  return str.toString()
+    .replace(/\x1B\[[0-9;]*[ABCDEFGJKST]/g, '')
+    .replace(/\x1B\[[0-9;]*[hl]/g, '')
+    .replace(/\x1B\][^\x07]*\x07/g, '')
+    .replace(/\x1B[^[\]m]/g, '');
 }
 
-const processes = { worldserver: null, authserver: null };
+const processes   = { worldserver: null, authserver: null };
 const processLogs = { worldserver: [], authserver: [] };
+const autoRestart = { worldserver: false, authserver: false };
+const stopping    = { worldserver: false, authserver: false };
 const MAX_LOG_LINES = 2000;
 
 let io = null;
@@ -18,7 +24,7 @@ function setIO(socketIO) {
 }
 
 function emitLog(serverName, raw) {
-  const line = stripAnsi(raw.toString());
+  const line = processOutput(raw.toString());
   processLogs[serverName].push(line);
   if (processLogs[serverName].length > MAX_LOG_LINES) {
     processLogs[serverName].shift();
@@ -46,6 +52,7 @@ function startServer(serverName) {
   }
 
   try {
+    stopping[serverName] = false;
     const cwd = workDir || path.dirname(exePath);
     const proc = spawn(exePath, [], {
       cwd,
@@ -63,12 +70,19 @@ function startServer(serverName) {
       emitLog(serverName, `\n[Dashboard] Process exited with code ${code}\n`);
       processes[serverName] = null;
       if (io) io.emit('server-status', { server: serverName, running: false });
+
+      if (autoRestart[serverName] && !stopping[serverName]) {
+        emitLog(serverName, `[Dashboard] Auto-restart enabled — restarting ${serverName} in 5 seconds…\n`);
+        setTimeout(() => startServer(serverName), 5000);
+      }
+      stopping[serverName] = false;
     });
 
     proc.on('error', (err) => {
       emitLog(serverName, `\n[Dashboard] Failed to start: ${err.message}\n`);
       processes[serverName] = null;
       if (io) io.emit('server-status', { server: serverName, running: false });
+      stopping[serverName] = false;
     });
 
     if (io) io.emit('server-status', { server: serverName, running: true });
@@ -79,18 +93,34 @@ function startServer(serverName) {
   }
 }
 
-function stopServer(serverName) {
+// mode: 'exit' | 'shutdown'
+// delay: seconds (only used with 'shutdown')
+function stopServer(serverName, mode = 'exit', delay = 0) {
   const proc = processes[serverName];
   if (!proc) return { success: false, error: 'Server is not running' };
+
+  stopping[serverName] = true;
+
   if (serverName === 'worldserver') {
     try {
-      proc.stdin.write('server shutdown 0\n');
-    } catch (err) {
+      if (mode === 'shutdown') {
+        proc.stdin.write(`server shutdown ${delay}\n`);
+      } else {
+        proc.stdin.write('server exit\n');
+      }
+    } catch {
       proc.kill();
     }
   } else {
     proc.kill();
   }
+
+  return { success: true };
+}
+
+function setAutoRestart(serverName, enabled) {
+  if (!(serverName in autoRestart)) return { success: false, error: 'Invalid server name' };
+  autoRestart[serverName] = !!enabled;
   return { success: true };
 }
 
@@ -106,11 +136,14 @@ function sendCommand(command) {
 }
 
 function getStatus(serverName) {
-  return { running: processes[serverName] !== null };
+  return {
+    running: processes[serverName] !== null,
+    autoRestart: autoRestart[serverName],
+  };
 }
 
 function getLogs(serverName) {
   return processLogs[serverName] || [];
 }
 
-module.exports = { setIO, startServer, stopServer, sendCommand, getStatus, getLogs };
+module.exports = { setIO, startServer, stopServer, setAutoRestart, sendCommand, getStatus, getLogs };

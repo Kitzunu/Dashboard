@@ -1,5 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../api.js';
+import { parseAnsi } from '../ansi.js';
+
+function AnsiLine({ text }) {
+  const segments = parseAnsi(text);
+  return (
+    <span className="console-line">
+      {segments.map((seg, i) => {
+        if (!seg.color && !seg.bold) return seg.text;
+        const style = {};
+        if (seg.color) style.color = seg.color;
+        if (seg.bold)  style.fontWeight = 'bold';
+        return <span key={i} style={style}>{seg.text}</span>;
+      })}
+    </span>
+  );
+}
 
 function ConsolePanel({ title, serverName, socket, canSendCommands }) {
   const [lines, setLines] = useState([]);
@@ -118,11 +134,7 @@ function ConsolePanel({ title, serverName, socket, canSendCommands }) {
         {loading ? (
           <span className="console-loading">Loading logs…</span>
         ) : (
-          lines.map((line, i) => (
-            <span key={i} className="console-line">
-              {line}
-            </span>
-          ))
+          lines.map((line, i) => <AnsiLine key={i} text={line} />)
         )}
         <div ref={endRef} />
       </div>

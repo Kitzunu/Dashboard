@@ -1,5 +1,13 @@
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 
+// Enforce a real JWT secret before anything else starts
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'change-this-to-a-random-secret') {
+  console.error('\n[FATAL] JWT_SECRET is not set or is using the default placeholder.');
+  console.error('        Set a strong random value in your .env file.');
+  console.error('        Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"\n');
+  process.exit(1);
+}
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
