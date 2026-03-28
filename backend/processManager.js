@@ -15,6 +15,7 @@ const processes   = { worldserver: null, authserver: null };
 const processLogs = { worldserver: [], authserver: [] };
 const autoRestart = { worldserver: false, authserver: false };
 const stopping    = { worldserver: false, authserver: false };
+const startTimes  = { worldserver: null, authserver: null };
 const MAX_LOG_LINES = 2000;
 
 let io = null;
@@ -61,6 +62,7 @@ function startServer(serverName) {
     });
 
     processes[serverName] = proc;
+    startTimes[serverName] = Date.now();
     processLogs[serverName] = [`[Dashboard] Starting ${serverName} from ${exePath}\n`];
 
     proc.stdout.on('data', (data) => emitLog(serverName, data));
@@ -69,6 +71,7 @@ function startServer(serverName) {
     proc.on('close', (code) => {
       emitLog(serverName, `\n[Dashboard] Process exited with code ${code}\n`);
       processes[serverName] = null;
+      startTimes[serverName] = null;
       if (io) io.emit('server-status', { server: serverName, running: false });
 
       if (autoRestart[serverName] && !stopping[serverName]) {
@@ -81,6 +84,7 @@ function startServer(serverName) {
     proc.on('error', (err) => {
       emitLog(serverName, `\n[Dashboard] Failed to start: ${err.message}\n`);
       processes[serverName] = null;
+      startTimes[serverName] = null;
       if (io) io.emit('server-status', { server: serverName, running: false });
       stopping[serverName] = false;
     });
@@ -139,6 +143,8 @@ function getStatus(serverName) {
   return {
     running: processes[serverName] !== null,
     autoRestart: autoRestart[serverName],
+    pid: processes[serverName]?.pid || null,
+    startTime: startTimes[serverName],
   };
 }
 

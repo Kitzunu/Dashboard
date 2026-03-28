@@ -9,6 +9,10 @@ import DBQueryPage from './DBQueryPage.jsx';
 import BansPage from './BansPage.jsx';
 import TicketsPage from './TicketsPage.jsx';
 import ConfigPage from './ConfigPage.jsx';
+import HomePage from './HomePage.jsx';
+import AnnouncePage from './AnnouncePage.jsx';
+import AutobroadcastPage from './AutobroadcastPage.jsx';
+import AccountsPage from './AccountsPage.jsx';
 
 const GM_LABELS = {
   1: 'Moderator',
@@ -18,18 +22,22 @@ const GM_LABELS = {
 };
 
 const NAV = [
-  { id: 'console', label: '🖥 Console', minLevel: 1 },
-  { id: 'players', label: '👥 Players', minLevel: 1 },
-  { id: 'tickets', label: '🎫 Tickets', minLevel: 1 },
-  { id: 'bans',    label: '🔨 Bans',    minLevel: 2 },
-  { id: 'servers', label: '⚙ Servers',  minLevel: 3 },
-  { id: 'dbquery', label: '🗄 DB Query', minLevel: 3 },
-  { id: 'config',  label: '📄 Config',   minLevel: 3 },
+  { id: 'home',          label: '📊 Overview',      minLevel: 1 },
+  { id: 'console',       label: '🖥 Console',        minLevel: 1 },
+  { id: 'players',       label: '👥 Players',        minLevel: 1 },
+  { id: 'tickets',       label: '🎫 Tickets',        minLevel: 1 },
+  { id: 'bans',          label: '🔨 Bans',           minLevel: 2 },
+  { id: 'announce',      label: '📢 Announce',       minLevel: 2 },
+  { id: 'accounts',      label: '👤 Accounts',       minLevel: 2 },
+  { id: 'autobroadcast', label: '📣 Autobroadcast',  minLevel: 2 },
+  { id: 'servers',       label: '⚙ Servers',         minLevel: 3 },
+  { id: 'dbquery',       label: '🗄 DB Query',        minLevel: 3 },
+  { id: 'config',        label: '📄 Config',          minLevel: 3 },
 ];
 
 export default function Layout() {
   const { auth, logout } = useAuth();
-  const [page, setPage] = useState('console');
+  const [page, setPage] = useState('home');
   const [socket, setSocket] = useState(null);
   const [serverStatus, setServerStatus] = useState({
     worldserver: { running: false },
@@ -152,13 +160,17 @@ export default function Layout() {
       </aside>
 
       <main className="main-content">
-        {page === 'console' && <ConsolePage socket={socket} auth={auth} />}
-        {page === 'players' && <PlayersPage auth={auth} serverStatus={serverStatus} />}
-        {page === 'tickets' && <TicketsPage />}
-        {page === 'bans'    && <BansPage />}
-        {page === 'servers' && <ServersPage serverStatus={serverStatus} setServerStatus={setServerStatus} />}
-        {page === 'dbquery' && <DBQueryPage />}
-        {page === 'config'  && <ConfigPage />}
+        {page === 'home'          && <HomePage />}
+        {page === 'console'       && <ConsolePage socket={socket} auth={auth} />}
+        {page === 'players'       && <PlayersPage auth={auth} serverStatus={serverStatus} />}
+        {page === 'tickets'       && <TicketsPage />}
+        {page === 'bans'          && <BansPage />}
+        {page === 'announce'      && <AnnouncePage />}
+        {page === 'accounts'      && <AccountsPage auth={auth} />}
+        {page === 'autobroadcast' && <AutobroadcastPage />}
+        {page === 'servers'       && <ServersPage serverStatus={serverStatus} setServerStatus={setServerStatus} />}
+        {page === 'dbquery'       && <DBQueryPage />}
+        {page === 'config'        && <ConfigPage />}
       </main>
 
       <ToastContainer toasts={toasts} />

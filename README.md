@@ -4,12 +4,17 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 
 ## Features
 
+- **Overview** — Live dashboard with server status cards (PID, uptime), player/ticket/ban stats, system memory bar, and a real-time player-count sparkline graph
 - **Console** — Real-time worldserver and authserver log output with full ANSI colour rendering, GM command input, persistent command history, and auto-scroll
 - **Players** — Live online player list (auto-refreshes every 30 s) with player filter, kick, and multi-type ban (character / account / IP)
 - **Tickets** — View, respond to, comment on, assign, escalate, and close in-game GM tickets; sidebar badge shows open ticket count
 - **Bans** — Three-tab view of active account, character, and IP bans; issue new bans and unban with confirmation
+- **Announcements** — Broadcast server-wide messages (chat announce or on-screen notify) with quick-fill templates and a sent-history log
+- **Accounts** — Search accounts by username / email / IP, view details and characters, set GM level, lock/unlock accounts, reset passwords
+- **Autobroadcast** — Manage the in-game autobroadcast rotation: add, edit, delete, and weight messages
 - **Servers** — Start, stop (immediate exit or graceful shutdown with delay), and auto-restart worldserver / authserver
 - **DB Query** — Run preset SQL queries against the auth, world, and characters databases
+- **Config** — View and edit `worldserver.conf` / `authserver.conf` in the browser with a find bar, unsaved-change indicators, and automatic `.bak` backups on save
 - **Role-based access** — GM level controls what each user can see and do
 - **Toast notifications** — Non-blocking feedback for every action
 - **Session management** — JWT-based auth with automatic logout on token expiry
@@ -79,11 +84,11 @@ FRONTEND_URL=http://localhost:5173
 
 The dashboard authenticates against the AzerothCore `account` table using SRP6 — the same credentials you use to log into the game. Log in with any account that has a GM level assigned in `account_access`.
 
-| GM Level | Role          | Access                                                              |
-|----------|---------------|---------------------------------------------------------------------|
-| 1        | Moderator     | Console (read + send), Players list, GM Tickets                     |
-| 2        | Game Master   | + Kick/ban players, manage bans, issue bans, view all tickets       |
-| 3        | Administrator | + Start/stop servers, DB Query, auto-restart toggle                 |
+| GM Level | Role          | Access                                                                                          |
+|----------|---------------|-------------------------------------------------------------------------------------------------|
+| 1        | Moderator     | Overview, Console (read + send), Players list, GM Tickets                                       |
+| 2        | Game Master   | + Kick/ban players, manage bans, issue announcements, accounts (view/lock), autobroadcast (view/add/edit) |
+| 3        | Administrator | + Start/stop servers, DB Query, auto-restart, Config editor, create accounts, reset passwords, delete autobroadcasts |
 
 To grant a GM level, run this in your auth database:
 
@@ -157,6 +162,36 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser and log
 - Run preset SQL queries against auth, world, or characters databases
 - Results displayed in a scrollable table
 
+### 📊 Overview
+- Two server cards showing live status, PID, and per-second uptime timer for worldserver and authserver
+- Three stat cards: Players Online, Open Tickets, Active Bans
+- System memory bar showing used / total RAM and percentage
+- SVG sparkline graph of player count over the last hour (sampled every 30 s, up to 120 points)
+- Auto-refreshes every 30 seconds
+
+### 📢 Announcements (GM level 2+)
+- Choose between **Announce** (chat log) and **Notify** (on-screen popup) message types
+- 200-character limit with live counter
+- Six quick-fill message templates (restart warnings, welcome message, events)
+- Ctrl+Enter keyboard shortcut to send
+- History table showing all announcements sent in this session
+
+### 👤 Accounts (GM level 2+)
+- Search accounts by username, email, or IP address (up to 50 results)
+- Results table with GM level badge, online/locked status indicators
+- **View** any account: full details grid (ID, email, join date, last login, last IP, GM level, status) plus character list
+- **GM Level** — change role via dropdown (Administrators only)
+- **Lock / Unlock** — prevent or restore login access (GM level 2+)
+- **Reset Password** — set a new password via GM command (Administrators only)
+- **Create Account** — create new accounts directly from the dashboard (Administrators only)
+
+### 📣 Autobroadcast (GM level 2+)
+- Table of all autobroadcast entries with ID, message text, and colour-coded weight badge (green ≥ 50, amber 20–49, dim < 20)
+- **Add** new entries with text and weight (1–100)
+- **Edit** existing entries inline
+- **Delete** with confirmation modal
+- Weight controls how often a message is selected relative to others
+
 ### 📄 Config (Administrators only)
 - View and edit `worldserver.conf` and `authserver.conf` directly in the browser
 - Full monospace editor with line numbers
@@ -171,38 +206,47 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser and log
 azerothcore-dashboard/
 ├── backend/
 │   ├── middleware/
-│   │   └── auth.js           # JWT verification, GM level guards
+│   │   └── auth.js               # JWT verification, GM level guards
 │   ├── routes/
-│   │   ├── auth.js           # Login (SRP6 verification + rate limiting)
-│   │   ├── bans.js           # Account / character / IP ban management
-│   │   ├── console.js        # GM command execution
-│   │   ├── db.js             # Preset database query endpoint
-│   │   ├── players.js        # Online players, kick, multi-type ban, count
-│   │   ├── servers.js        # Start, stop, status, logs, auto-restart
-│   │   ├── config.js         # Read and save worldserver/authserver config files
-│   │   └── tickets.js        # GM ticket CRUD (respond, comment, assign, escalate)
-│   ├── db.js                 # MySQL connection pools (auth, world, characters)
-│   ├── processManager.js     # Server process lifecycle + Socket.IO broadcast
-│   └── server.js             # Express + Socket.IO entry point
+│   │   ├── auth.js               # Login (SRP6 verification + rate limiting)
+│   │   ├── accounts.js           # Account search, GM level, lock, password, create
+│   │   ├── announcements.js      # Send announce/notify, in-memory history
+│   │   ├── autobroadcast.js      # CRUD for autobroadcast table
+│   │   ├── bans.js               # Account / character / IP ban management
+│   │   ├── config.js             # Read and save worldserver/authserver config files
+│   │   ├── console.js            # GM command execution
+│   │   ├── db.js                 # Preset database query endpoint
+│   │   ├── overview.js           # Dashboard summary: servers, players, tickets, bans, memory
+│   │   ├── players.js            # Online players, kick, multi-type ban, count
+│   │   ├── servers.js            # Start, stop, status, logs, auto-restart
+│   │   └── tickets.js            # GM ticket CRUD (respond, comment, assign, escalate)
+│   ├── db.js                     # MySQL connection pools (auth, world, characters)
+│   ├── playerHistory.js          # Rolling in-memory player count history (max 120 points)
+│   ├── processManager.js         # Server process lifecycle + Socket.IO broadcast
+│   └── server.js                 # Express + Socket.IO entry point
 ├── frontend/
 │   └── src/
 │       ├── components/
+│       │   ├── AccountsPage.jsx   # Account search, detail modal, GM/lock/password management
+│       │   ├── AnnouncePage.jsx   # Broadcast announce/notify with templates and history
+│       │   ├── AutobroadcastPage.jsx  # Manage autobroadcast entries (add/edit/delete/weight)
 │       │   ├── BansPage.jsx
 │       │   ├── ConsolePage.jsx
 │       │   ├── ConfigPage.jsx
 │       │   ├── DBQueryPage.jsx
-│       │   ├── Layout.jsx        # Sidebar, nav badges, toast container
+│       │   ├── HomePage.jsx       # Overview: server cards, stat cards, memory bar, sparkline
+│       │   ├── Layout.jsx         # Sidebar, nav badges, toast container
 │       │   ├── Login.jsx
 │       │   ├── PlayersPage.jsx
 │       │   ├── ServersPage.jsx
 │       │   └── TicketsPage.jsx
-│       ├── ansi.js           # ANSI SGR colour parser for console output
-│       ├── api.js            # Fetch wrapper with JWT auth + 401 handling
-│       ├── App.jsx           # Auth context and page routing
-│       ├── socket.js         # Socket.IO client
-│       └── toast.js          # Global toast notification helper
+│       ├── ansi.js               # ANSI SGR colour parser for console output
+│       ├── api.js                # Fetch wrapper with JWT auth + 401 handling
+│       ├── App.jsx               # Auth context and page routing
+│       ├── socket.js             # Socket.IO client
+│       └── toast.js              # Global toast notification helper
 ├── .env.example
-└── package.json              # Root scripts (start, install:all)
+└── package.json                  # Root scripts (start, install:all)
 ```
 
 ## Notes

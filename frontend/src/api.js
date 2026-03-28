@@ -62,6 +62,23 @@ export const api = {
   escalateTicket:  (id)      => request('POST', `/api/tickets/${id}/escalate`),
   deescalateTicket:(id)      => request('POST', `/api/tickets/${id}/deescalate`),
 
+  getOverview: () => request('GET', '/api/overview'),
+
+  getAnnouncements:  ()                   => request('GET',  '/api/announcements/history'),
+  sendAnnouncement:  (type, message)      => request('POST', '/api/announcements', { type, message }),
+
+  getAutobroadcasts:    ()           => request('GET',    '/api/autobroadcast'),
+  createAutobroadcast:  (text, weight) => request('POST', '/api/autobroadcast', { text, weight }),
+  updateAutobroadcast:  (id, text, weight) => request('PUT', `/api/autobroadcast/${id}`, { text, weight }),
+  deleteAutobroadcast:  (id)         => request('DELETE', `/api/autobroadcast/${id}`),
+
+  searchAccounts:    (q)          => request('GET',   `/api/accounts?q=${encodeURIComponent(q)}`),
+  getAccount:        (id)         => request('GET',   `/api/accounts/${id}`),
+  createAccount:     (username, password) => request('POST', '/api/accounts', { username, password }),
+  setGMLevel:        (id, gmlevel)  => request('PATCH', `/api/accounts/${id}/gmlevel`, { gmlevel }),
+  setAccountLock:    (id, locked)   => request('PATCH', `/api/accounts/${id}/lock`, { locked }),
+  resetPassword:     (id, password) => request('POST',  `/api/accounts/${id}/password`, { password }),
+
   getConfigs:      ()             => request('GET', '/api/config'),
   getConfig:       (name)         => request('GET', `/api/config/${name}`),
   saveConfig:      (name, content) => request('PUT', `/api/config/${name}`, { content }),
