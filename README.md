@@ -1,15 +1,18 @@
 # AzerothCore Dashboard
 
-A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/) servers. Monitor server status, manage online players, view console output, query databases, and manage account bans — all from your browser.
+A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/) servers. Monitor server status, manage online players, view live console output, handle GM tickets, manage bans, and query databases — all from your browser.
 
 ## Features
 
-- **Console** — Real-time worldserver and authserver log output with GM command input
-- **Players** — Live online player list with kick and ban actions, auto-refreshes every 30 seconds
-- **Bans** — View and remove active account bans
-- **Servers** — Start and stop worldserver / authserver as child processes
-- **DB Query** — Run preset queries against the auth, world, and characters databases
+- **Console** — Real-time worldserver and authserver log output with full ANSI colour rendering, GM command input, persistent command history, and auto-scroll
+- **Players** — Live online player list (auto-refreshes every 30 s) with player filter, kick, and multi-type ban (character / account / IP)
+- **Tickets** — View, respond to, comment on, assign, escalate, and close in-game GM tickets; sidebar badge shows open ticket count
+- **Bans** — Three-tab view of active account, character, and IP bans; issue new bans and unban with confirmation
+- **Servers** — Start, stop (immediate exit or graceful shutdown with delay), and auto-restart worldserver / authserver
+- **DB Query** — Run preset SQL queries against the auth, world, and characters databases
 - **Role-based access** — GM level controls what each user can see and do
+- **Toast notifications** — Non-blocking feedback for every action
+- **Session management** — JWT-based auth with automatic logout on token expiry
 
 ## Requirements
 
@@ -70,13 +73,13 @@ FRONTEND_URL=http://localhost:5173
 
 **4. Set up a dashboard account**
 
-The dashboard authenticates against the AzerothCore `account` table. Log in using any existing game account that has a GM level assigned in `account_access`.
+The dashboard authenticates against the AzerothCore `account` table using SRP6 — the same credentials you use to log into the game. Log in with any account that has a GM level assigned in `account_access`.
 
-| GM Level | Role          | Access                                      |
-|----------|---------------|---------------------------------------------|
-| 1        | Moderator     | Console (read), Players list                |
-| 2        | Game Master   | + Kick/ban players, view/remove bans        |
-| 3        | Administrator | + Start/stop servers, DB Query              |
+| GM Level | Role          | Access                                                              |
+|----------|---------------|---------------------------------------------------------------------|
+| 1        | Moderator     | Console (read + send), Players list, GM Tickets                     |
+| 2        | Game Master   | + Kick/ban players, manage bans, issue bans, view all tickets       |
+| 3        | Administrator | + Start/stop servers, DB Query, auto-restart toggle                 |
 
 To grant a GM level, run this in your auth database:
 
@@ -105,44 +108,100 @@ npm run start:frontend
 
 Then open [http://localhost:5173](http://localhost:5173) in your browser and log in with your AzerothCore account credentials.
 
+## Pages
+
+### 🖥 Console
+- Live log streaming via Socket.IO for both worldserver and authserver
+- Full ANSI SGR colour support — log colours defined in `worldserver.conf` render correctly
+- Send GM commands directly from the browser
+- Command history persisted per session (up and down arrow navigation)
+- Auto-scroll toggle, persisted across sessions
+
+### 👥 Players
+- Shows all characters currently online with race, class, level, zone, and account name
+- Filter by character name or account username
+- **Kick** — remove a player with an optional reason
+- **Ban** — choose ban type (Character / Account / IP), target is pre-filled from the player row; enter duration and reason
+- Auto-refreshes every 30 seconds; clears and stops when the worldserver is offline
+- Player count badge in the sidebar reflects real-time online count (shows 0 when server is offline)
+
+### 🎫 Tickets
+- Lists all open GM tickets (`type = 0` in `gm_ticket`) with player name, message preview, creation time, assigned GM, and status badges (New / Escalated)
+- Click any row to expand full details including GM comment and last response
+- **Respond & Close** — send a response and optionally close the ticket in one action
+- **Add Comment** — attach an internal GM comment via `.ticket comment`
+- **Assign / Unassign** — assign the ticket to a GM by character name
+- **Escalate / De-escalate** — flag a ticket as escalated or remove the flag
+- Toggle between open-only and all tickets
+- Open ticket count badge in the sidebar, polled every 60 seconds
+- Auto-refreshes every 60 seconds; closed tickets are removed from the open list immediately on action
+
+### 🔨 Bans
+- Three tabs: **Account Bans**, **Character Bans**, **IP Bans**
+- Each tab shows who was banned, by whom, the reason, ban date, and expiry (or "Permanent")
+- **Issue Ban** button — choose type, enter target, duration (e.g. `1h`, `7d`, `-1` for permanent), and reason
+- **Unban** button on each row with a confirmation modal showing the ban reason
+
+### ⚙ Servers
+- Start and stop worldserver and authserver directly from the dashboard
+- **Exit** — sends `server exit` for an immediate clean shutdown
+- **Shutdown** — sends `server shutdown <delay>` with a configurable countdown (seconds)
+- **Auto-restart** — toggle per-server; automatically restarts the process after a crash (does not restart on manual stop)
+- Live status indicators in the sidebar footer
+
+### 🗄 DB Query
+- Run preset SQL queries against auth, world, or characters databases
+- Results displayed in a scrollable table
+
 ## Project Structure
 
 ```
 azerothcore-dashboard/
 ├── backend/
 │   ├── middleware/
-│   │   └── auth.js          # JWT verification, GM level guards
+│   │   └── auth.js           # JWT verification, GM level guards
 │   ├── routes/
-│   │   ├── auth.js          # Login endpoint (SRP6 verification)
-│   │   ├── bans.js          # List and remove account bans
-│   │   ├── console.js       # GM command execution
-│   │   ├── db.js            # Database query endpoint
-│   │   ├── players.js       # Online players, kick, ban, count
-│   │   └── servers.js       # Start, stop, status, logs
-│   ├── db.js                # MySQL connection pools
-│   ├── processManager.js    # Server process lifecycle
-│   └── server.js            # Express + Socket.IO entry point
+│   │   ├── auth.js           # Login (SRP6 verification + rate limiting)
+│   │   ├── bans.js           # Account / character / IP ban management
+│   │   ├── console.js        # GM command execution
+│   │   ├── db.js             # Preset database query endpoint
+│   │   ├── players.js        # Online players, kick, multi-type ban, count
+│   │   ├── servers.js        # Start, stop, status, logs, auto-restart
+│   │   └── tickets.js        # GM ticket CRUD (respond, comment, assign, escalate)
+│   ├── db.js                 # MySQL connection pools (auth, world, characters)
+│   ├── processManager.js     # Server process lifecycle + Socket.IO broadcast
+│   └── server.js             # Express + Socket.IO entry point
 ├── frontend/
 │   └── src/
 │       ├── components/
 │       │   ├── BansPage.jsx
 │       │   ├── ConsolePage.jsx
 │       │   ├── DBQueryPage.jsx
-│       │   ├── Layout.jsx
+│       │   ├── Layout.jsx        # Sidebar, nav badges, toast container
 │       │   ├── Login.jsx
 │       │   ├── PlayersPage.jsx
-│       │   └── ServersPage.jsx
-│       ├── api.js            # Fetch wrapper with JWT auth
-│       ├── App.jsx           # Auth context and routing
+│       │   ├── ServersPage.jsx
+│       │   └── TicketsPage.jsx
+│       ├── ansi.js           # ANSI SGR colour parser for console output
+│       ├── api.js            # Fetch wrapper with JWT auth + 401 handling
+│       ├── App.jsx           # Auth context and page routing
 │       ├── socket.js         # Socket.IO client
-│       └── toast.js          # Toast notification helper
+│       └── toast.js          # Global toast notification helper
 ├── .env.example
-└── package.json             # Root scripts (start, install:all)
+└── package.json              # Root scripts (start, install:all)
 ```
 
 ## Notes
 
-- The dashboard starts `worldserver.exe` and `authserver.exe` as **child processes**. If the dashboard process exits, both game servers will also stop.
-- Worldserver shutdown uses the `server shutdown 0` command for a clean shutdown. Authserver is killed directly.
-- Console command history persists for the current browser session. Auto-scroll preference is saved across sessions.
+- The dashboard starts `worldserver.exe` and `authserver.exe` as **child processes**. If the dashboard backend process exits, the game servers will also stop.
+- **Graceful shutdown:** worldserver uses `server exit` (immediate) or `server shutdown <N>` (countdown). Authserver is terminated with `SIGTERM`.
+- **Auto-restart** tracks intentional stops so it only restarts on unexpected crashes, not manual stops.
+- **Authentication** uses AzerothCore's SRP6 verifier (salt + verifier columns) — no plain-text password storage or comparison.
+- **Login rate limiting** is set to 10 attempts per 15 minutes per IP to protect against brute-force attacks.
 - The session token expires after 8 hours and will automatically redirect to the login page.
+- Console command history persists for the current browser session. Auto-scroll preference is saved across sessions in `localStorage`.
+
+## Credits
+
+- **[AzerothCore](https://www.azerothcore.org/)** — the open-source World of Warcraft emulator this dashboard is built for
+- **Development** — assisted by [Claude Code](https://claude.ai/code) (Anthropic)
