@@ -8,6 +8,7 @@ import PlayersPage from './PlayersPage.jsx';
 import DBQueryPage from './DBQueryPage.jsx';
 import BansPage from './BansPage.jsx';
 import TicketsPage from './TicketsPage.jsx';
+import ConfigPage from './ConfigPage.jsx';
 
 const GM_LABELS = {
   1: 'Moderator',
@@ -23,6 +24,7 @@ const NAV = [
   { id: 'bans',    label: '🔨 Bans',    minLevel: 2 },
   { id: 'servers', label: '⚙ Servers',  minLevel: 3 },
   { id: 'dbquery', label: '🗄 DB Query', minLevel: 3 },
+  { id: 'config',  label: '📄 Config',   minLevel: 3 },
 ];
 
 export default function Layout() {
@@ -156,6 +158,7 @@ export default function Layout() {
         {page === 'bans'    && <BansPage />}
         {page === 'servers' && <ServersPage serverStatus={serverStatus} setServerStatus={setServerStatus} />}
         {page === 'dbquery' && <DBQueryPage />}
+        {page === 'config'  && <ConfigPage />}
       </main>
 
       <ToastContainer toasts={toasts} />

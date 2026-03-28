@@ -52,6 +52,10 @@ Open `.env` and set the following values:
 WORLDSERVER_PATH=C:\AzerothCore\worldserver.exe
 AUTHSERVER_PATH=C:\AzerothCore\authserver.exe
 
+# Config file paths (optional — defaults to the .conf next to each executable)
+# WORLDSERVER_CONF=C:\AzerothCore\worldserver.conf
+# AUTHSERVER_CONF=C:\AzerothCore\authserver.conf
+
 # Database connection
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -153,6 +157,14 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser and log
 - Run preset SQL queries against auth, world, or characters databases
 - Results displayed in a scrollable table
 
+### 📄 Config (Administrators only)
+- View and edit `worldserver.conf` and `authserver.conf` directly in the browser
+- Full monospace editor with line numbers
+- **Find** bar — search for any setting by name and jump to it instantly
+- Unsaved-changes indicator (amber dot on tab, badge in header and footer)
+- **Save** writes the file and automatically creates a `.bak` backup of the previous version
+- **Discard** reverts all edits back to the last saved state
+
 ## Project Structure
 
 ```
@@ -167,6 +179,7 @@ azerothcore-dashboard/
 │   │   ├── db.js             # Preset database query endpoint
 │   │   ├── players.js        # Online players, kick, multi-type ban, count
 │   │   ├── servers.js        # Start, stop, status, logs, auto-restart
+│   │   ├── config.js         # Read and save worldserver/authserver config files
 │   │   └── tickets.js        # GM ticket CRUD (respond, comment, assign, escalate)
 │   ├── db.js                 # MySQL connection pools (auth, world, characters)
 │   ├── processManager.js     # Server process lifecycle + Socket.IO broadcast
@@ -176,6 +189,7 @@ azerothcore-dashboard/
 │       ├── components/
 │       │   ├── BansPage.jsx
 │       │   ├── ConsolePage.jsx
+│       │   ├── ConfigPage.jsx
 │       │   ├── DBQueryPage.jsx
 │       │   ├── Layout.jsx        # Sidebar, nav badges, toast container
 │       │   ├── Login.jsx

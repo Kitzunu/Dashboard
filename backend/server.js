@@ -13,6 +13,7 @@ const consoleRoutes = require('./routes/console');
 const dbRoutes = require('./routes/db');
 const banRoutes = require('./routes/bans');
 const ticketRoutes = require('./routes/tickets');
+const configRoutes = require('./routes/config');
 const { authenticateToken } = require('./middleware/auth');
 const processManager = require('./processManager');
 
@@ -35,6 +36,7 @@ app.use('/api/console', authenticateToken, consoleRoutes);
 app.use('/api/db', authenticateToken, dbRoutes);
 app.use('/api/bans',    authenticateToken, banRoutes);
 app.use('/api/tickets', authenticateToken, ticketRoutes);
+app.use('/api/config',  authenticateToken, configRoutes);
 
 // Authenticate socket connections with JWT
 io.use((socket, next) => {

@@ -62,6 +62,10 @@ export const api = {
   escalateTicket:  (id)      => request('POST', `/api/tickets/${id}/escalate`),
   deescalateTicket:(id)      => request('POST', `/api/tickets/${id}/deescalate`),
 
+  getConfigs:      ()             => request('GET', '/api/config'),
+  getConfig:       (name)         => request('GET', `/api/config/${name}`),
+  saveConfig:      (name, content) => request('PUT', `/api/config/${name}`, { content }),
+
   getBans: () => request('GET', '/api/bans'),
   banTarget: (type, target, duration, reason) =>
     request('POST', '/api/bans', { type, target, duration, reason }),
