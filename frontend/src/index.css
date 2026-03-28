@@ -323,6 +323,8 @@ input:focus, textarea:focus, select:focus { border-color: var(--gold-dim); }
   color: #b8c5d0;
 }
 
+.console-loading { display: block; color: var(--text-dim); font-style: italic; padding: 12px 0; }
+
 .console-output::-webkit-scrollbar { width: 6px; }
 .console-output::-webkit-scrollbar-track { background: transparent; }
 .console-output::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -442,6 +444,26 @@ input:focus, textarea:focus, select:focus { border-color: var(--gold-dim); }
 .null-val { color: var(--text-dim); font-style: italic; }
 
 .loading-text { color: var(--text-dim); padding: 32px 0; text-align: center; }
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.filter-input {
+  flex: 1;
+  max-width: 320px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 7px 10px;
+  font-size: 13px;
+  outline: none;
+}
+.filter-input:focus { border-color: var(--gold-dim); }
 
 /* ── Modals ──────────────────────────────────────────────────── */
 .modal-overlay {

@@ -3,10 +3,19 @@ import { api } from '../api.js';
 
 function ConsolePanel({ title, serverName, socket, canSendCommands }) {
   const [lines, setLines] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [command, setCommand] = useState('');
-  const [cmdHistory, setCmdHistory] = useState([]);
+  const [cmdHistory, setCmdHistory] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem(`cmd-history-${serverName}`)) || [];
+    } catch {
+      return [];
+    }
+  });
   const [histIdx, setHistIdx] = useState(-1);
-  const [autoScroll, setAutoScroll] = useState(true);
+  const [autoScroll, setAutoScroll] = useState(
+    () => localStorage.getItem(`console-autoscroll-${serverName}`) !== 'false'
+  );
   const [sending, setSending] = useState(false);
   const outputRef = useRef(null);
   const endRef = useRef(null);
@@ -15,7 +24,8 @@ function ConsolePanel({ title, serverName, socket, canSendCommands }) {
   useEffect(() => {
     api.getServerLogs(serverName)
       .then((data) => setLines(data.logs || []))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [serverName]);
 
   // Subscribe to live output
@@ -49,7 +59,11 @@ function ConsolePanel({ title, serverName, socket, canSendCommands }) {
     e.preventDefault();
     const cmd = command.trim();
     if (!cmd) return;
-    setCmdHistory((prev) => [cmd, ...prev.slice(0, 49)]);
+    setCmdHistory((prev) => {
+      const next = [cmd, ...prev.slice(0, 49)];
+      sessionStorage.setItem(`cmd-history-${serverName}`, JSON.stringify(next));
+      return next;
+    });
     setHistIdx(-1);
     setCommand('');
     setSending(true);
@@ -92,17 +106,24 @@ function ConsolePanel({ title, serverName, socket, canSendCommands }) {
           <input
             type="checkbox"
             checked={autoScroll}
-            onChange={(e) => setAutoScroll(e.target.checked)}
+            onChange={(e) => {
+              setAutoScroll(e.target.checked);
+              localStorage.setItem(`console-autoscroll-${serverName}`, e.target.checked);
+            }}
           />
           Auto-scroll
         </label>
       </div>
       <div className="console-output" ref={outputRef}>
-        {lines.map((line, i) => (
-          <span key={i} className="console-line">
-            {line}
-          </span>
-        ))}
+        {loading ? (
+          <span className="console-loading">Loading logs…</span>
+        ) : (
+          lines.map((line, i) => (
+            <span key={i} className="console-line">
+              {line}
+            </span>
+          ))
+        )}
         <div ref={endRef} />
       </div>
       {canSendCommands && (

@@ -84,6 +84,7 @@ export default function PlayersPage({ auth }) {
   const [flash, setFlash] = useState(null);
   const [kickTarget, setKickTarget] = useState(null);
   const [banTarget, setBanTarget] = useState(null);
+  const [filter, setFilter] = useState('');
 
   const canModerate = auth.gmlevel >= 2;
 
@@ -132,6 +133,15 @@ export default function PlayersPage({ auth }) {
     }
   };
 
+  const q = filter.trim().toLowerCase();
+  const visible = q
+    ? players.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          (p.username ?? p.account ?? '').toString().toLowerCase().includes(q)
+      )
+    : players;
+
   return (
     <div className="page">
       <div className="page-header">
@@ -146,6 +156,19 @@ export default function PlayersPage({ auth }) {
         <div className={`alert ${flash.error ? 'alert-error' : 'alert-info'}`}>{flash.text}</div>
       )}
       {error && <div className="alert alert-error">{error}</div>}
+
+      <div className="filter-row">
+        <input
+          className="filter-input"
+          type="text"
+          placeholder="Filter by name or account…"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        />
+        {filter && (
+          <button className="btn btn-ghost btn-sm" onClick={() => setFilter('')}>Clear</button>
+        )}
+      </div>
 
       {loading ? (
         <div className="loading-text">Loading players…</div>
@@ -163,14 +186,14 @@ export default function PlayersPage({ auth }) {
               </tr>
             </thead>
             <tbody>
-              {players.length === 0 ? (
+              {visible.length === 0 ? (
                 <tr>
                   <td colSpan={canModerate ? 6 : 5} className="empty-cell">
-                    No players online
+                    {q ? 'No players match that filter' : 'No players online'}
                   </td>
                 </tr>
               ) : (
-                players.map((p) => (
+                visible.map((p) => (
                   <tr key={p.guid}>
                     <td className="td-name">{p.name}</td>
                     <td>{RACES[p.race] ?? p.race}</td>
