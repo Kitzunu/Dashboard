@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../App.jsx';
 import { connectSocket, disconnectSocket } from '../socket.js';
 import { api } from '../api.js';
@@ -6,6 +6,7 @@ import ConsolePage from './ConsolePage.jsx';
 import ServersPage from './ServersPage.jsx';
 import PlayersPage from './PlayersPage.jsx';
 import DBQueryPage from './DBQueryPage.jsx';
+import BansPage from './BansPage.jsx';
 
 const GM_LABELS = {
   1: 'Moderator',
@@ -17,7 +18,8 @@ const GM_LABELS = {
 const NAV = [
   { id: 'console', label: '🖥 Console', minLevel: 1 },
   { id: 'players', label: '👥 Players', minLevel: 1 },
-  { id: 'servers', label: '⚙ Servers', minLevel: 3 },
+  { id: 'bans',    label: '🔨 Bans',    minLevel: 2 },
+  { id: 'servers', label: '⚙ Servers',  minLevel: 3 },
   { id: 'dbquery', label: '🗄 DB Query', minLevel: 3 },
 ];
 
@@ -29,9 +31,11 @@ export default function Layout() {
     worldserver: { running: false },
     authserver: { running: false },
   });
+  const [playerCount, setPlayerCount] = useState(null);
+  const [toasts, setToasts] = useState([]);
+  const toastId = useRef(0);
 
   useEffect(() => {
-    // Load initial server status
     api.getServerStatus()
       .then(setServerStatus)
       .catch(() => {});
@@ -46,6 +50,35 @@ export default function Layout() {
     return () => disconnectSocket();
   }, [auth.token]);
 
+  // Poll player count every 30s
+  useEffect(() => {
+    const fetchCount = () => {
+      api.getPlayerCount()
+        .then((d) => setPlayerCount(d.count))
+        .catch(() => {});
+    };
+    fetchCount();
+    const interval = setInterval(fetchCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Clear count when world goes offline
+  useEffect(() => {
+    if (!serverStatus.worldserver.running) setPlayerCount(0);
+  }, [serverStatus.worldserver.running]);
+
+  // Toast listener
+  useEffect(() => {
+    const handler = (e) => {
+      const id = ++toastId.current;
+      const { text, type } = e.detail;
+      setToasts((prev) => [...prev, { id, text, type }]);
+      setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
+    };
+    window.addEventListener('toast', handler);
+    return () => window.removeEventListener('toast', handler);
+  }, []);
+
   const navItems = NAV.filter((item) => auth.gmlevel >= item.minLevel);
 
   return (
@@ -53,9 +86,9 @@ export default function Layout() {
       <aside className="sidebar">
         <div className="sidebar-brand">
           <span className="brand-icon">
-            <img src="../../img/icon.png" alt="image" width="38" height="auto"></img>
+            <img src="../../img/icon.png" alt="image" width="38" height="auto" />
           </span>
-           <div>
+          <div>
             <div className="brand-name">AzerothCore</div>
             <div className="brand-sub">Dashboard</div>
           </div>
@@ -68,7 +101,12 @@ export default function Layout() {
               className={`nav-item ${page === item.id ? 'active' : ''}`}
               onClick={() => setPage(item.id)}
             >
-              {item.label}
+              <span className="nav-label">{item.label}</span>
+              {item.id === 'players' && playerCount != null && (
+                <span className={`nav-badge ${playerCount > 0 ? 'nav-badge-active' : ''}`}>
+                  {playerCount}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -90,12 +128,13 @@ export default function Layout() {
 
       <main className="main-content">
         {page === 'console' && <ConsolePage socket={socket} auth={auth} />}
-        {page === 'players' && <PlayersPage auth={auth} />}
-        {page === 'servers' && (
-          <ServersPage serverStatus={serverStatus} setServerStatus={setServerStatus} />
-        )}
+        {page === 'players' && <PlayersPage auth={auth} serverStatus={serverStatus} />}
+        {page === 'bans'    && <BansPage />}
+        {page === 'servers' && <ServersPage serverStatus={serverStatus} setServerStatus={setServerStatus} />}
         {page === 'dbquery' && <DBQueryPage />}
       </main>
+
+      <ToastContainer toasts={toasts} />
     </div>
   );
 }
@@ -105,6 +144,19 @@ function StatusDot({ label, running }) {
     <div className="status-dot-group">
       <span className={`dot ${running ? 'dot-green' : 'dot-red'}`} />
       <span className="dot-label">{label}</span>
+    </div>
+  );
+}
+
+function ToastContainer({ toasts }) {
+  if (toasts.length === 0) return null;
+  return (
+    <div className="toast-container">
+      {toasts.map((t) => (
+        <div key={t.id} className={`toast toast-${t.type}`}>
+          {t.text}
+        </div>
+      ))}
     </div>
   );
 }

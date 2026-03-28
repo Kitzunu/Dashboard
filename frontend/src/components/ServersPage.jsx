@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api.js';
+import { toast } from '../toast.js';
 
 function ServerCard({ name, displayName, status, onStart, onStop, busy }) {
   const isRunning = status.running;
@@ -39,7 +40,6 @@ function ServerCard({ name, displayName, status, onStart, onStop, busy }) {
 
 export default function ServersPage({ serverStatus, setServerStatus }) {
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState(null);
 
   useEffect(() => {
     api.getServerStatus()
@@ -47,23 +47,18 @@ export default function ServersPage({ serverStatus, setServerStatus }) {
       .catch(() => {});
   }, []);
 
-  const flash = (msg, isError = false) => {
-    setMessage({ text: msg, error: isError });
-    setTimeout(() => setMessage(null), 4000);
-  };
-
   const handleStart = async (name) => {
     setBusy(true);
     try {
       const result = await api.startServer(name);
       if (result.success) {
-        flash(`${name} started`);
+        toast(`${name} starting…`);
         setServerStatus((prev) => ({ ...prev, [name]: { running: true } }));
       } else {
-        flash(result.error, true);
+        toast(result.error, 'error');
       }
     } catch (err) {
-      flash(err.message, true);
+      toast(err.message, 'error');
     } finally {
       setBusy(false);
     }
@@ -75,12 +70,12 @@ export default function ServersPage({ serverStatus, setServerStatus }) {
     try {
       const result = await api.stopServer(name);
       if (result.success) {
-        flash(`Stop signal sent to ${name}`);
+        toast(`Stop signal sent to ${name}`);
       } else {
-        flash(result.error, true);
+        toast(result.error, 'error');
       }
     } catch (err) {
-      flash(err.message, true);
+      toast(err.message, 'error');
     } finally {
       setBusy(false);
     }
@@ -92,12 +87,6 @@ export default function ServersPage({ serverStatus, setServerStatus }) {
       <p className="page-sub">
         Servers are started as child processes of this dashboard. Configure paths in <code>.env</code>.
       </p>
-
-      {message && (
-        <div className={`alert ${message.error ? 'alert-error' : 'alert-info'}`}>
-          {message.text}
-        </div>
-      )}
 
       <div className="server-cards">
         <ServerCard

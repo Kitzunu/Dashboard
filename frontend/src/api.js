@@ -47,4 +47,9 @@ export const api = {
     request('POST', `/api/players/${encodeURIComponent(name)}/ban`, { duration, reason }),
 
   dbQuery: (query, database) => request('POST', '/api/db/query', { query, database }),
+
+  getPlayerCount: () => request('GET', '/api/players/count'),
+
+  getBans: () => request('GET', '/api/bans'),
+  unbanAccount: (id) => request('DELETE', `/api/bans/${id}`),
 };

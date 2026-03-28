@@ -5,6 +5,15 @@ const processManager = require('../processManager');
 
 const router = express.Router();
 
+router.get('/count', requireGMLevel(1), async (req, res) => {
+  try {
+    const [rows] = await charPool.query('SELECT COUNT(*) AS count FROM characters WHERE online = 1');
+    res.json({ count: Number(rows[0].count) });
+  } catch {
+    res.json({ count: 0 });
+  }
+});
+
 router.get('/', requireGMLevel(1), async (req, res) => {
   try {
     const authDb = process.env.AUTH_DB || 'acore_auth';

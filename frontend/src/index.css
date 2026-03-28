@@ -586,6 +586,67 @@ kbd {
   color: var(--text-dim);
 }
 
+/* ── Nav badge ───────────────────────────────────────────────── */
+.nav-item { display: flex; align-items: center; justify-content: space-between; }
+.nav-label { flex: 1; }
+
+.nav-badge {
+  min-width: 20px;
+  padding: 1px 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-align: center;
+}
+.nav-badge-active { background: rgba(201,162,39,0.15); border-color: var(--gold-dim); color: var(--gold); }
+
+/* ── Toasts ──────────────────────────────────────────────────── */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 200;
+}
+
+.toast {
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  animation: toast-in 0.2s ease;
+  max-width: 320px;
+}
+.toast-success { background: #1a3d2b; border: 1px solid var(--green); color: var(--green); }
+.toast-error   { background: #3d1a1a; border: 1px solid var(--red);   color: #f08080; }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Offline notice ──────────────────────────────────────────── */
+.offline-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+  color: var(--red);
+  font-size: 15px;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+/* ── Bans page ───────────────────────────────────────────────── */
+.td-perm { color: var(--red); font-weight: 600; }
+.modal-detail { font-size: 13px; color: var(--text-dim); }
+
 code {
   background: var(--surface2);
   border: 1px solid var(--border);
