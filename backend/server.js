@@ -23,6 +23,7 @@ const mailRoutes         = require('./routes/mail');
 const thresholdsRoutes   = require('./routes/thresholds');
 const bugreportRoutes    = require('./routes/bugreports');
 const lagreportRoutes    = require('./routes/lagreports');
+const mailserverRoutes   = require('./routes/mailserver');
 const playerHistory      = require('./playerHistory');
 const { authenticateToken } = require('./middleware/auth');
 const ipAllowlist = require('./middleware/ipAllowlist');
@@ -58,6 +59,7 @@ app.use('/api/mail',           authenticateToken, mailRoutes);
 app.use('/api/thresholds',     authenticateToken, thresholdsRoutes);
 app.use('/api/bugreports',    authenticateToken, bugreportRoutes);
 app.use('/api/lagreports',    authenticateToken, lagreportRoutes);
+app.use('/api/mailserver',    authenticateToken, mailserverRoutes);
 
 // Authenticate socket connections with JWT
 io.use((socket, next) => {

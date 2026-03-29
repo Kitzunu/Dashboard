@@ -16,6 +16,7 @@ import AccountsPage from './AccountsPage.jsx';
 import MailPage from './MailPage.jsx';
 import BugReportsPage from './BugReportsPage.jsx';
 import LagReportsPage from './LagReportsPage.jsx';
+import MailServerPage from './MailServerPage.jsx';
 
 const GM_LABELS = {
   1: 'Moderator',
@@ -36,6 +37,7 @@ const NAV = [
   { id: 'mail',          label: '✉ Send Mail',        minLevel: 2 },
   { id: 'bugreports',    label: '🐛 Bug Reports',     minLevel: 1 },
   { id: 'lagreports',    label: '📶 Lag Reports',     minLevel: 1 },
+  { id: 'mailserver',    label: '📬 Mail Server',     minLevel: 3 },
   { id: 'servers',       label: '⚙ Servers',         minLevel: 3 },
   { id: 'dbquery',       label: '🗄 DB Query',        minLevel: 3 },
   { id: 'config',        label: '📄 Config',          minLevel: 3 },
@@ -177,6 +179,7 @@ export default function Layout() {
         {page === 'mail'          && <MailPage />}
         {page === 'bugreports'    && <BugReportsPage />}
         {page === 'lagreports'    && <LagReportsPage />}
+        {page === 'mailserver'    && <MailServerPage />}
         {page === 'servers'       && <ServersPage serverStatus={serverStatus} setServerStatus={setServerStatus} />}
         {page === 'dbquery'       && <DBQueryPage />}
         {page === 'config'        && <ConfigPage />}

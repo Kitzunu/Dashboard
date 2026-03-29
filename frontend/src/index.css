@@ -1609,6 +1609,132 @@ code {
   color: var(--gold-dim);
 }
 
+/* ── Mail Server ─────────────────────────────────────────────── */
+.ms-modal {
+  width: 680px;
+  max-width: 95vw;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.ms-tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.ms-tab {
+  padding: 8px 18px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.ms-tab:hover  { color: var(--text); }
+.ms-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+.ms-tab-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.ms-body-textarea {
+  resize: vertical;
+  min-height: 110px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.ms-money-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.ms-money-label {
+  font-size: 13px;
+  color: var(--text-dim);
+  width: 130px;
+  flex-shrink: 0;
+}
+
+.ms-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ms-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--gold);
+}
+
+.ms-toggle-label {
+  font-size: 13px;
+}
+
+.ms-add-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.ms-add-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  white-space: nowrap;
+  margin-right: 4px;
+}
+
+.ms-condition-add {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  margin-top: 4px;
+}
+
+.ms-condition-fields {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.money-display {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* ── Shared small form helpers ───────────────────────────────── */
+.form-row-sm {
+  margin-bottom: 0;
+}
+
+.input-sm {
+  padding: 5px 10px;
+  font-size: 13px;
+  height: 32px;
+}
+
 /* ── Lag Reports ─────────────────────────────────────────────── */
 .lag-stats-bar {
   display: flex;

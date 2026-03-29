@@ -13,6 +13,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 - **Accounts** — Search accounts by username / email / IP, view details and characters, set GM level, lock/unlock accounts, reset passwords
 - **Autobroadcast** — Manage the in-game autobroadcast rotation: add, edit, delete, and weight messages
 - **Send Mail** — Send in-game mail, items, or money to any character directly from the dashboard
+- **Mail Server** — Full CRUD editor for the `mail_server_template` system: create/edit/delete templates with subject, body, faction-specific money (Alliance/Horde gold/silver/copper), active toggle, item attachments per faction, eligibility conditions (Level, PlayTime, Quest, Achievement, Reputation, Faction, Race, Class, AccountFlags), and a recipients list showing which characters have already received each template (Administrators only)
 - **Lag Reports** — Browse player-submitted lag reports from the `lag_reports` characters table; filterable by type and minimum latency; aggregate stats with top-reporter and top-map breakdowns; dismiss individual reports (GM 2+) or clear all (Administrator)
 - **Bug Reports** — Browse and inspect in-game FeedbackUI bug reports, suggestions, and feedback; paginated table with character, zone, subject, and type; full detail modal with reporter info, location, system specs, aura list, and addon data; dismiss (delete) reports at GM level 2+
 - **Servers** — Start, stop, scheduled restart, auto-restart, and MOTD editor for worldserver / authserver
@@ -217,6 +218,17 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser and log
 - **Delete** with confirmation modal
 - Weight controls how often a message is selected relative to others
 
+### 📬 Mail Server (Administrators only)
+- Full CRUD editor for the `mail_server_template` system (4 linked tables in the characters database)
+- **Template list** — table showing ID, active/inactive status badge, subject, Alliance and Horde money amounts, item count, condition count, and recipient count
+- **Create / Edit modal** with four tabs:
+  - **General** — Subject, body textarea, Alliance money (gold/silver/copper inputs), Horde money, active toggle
+  - **Items** — Per-faction item attachments; add by selecting Alliance or Horde, entering Item ID and count; remove individual items
+  - **Conditions** — Eligibility conditions (type dropdown: Level / PlayTime / Quest / Achievement / Reputation / Faction / Race / Class / AccountFlags); each type shows contextual field labels (e.g. "Required level", "Quest ID", "Faction ID", "Minutes played"); value and state fields with hints
+  - **Recipients** — Read-only list of characters who have already received the template (name, level, GUID)
+- **Delete** with confirmation modal noting cascade deletion of items, conditions, and recipient records
+- Viewing is available to GM 2+; create/edit/delete requires Administrator (GM 3)
+
 ### 📶 Lag Reports (GM level 1+)
 - Paginated table (50 per page) of all player-submitted lag events from the `lag_reports` characters database table
 - **Filter by type** — All / Loot / Auction House / Mail / Chat / Movement / Spells & Abilities
@@ -275,7 +287,8 @@ azerothcore-dashboard/
 │   │   ├── servertools.js        # Scheduled restart, cancel restart, MOTD get/set
 │   │   ├── tickets.js            # GM ticket CRUD (respond, comment, assign, escalate)
 │   │   ├── bugreports.js         # Bug report list, detail, and dismiss endpoints
-│   │   └── lagreports.js         # Lag report list, stats, dismiss, and clear-all endpoints
+│   │   ├── lagreports.js         # Lag report list, stats, dismiss, and clear-all endpoints
+│   │   └── mailserver.js         # Mail server template CRUD + items, conditions, recipients
 │   ├── db.js                     # MySQL connection pools (auth, world, characters)
 │   ├── playerHistory.js          # Rolling in-memory player count history (max 120 points)
 │   ├── processManager.js         # Server process lifecycle + Socket.IO broadcast
@@ -292,6 +305,7 @@ azerothcore-dashboard/
 │       │   ├── DBQueryPage.jsx
 │       │   ├── BugReportsPage.jsx # FeedbackUI bug report browser with detail modal
 │       │   ├── LagReportsPage.jsx # Lag report browser with stats, filters, and latency colouring
+│       │   ├── MailServerPage.jsx # Mail server template editor (general, items, conditions, recipients)
 │       │   ├── HomePage.jsx       # Overview: server cards, stat cards, memory/CPU bars, sparkline
 │       │   ├── MailPage.jsx       # Send in-game mail / items / money to characters
 │       │   ├── Layout.jsx         # Sidebar, nav badges, toast container

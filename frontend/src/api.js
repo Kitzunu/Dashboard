@@ -100,6 +100,18 @@ export const api = {
   getConfig:       (name)         => request('GET', `/api/config/${name}`),
   saveConfig:      (name, content) => request('PUT', `/api/config/${name}`, { content }),
 
+  // Mail Server Templates
+  getMailServerTemplates:  ()          => request('GET',    '/api/mailserver'),
+  getMailServerTemplate:   (id)        => request('GET',    `/api/mailserver/${id}`),
+  createMailServerTemplate:(data)      => request('POST',   '/api/mailserver', data),
+  updateMailServerTemplate:(id, data)  => request('PUT',    `/api/mailserver/${id}`, data),
+  deleteMailServerTemplate:(id)        => request('DELETE', `/api/mailserver/${id}`),
+  addMailServerItem:       (id, data)  => request('POST',   `/api/mailserver/${id}/items`, data),
+  deleteMailServerItem:    (id, itemId)=> request('DELETE', `/api/mailserver/${id}/items/${itemId}`),
+  addMailServerCondition:  (id, data)  => request('POST',   `/api/mailserver/${id}/conditions`, data),
+  deleteMailServerCondition:(id, condId)=>request('DELETE', `/api/mailserver/${id}/conditions/${condId}`),
+  getMailServerRecipients: (id)        => request('GET',    `/api/mailserver/${id}/recipients`),
+
   getLagReports: (page, lagType, minLatency) => {
     const params = new URLSearchParams({ page: page || 1 });
     if (lagType != null && lagType !== 'all') params.set('lagType', lagType);
