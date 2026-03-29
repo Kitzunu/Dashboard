@@ -3,6 +3,6 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  server: { host: 0.0.0.0, // todo: make these read from config?
+  server: { host: true, // todo: make these read from config?
             port: 5173 },
 });
