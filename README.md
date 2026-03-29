@@ -58,11 +58,15 @@ cp .env.example .env
 Open `.env` and set the following values:
 
 ```env
-# Paths to your AzerothCore executables
+# AzerothCore executable paths
 WORLDSERVER_PATH=C:\AzerothCore\worldserver.exe
 AUTHSERVER_PATH=C:\AzerothCore\authserver.exe
+# Working directories for the servers (defaults to the exe's directory if omitted)
+# WORLDSERVER_DIR=C:\AzerothCore
+# AUTHSERVER_DIR=C:\AzerothCore
 
-# Config file paths (optional — defaults to the .conf next to each executable)
+# Config file paths (optional — defaults to the .conf file next to each executable)
+# Set these explicitly if your config files live in a different directory
 # WORLDSERVER_CONF=C:\AzerothCore\worldserver.conf
 # AUTHSERVER_CONF=C:\AzerothCore\authserver.conf
 
@@ -75,15 +79,27 @@ AUTH_DB=acore_auth
 WORLD_DB=acore_world
 CHARACTERS_DB=acore_characters
 
-# JWT secret — must be changed to a long random string
+# JWT secret — change this to something random!
 JWT_SECRET=change-this-to-a-random-secret
 
-# Backend port and frontend URL (for CORS)
+# Backend port
 PORT=3001
+
+# IP allowlist — comma-separated list of IPs allowed to reach the backend.
+# Defaults to localhost only if this variable is omitted.
+# Add your server's LAN/WAN IP here if you need remote access.
+# Example: ALLOWED_IPS=127.0.0.1,::1,192.168.1.50
+ALLOWED_IPS=127.0.0.1,::1
+
+# Frontend URL (for CORS)
 FRONTEND_URL=http://localhost:5173
 
-# IP allowlist — comma-separated. Defaults to localhost only if omitted.
-ALLOWED_IPS=127.0.0.1,::1
+# Path to WotLK (3.3.5a) client DBC files directory (the DBFilesClient folder).
+# Required for human-readable map and zone names in Lag Reports and Players.
+# Leave blank to fall back to "Map {id}" / zone ID placeholders.
+# Example (Windows): DBC_PATH=C:\World of Warcraft\Data\enUS\DBFilesClient
+# Example (Linux):   DBC_PATH=/opt/wow/Data/enUS/DBFilesClient
+DBC_PATH=
 ```
 
 > **Important:** Generate a strong `JWT_SECRET`. You can use `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` to create one.
