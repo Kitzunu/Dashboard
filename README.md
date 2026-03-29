@@ -135,7 +135,7 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser and log
 - Auto-scroll toggle, persisted across sessions
 
 ### 👥 Players
-- Shows all characters currently online with race, class, level, zone, and account name
+- Shows all characters currently online with race, class, level, zone (resolved from AreaTable.dbc when `DBC_PATH` is configured, otherwise raw zone ID), and account name
 - Filter by character name or account username
 - **Kick** — remove a player with an optional reason
 - **Ban** — choose ban type (Character / Account / IP), target is pre-filled from the player row; enter duration and reason

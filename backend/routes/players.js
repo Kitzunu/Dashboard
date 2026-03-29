@@ -2,6 +2,7 @@ const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const { charPool, authPool } = require('../db');
 const processManager = require('../processManager');
+const dbc = require('../dbc');
 
 const router = express.Router();
 
@@ -25,7 +26,11 @@ router.get('/', requireGMLevel(1), async (req, res) => {
        WHERE c.online = 1
        ORDER BY c.name`
     );
-    res.json(rows);
+    const players = rows.map((r) => ({
+      ...r,
+      zoneName: dbc.getAreaName(r.zone) || null,
+    }));
+    res.json(players);
   } catch (err) {
     console.error('Players query error:', err);
     res.status(500).json({ error: 'Database error: ' + err.message });

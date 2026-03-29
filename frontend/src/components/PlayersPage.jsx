@@ -10,38 +10,6 @@ const CLASSES = {
   1: 'Warrior', 2: 'Paladin', 3: 'Hunter', 4: 'Rogue', 5: 'Priest',
   6: 'Death Knight', 7: 'Shaman', 8: 'Mage', 9: 'Warlock', 11: 'Druid',
 };
-const ZONES = {
-  // Cities
-  1519: 'Stormwind City', 1537: 'Ironforge', 1497: 'Undercity',
-  1637: 'Orgrimmar', 1638: 'Thunder Bluff', 1657: 'Darnassus',
-  3487: 'Silvermoon City', 4197: 'Dalaran', 3703: 'Shattrath City',
-  // Eastern Kingdoms
-  1: 'Dun Morogh', 12: 'Elwynn Forest', 38: 'Loch Modan', 40: 'Westfall',
-  44: 'Redridge Mountains', 10: 'Duskwood', 47: 'Burning Steppes',
-  51: 'Searing Gorge', 3: 'Badlands', 25: 'Blackrock Mountain',
-  85: 'Tirisfal Glades', 130: 'Silverpine Forest', 267: 'Hillsbrad Foothills',
-  15: 'Alterac Mountains', 17: 'Arathi Highlands', 11: 'Wetlands',
-  28: 'Western Plaguelands', 139: 'Eastern Plaguelands', 22: 'Stranglethorn Vale',
-  14: 'Dustwallow Marsh', 8: 'Swamp of Sorrows', 4: 'Blasted Lands',
-  26: 'Deadwind Pass', 4080: "Isle of Quel'Danas",
-  // Kalimdor
-  141: 'Teldrassil', 148: 'Darkshore', 331: 'Ashenvale',
-  406: 'Stonetalon Mountains', 405: 'Desolace', 215: 'Mulgore',
-  16: 'Azshara', 357: 'Feralas', 400: 'Thousand Needles',
-  440: 'Tanaris', 490: "Un'Goro Crater", 361: 'Felwood',
-  371: 'Winterspring', 493: 'Moonglade', 1377: 'Silithus',
-  // Outland
-  3483: 'Hellfire Peninsula', 3521: 'Zangarmarsh', 3519: 'Terokkar Forest',
-  3518: 'Nagrand', 3522: "Blade's Edge Mountains", 3523: 'Shadowmoon Valley',
-  3524: 'Netherstorm', 3430: 'Eversong Woods', 3433: 'Ghostlands',
-  // Northrend
-  3537: 'Borean Tundra', 495: 'Howling Fjord', 65: 'Dragonblight',
-  394: 'Grizzly Hills', 66: "Zul'Drak", 67: 'Crystalsong Forest',
-  4197: 'Dalaran', 2817: 'Icecrown', 4275: 'Storm Peaks',
-  // Battlegrounds / instances
-  618: 'Wintergrasp', 2597: 'Alterac Valley', 3277: 'Warsong Gulch',
-  3358: 'Arathi Basin', 3820: 'Eye of the Storm', 4710: 'Isle of Conquest',
-};
 
 function KickModal({ name, onConfirm, onClose }) {
   const [reason, setReason] = useState('');
@@ -274,7 +242,7 @@ export default function PlayersPage({ auth, serverStatus }) {
                         <td>{RACES[p.race] ?? p.race}</td>
                         <td>{CLASSES[p.class] ?? p.class}</td>
                         <td>{p.level}</td>
-                        <td className="td-muted">{ZONES[p.zone] ?? p.zone}</td>
+                        <td className="td-muted">{p.zoneName ?? p.zone}</td>
                         <td className="td-muted">{p.username ?? p.account}</td>
                         {canModerate && (
                           <td className="td-actions">
