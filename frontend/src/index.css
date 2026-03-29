@@ -1517,6 +1517,38 @@ code {
   padding: 1px 7px;
 }
 
+/* ── Overview header controls ────────────────────────────────── */
+.overview-header-controls {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* ── Notification bell ───────────────────────────────────────── */
+.notif-status {
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: default;
+  user-select: none;
+}
+
+.notif-granted {
+  color: var(--green);
+  background: rgba(61,220,132,0.08);
+  border: 1px solid rgba(61,220,132,0.2);
+}
+
+.notif-denied {
+  color: var(--text-dim);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  font-size: 12px;
+}
+
 /* ── Threshold settings panel ────────────────────────────────── */
 .threshold-settings {
   display: flex;

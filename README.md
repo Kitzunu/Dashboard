@@ -183,6 +183,7 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser and log
 - **System Memory bar** — used/total GB with percentage; turns amber then red when warning threshold is exceeded
 - **CPU Usage bar** — sampled across all cores over 200 ms; turns amber then red when warning threshold is exceeded
 - **Configurable alert thresholds** — ⚙ button in the page header to set CPU % and memory % warning levels; saved to `backend/thresholds.json` and persisted across restarts (save requires Administrator)
+- **Browser alert notifications** — 🔔 button in the Overview header requests notification permission; when CPU or memory crosses its threshold a browser notification pops up with a distinct two-tone sound (ascending beep for CPU, descending for memory); alerts fire once on threshold crossing, not on every poll
 - SVG sparkline graph of player count over the last hour (sampled every 30 s, up to 120 points)
 - Core, DB version, and Cache ID read from the `version` table; **Core Revision** is a clickable link to the AzerothCore GitHub commit
 - Current Message of the Day displayed at the bottom

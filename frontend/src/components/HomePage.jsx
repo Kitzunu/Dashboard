@@ -2,6 +2,82 @@ import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 
+// ── Alert sound (Web Audio API — no external files) ───────────────────────────
+// type 'cpu'    → ascending two-tone beep
+// type 'memory' → descending two-tone beep
+function playAlertSound(type) {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx   = new AudioCtx();
+    const freqs = type === 'cpu' ? [660, 880] : [880, 660];
+    freqs.forEach((freq, i) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type           = 'sine';
+      osc.frequency.value = freq;
+      const t = ctx.currentTime + i * 0.25;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.25, t + 0.02);
+      gain.gain.setValueAtTime(0.25, t + 0.16);
+      gain.gain.linearRampToValueAtTime(0, t + 0.22);
+      osc.start(t);
+      osc.stop(t + 0.22);
+    });
+  } catch {}
+}
+
+// ── Browser notification helper ───────────────────────────────────────────────
+function fireNotification(type, pct, threshold) {
+  playAlertSound(type);
+  if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+  const label = type === 'cpu' ? 'CPU' : 'Memory';
+  try {
+    new Notification(`⚠ ${label} Alert — AzerothCore Dashboard`, {
+      body: `${label} usage is at ${pct}% (threshold: ${threshold}%)`,
+      icon: '/img/icon.png',
+      tag:  `ac-alert-${type}`,   // replaces any existing notification of same type
+    });
+  } catch {}
+}
+
+// ── Notification permission bell ──────────────────────────────────────────────
+function NotificationBell() {
+  const supported = typeof Notification !== 'undefined';
+  const [permission, setPermission] = useState(supported ? Notification.permission : 'unsupported');
+
+  if (!supported || permission === 'unsupported') return null;
+
+  const handleRequest = async () => {
+    const result = await Notification.requestPermission();
+    setPermission(result);
+    if (result === 'granted') toast('Browser notifications enabled');
+    else if (result === 'denied') toast('Notifications blocked — enable them in browser settings', 'error');
+  };
+
+  if (permission === 'granted') {
+    return (
+      <span className="notif-status notif-granted" title="Browser alert notifications enabled">
+        🔔
+      </span>
+    );
+  }
+  if (permission === 'denied') {
+    return (
+      <span className="notif-status notif-denied" title="Notifications blocked — enable in browser settings">
+        🔕 Alerts blocked
+      </span>
+    );
+  }
+  return (
+    <button className="btn btn-ghost btn-xs" onClick={handleRequest} title="Enable browser alert notifications">
+      🔔 Enable Alerts
+    </button>
+  );
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function formatUptime(startTime) {
   if (!startTime) return '—';
@@ -74,7 +150,7 @@ function StatCard({ label, value }) {
 function ResourceBar({ title, pct, detail, threshold }) {
   const warn     = threshold != null && pct >= threshold;
   const critical = threshold != null && pct >= Math.min(threshold + 10, 95);
-  const barColor = critical ? 'var(--red)' : warn ? 'var(--warn)' : null; // null = default gradient
+  const barColor = critical ? 'var(--red)' : warn ? 'var(--warn)' : null;
 
   return (
     <div className="memory-bar-wrap">
@@ -152,7 +228,6 @@ function ThresholdSettings({ thresholds, onSaved }) {
   const [mem, setMem]     = useState(thresholds.memory);
   const [busy, setBusy]   = useState(false);
 
-  // Keep in sync if parent reloads
   useEffect(() => { setCpu(thresholds.cpu); setMem(thresholds.memory); }, [thresholds]);
 
   const isDirty = cpu !== thresholds.cpu || mem !== thresholds.memory;
@@ -212,17 +287,49 @@ function ThresholdSettings({ thresholds, onSaved }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function HomePage() {
-  const [overview, setOverview]   = useState(null);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState(null);
+  const [overview, setOverview]     = useState(null);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState(null);
   const [thresholds, setThresholds] = useState({ cpu: 80, memory: 85 });
-  const intervalRef = useRef(null);
+
+  // Refs so the interval callback always reads current values without stale closures
+  const thresholdsRef  = useRef({ cpu: 80, memory: 85 });
+  const alertStateRef  = useRef({ cpu: false, mem: false });
+  const intervalRef    = useRef(null);
+
+  // Keep thresholdsRef in sync whenever state changes (e.g. after a save)
+  useEffect(() => { thresholdsRef.current = thresholds; }, [thresholds]);
+
+  // Check alert transitions and fire notifications as needed
+  const checkAlerts = (cpuPct, memPct) => {
+    const t        = thresholdsRef.current;
+    const cpuAlert = cpuPct  >= t.cpu;
+    const memAlert = memPct  >= t.memory;
+    const prev     = alertStateRef.current;
+
+    if (cpuAlert && !prev.cpu) fireNotification('cpu',    cpuPct,  t.cpu);
+    if (memAlert && !prev.mem) fireNotification('memory', memPct,  t.memory);
+
+    alertStateRef.current = { cpu: cpuAlert, mem: memAlert };
+  };
 
   const fetchOverview = async () => {
     try {
       const data = await api.getOverview();
       setOverview(data);
-      if (data.thresholds) setThresholds(data.thresholds);
+      if (data.thresholds) {
+        setThresholds(data.thresholds);
+        thresholdsRef.current = data.thresholds;
+      }
+
+      // Compute percentages and check alert transitions
+      const sys    = data.system ?? {};
+      const cpuPct = sys.cpuUsage ?? 0;
+      const memPct = sys.memPct ?? (sys.totalMem > 0
+        ? Math.round(((sys.totalMem - sys.freeMem) / sys.totalMem) * 100)
+        : 0);
+      checkAlerts(cpuPct, memPct);
+
       setError(null);
     } catch (err) {
       setError(err.message || 'Failed to load overview');
@@ -250,14 +357,19 @@ export default function HomePage() {
   const motd          = overview?.motd          ?? '';
   const version       = overview?.version       ?? null;
 
-  const memPct  = system.memPct  ?? (system.totalMem > 0 ? Math.round(((system.totalMem - system.freeMem) / system.totalMem) * 100) : 0);
-  const cpuPct  = system.cpuUsage ?? 0;
+  const memPct = system.memPct ?? (system.totalMem > 0
+    ? Math.round(((system.totalMem - system.freeMem) / system.totalMem) * 100)
+    : 0);
+  const cpuPct = system.cpuUsage ?? 0;
 
   return (
     <div className="page">
       <div className="page-header">
         <h2 className="page-title">Dashboard Overview</h2>
-        <ThresholdSettings thresholds={thresholds} onSaved={setThresholds} />
+        <div className="overview-header-controls">
+          <NotificationBell />
+          <ThresholdSettings thresholds={thresholds} onSaved={setThresholds} />
+        </div>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
