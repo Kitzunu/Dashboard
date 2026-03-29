@@ -14,6 +14,10 @@ const CLASSES = {
 const GM_LABELS = {
   0: 'Player', 1: 'Moderator', 2: 'Game Master', 3: 'Administrator', 4: 'Console',
 };
+const EXPANSION_LABELS = {
+  0: 'Classic', 1: 'The Burning Crusade', 2: 'Wrath of the Lich King',
+  3: 'Cataclysm', 4: 'Mists of Pandaria', 5: 'Warlords of Draenor', 6: 'Legion',
+};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function fmtUnix(unix) {
@@ -34,11 +38,15 @@ function fmtPlaytime(seconds) {
   return `${h}h`;
 }
 
+const selectStyle = {
+  background: 'var(--surface2)', color: 'var(--text)',
+  border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '4px 8px',
+};
+
 // ── Reset Password Sub-modal ──────────────────────────────────────────────────
 function ResetPasswordModal({ accountId, username, onClose }) {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
-
   const valid = password.length >= 6;
 
   const handleSubmit = async () => {
@@ -61,24 +69,15 @@ function ResetPasswordModal({ accountId, username, onClose }) {
         <h3>Reset Password — <span className="player-name-em">{username}</span></h3>
         <div className="form-group">
           <label>New Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Minimum 6 characters"
-            autoFocus
-            onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }}
-          />
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+            placeholder="Minimum 6 characters" autoFocus
+            onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }} />
           {password.length > 0 && password.length < 6 && (
             <small style={{ color: 'var(--red)' }}>Password must be at least 6 characters</small>
           )}
         </div>
         <div className="modal-actions">
-          <button
-            className="btn btn-danger"
-            onClick={handleSubmit}
-            disabled={!valid || busy}
-          >
+          <button className="btn btn-danger" onClick={handleSubmit} disabled={!valid || busy}>
             {busy ? 'Resetting…' : 'Reset Password'}
           </button>
           <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
@@ -106,19 +105,274 @@ function LockConfirmModal({ username, onConfirm, onClose }) {
   );
 }
 
+// ── Delete Account Modal ──────────────────────────────────────────────────────
+function DeleteAccountModal({ username, onConfirm, onClose }) {
+  const [input, setInput] = useState('');
+  const [busy, setBusy] = useState(false);
+  const confirmed = input === username;
+
+  const handleDelete = async () => {
+    if (!confirmed) return;
+    setBusy(true);
+    try {
+      await onConfirm();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3 style={{ color: 'var(--red)' }}>Delete Account</h3>
+        <p style={{ color: 'var(--text-dim)', marginBottom: 16 }}>
+          This permanently deletes <strong style={{ color: 'var(--text)' }}>{username}</strong> and
+          all associated characters. This action <strong>cannot be undone</strong>.
+        </p>
+        <div className="form-group">
+          <label>Type the account name to confirm</label>
+          <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
+            placeholder={username} autoFocus />
+        </div>
+        <div className="modal-actions">
+          <button className="btn btn-danger" onClick={handleDelete} disabled={!confirmed || busy}>
+            {busy ? 'Deleting…' : 'Delete Account'}
+          </button>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Edit Email Modal ──────────────────────────────────────────────────────────
+function EditEmailModal({ accountId, currentEmail, onClose, onSaved }) {
+  const [email, setEmail] = useState(currentEmail || '');
+  const [busy, setBusy] = useState(false);
+  const valid = email.trim().length > 0;
+
+  const handleSave = async () => {
+    if (!valid) return;
+    setBusy(true);
+    try {
+      await api.setEmail(accountId, email.trim());
+      toast('Email updated');
+      onSaved(email.trim());
+      onClose();
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>Change Email</h3>
+        <div className="form-group">
+          <label>New Email</label>
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+            placeholder="new@email.com" autoFocus
+            onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }} />
+        </div>
+        <div className="modal-actions">
+          <button className="btn btn-primary" onClick={handleSave} disabled={!valid || busy}>
+            {busy ? 'Saving…' : 'Save Email'}
+          </button>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Ban Modal ─────────────────────────────────────────────────────────────────
+const BAN_DURATION_PRESETS = [
+  { label: '1 hour',  value: '1h' },
+  { label: '1 day',   value: '1d' },
+  { label: '7 days',  value: '7d' },
+  { label: '30 days', value: '30d' },
+  { label: 'Permanent', value: '-1' },
+];
+
+function BanModal({ username, lastIp, onClose }) {
+  const [banType, setBanType]     = useState('account');
+  const [duration, setDuration]   = useState('7d');
+  const [customDur, setCustomDur] = useState('');
+  const [useCustom, setUseCustom] = useState(false);
+  const [reason, setReason]       = useState('');
+  const [busy, setBusy]           = useState(false);
+
+  const target       = banType === 'account' ? username : (lastIp || '');
+  const effectiveDur = useCustom ? customDur.trim() : duration;
+  const valid        = target && effectiveDur && reason.trim();
+
+  const handleBan = async () => {
+    if (!valid) return;
+    setBusy(true);
+    try {
+      await api.banTarget(banType, target, effectiveDur, reason.trim());
+      toast(`${banType === 'account' ? 'Account' : 'IP'} ban applied to ${target}`);
+      onClose();
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>Ban — <span className="player-name-em">{username}</span></h3>
+
+        <div className="form-group">
+          <label>Ban type</label>
+          <div className="ban-type-tabs">
+            <button type="button"
+              className={`ban-type-tab ${banType === 'account' ? 'active' : ''}`}
+              onClick={() => setBanType('account')}>
+              Account
+            </button>
+            <button type="button"
+              className={`ban-type-tab ${banType === 'ip' ? 'active' : ''}`}
+              onClick={() => setBanType('ip')}
+              disabled={!lastIp}>
+              IP {lastIp ? `(${lastIp})` : '(no IP on record)'}
+            </button>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label>Duration</label>
+          <div className="restart-presets" style={{ marginBottom: 8 }}>
+            {BAN_DURATION_PRESETS.map((p) => (
+              <button key={p.value} type="button"
+                className={`btn btn-secondary btn-xs restart-preset ${!useCustom && duration === p.value ? 'active' : ''}`}
+                onClick={() => { setDuration(p.value); setUseCustom(false); }}>
+                {p.label}
+              </button>
+            ))}
+            <button type="button"
+              className={`btn btn-secondary btn-xs restart-preset ${useCustom ? 'active' : ''}`}
+              onClick={() => setUseCustom(true)}>
+              Custom
+            </button>
+          </div>
+          {useCustom && (
+            <input type="text" value={customDur} onChange={(e) => setCustomDur(e.target.value)}
+              placeholder="e.g. 12h, 3d, -1 for permanent" style={{ maxWidth: 220 }} />
+          )}
+          <small className="type-hint">Use <code>-1</code> for permanent, or e.g. <code>1h</code> / <code>7d</code></small>
+        </div>
+
+        <div className="form-group">
+          <label>Reason</label>
+          <input type="text" value={reason} onChange={(e) => setReason(e.target.value)}
+            placeholder="Reason for ban" autoFocus />
+        </div>
+
+        <div className="modal-actions">
+          <button className="btn btn-danger" onClick={handleBan}
+            disabled={!valid || busy}>
+            {busy ? 'Banning…' : `Ban ${banType === 'account' ? 'Account' : 'IP'}`}
+          </button>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Mute Modal ────────────────────────────────────────────────────────────────
+const MUTE_PRESETS = [
+  { label: '10 min', minutes: 10 },
+  { label: '30 min', minutes: 30 },
+  { label: '1 hour', minutes: 60 },
+  { label: '1 day',  minutes: 1440 },
+  { label: '7 days', minutes: 10080 },
+];
+
+function MuteModal({ characterName, onClose, onMuted }) {
+  const [minutes, setMinutes] = useState(60);
+  const [reason, setReason]   = useState('');
+  const [busy, setBusy]       = useState(false);
+  const valid = minutes >= 1 && reason.trim().length > 0;
+
+  const handleMute = async () => {
+    if (!valid) return;
+    setBusy(true);
+    try {
+      await api.muteCharacter(characterName, minutes, reason.trim());
+      toast(`${characterName} muted for ${minutes} minute(s)`);
+      onMuted();
+      onClose();
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>Mute — <span className="player-name-em">{characterName}</span></h3>
+
+        <div className="form-group">
+          <label>Duration</label>
+          <div className="restart-presets" style={{ marginBottom: 8 }}>
+            {MUTE_PRESETS.map((p) => (
+              <button key={p.minutes} type="button"
+                className={`btn btn-secondary btn-xs restart-preset ${minutes === p.minutes ? 'active' : ''}`}
+                onClick={() => setMinutes(p.minutes)}>
+                {p.label}
+              </button>
+            ))}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input type="number" min="1" value={minutes} style={{ width: 100 }}
+              onChange={(e) => setMinutes(Math.max(1, parseInt(e.target.value, 10) || 1))} />
+            <span className="td-muted">minutes</span>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label>Reason</label>
+          <input type="text" value={reason} onChange={(e) => setReason(e.target.value)}
+            placeholder="Reason for mute" autoFocus />
+        </div>
+
+        <div className="modal-actions">
+          <button className="btn btn-warning" onClick={handleMute} disabled={!valid || busy}>
+            {busy ? 'Muting…' : 'Mute Player'}
+          </button>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Account Detail Modal ──────────────────────────────────────────────────────
-function AccountDetailModal({ account, auth, onClose, onRefresh }) {
-  const [detail, setDetail] = useState(account);
+function AccountDetailModal({ account, auth, onClose, onRefresh, onDeleted }) {
+  const [detail, setDetail]               = useState(account);
   const [showResetPassword, setShowResetPassword] = useState(false);
-  const [showLockConfirm, setShowLockConfirm] = useState(false);
-  const [gmBusy, setGmBusy] = useState(false);
-  const [lockBusy, setLockBusy] = useState(false);
+  const [showLockConfirm, setShowLockConfirm]     = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showEditEmail, setShowEditEmail]         = useState(false);
+  const [showBan, setShowBan]                     = useState(false);
+  const [muteTarget, setMuteTarget]               = useState(null); // character name
+  const [gmBusy, setGmBusy]               = useState(false);
+  const [expansionBusy, setExpansionBusy] = useState(false);
+  const [lockBusy, setLockBusy]           = useState(false);
 
-  const canLock = auth.gmlevel >= 2;
+  const canLock  = auth.gmlevel >= 2;
   const canAdmin = auth.gmlevel >= 3;
-
   const characters = detail.characters || [];
 
+  // GM level change
   const handleGMChange = async (e) => {
     const level = parseInt(e.target.value, 10);
     setGmBusy(true);
@@ -134,12 +388,24 @@ function AccountDetailModal({ account, auth, onClose, onRefresh }) {
     }
   };
 
-  const handleLockToggle = async () => {
-    if (!detail.locked) {
-      setShowLockConfirm(true);
-      return;
+  // Expansion change
+  const handleExpansionChange = async (e) => {
+    const expansion = parseInt(e.target.value, 10);
+    setExpansionBusy(true);
+    try {
+      await api.setExpansion(detail.id, expansion);
+      setDetail((prev) => ({ ...prev, expansion }));
+      toast(`Expansion set to ${EXPANSION_LABELS[expansion] ?? expansion} for ${detail.username}`);
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setExpansionBusy(false);
     }
-    // Unlocking — no confirm needed
+  };
+
+  // Lock / unlock
+  const handleLockToggle = async () => {
+    if (!detail.locked) { setShowLockConfirm(true); return; }
     setLockBusy(true);
     try {
       await api.setAccountLock(detail.id, false);
@@ -168,10 +434,34 @@ function AccountDetailModal({ account, auth, onClose, onRefresh }) {
     }
   };
 
+  // Delete account
+  const handleDelete = async () => {
+    try {
+      await api.deleteAccount(detail.id);
+      toast(`Account ${detail.username} deleted`);
+      setShowDeleteConfirm(false);
+      onDeleted();
+      onClose();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  };
+
+  // Unmute character
+  const handleUnmute = async (charName) => {
+    try {
+      await api.unmuteCharacter(charName);
+      toast(`${charName} unmuted`);
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  };
+
   return (
     <>
       <div className="modal-overlay" onClick={onClose}>
         <div className="modal modal-wide" onClick={(e) => e.stopPropagation()}>
+
           {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <h3 style={{ margin: 0 }}>Account Details</h3>
@@ -185,37 +475,46 @@ function AccountDetailModal({ account, auth, onClose, onRefresh }) {
               <label>Username</label>
               <span className="player-name-em" style={{ fontSize: 16 }}>{detail.username}</span>
             </div>
+
             <div className="form-group" style={{ margin: 0 }}>
               <label>Email</label>
-              <span>{detail.email || '—'}</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>{detail.email || '—'}</span>
+                {canAdmin && (
+                  <button className="btn btn-ghost btn-xs" onClick={() => setShowEditEmail(true)}>
+                    Edit
+                  </button>
+                )}
+              </span>
             </div>
+
             <div className="form-group" style={{ margin: 0 }}>
               <label>Account ID</label>
               <span className="td-muted">{detail.id}</span>
             </div>
+
             <div className="form-group" style={{ margin: 0 }}>
               <label>Joined</label>
               <span className="td-muted">{fmtUnixFull(detail.joindate)}</span>
             </div>
+
             <div className="form-group" style={{ margin: 0 }}>
               <label>Last Login</label>
               <span className="td-muted">{fmtUnixFull(detail.last_login)}</span>
             </div>
+
             <div className="form-group" style={{ margin: 0 }}>
               <label>Last IP</label>
               <span className="td-muted" style={{ fontFamily: 'var(--font-mono)', fontSize: 13 }}>
                 {detail.last_ip || '—'}
               </span>
             </div>
+
             <div className="form-group" style={{ margin: 0 }}>
               <label>GM Level</label>
               {canAdmin ? (
-                <select
-                  value={detail.gmlevel ?? 0}
-                  onChange={handleGMChange}
-                  disabled={gmBusy}
-                  style={{ background: 'var(--surface2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '4px 8px' }}
-                >
+                <select value={detail.gmlevel ?? 0} onChange={handleGMChange}
+                  disabled={gmBusy} style={selectStyle}>
                   {[0, 1, 2, 3].map((lvl) => (
                     <option key={lvl} value={lvl}>{GM_LABELS[lvl]}</option>
                   ))}
@@ -229,6 +528,21 @@ function AccountDetailModal({ account, auth, onClose, onRefresh }) {
                 </span>
               )}
             </div>
+
+            <div className="form-group" style={{ margin: 0 }}>
+              <label>Expansion</label>
+              {canAdmin ? (
+                <select value={detail.expansion ?? 2} onChange={handleExpansionChange}
+                  disabled={expansionBusy} style={selectStyle}>
+                  {Object.entries(EXPANSION_LABELS).map(([val, label]) => (
+                    <option key={val} value={val}>{label}</option>
+                  ))}
+                </select>
+              ) : (
+                <span className="td-muted">{EXPANSION_LABELS[detail.expansion ?? 2] ?? detail.expansion}</span>
+              )}
+            </div>
+
             <div className="form-group" style={{ margin: 0 }}>
               <label>Status</label>
               <span style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -242,23 +556,28 @@ function AccountDetailModal({ account, auth, onClose, onRefresh }) {
           </div>
 
           {/* Actions */}
+          <p className="account-section-title" style={{ marginTop: 20 }}>Actions</p>
           <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
             {canLock && (
-              <button
-                className={detail.locked ? 'btn btn-ghost' : 'btn btn-warning'}
-                onClick={handleLockToggle}
-                disabled={lockBusy}
-              >
+              <button className={detail.locked ? 'btn btn-ghost' : 'btn btn-warning'}
+                onClick={handleLockToggle} disabled={lockBusy}>
                 {lockBusy ? '…' : detail.locked ? 'Unlock Account' : 'Lock Account'}
               </button>
             )}
-            {canAdmin && (
-              <button
-                className="btn btn-danger"
-                onClick={() => setShowResetPassword(true)}
-              >
-                Reset Password
+            {canLock && (
+              <button className="btn btn-danger" onClick={() => setShowBan(true)}>
+                Ban
               </button>
+            )}
+            {canAdmin && (
+              <>
+                <button className="btn btn-danger" onClick={() => setShowResetPassword(true)}>
+                  Reset Password
+                </button>
+                <button className="btn btn-danger" onClick={() => setShowDeleteConfirm(true)}>
+                  Delete Account
+                </button>
+              </>
             )}
           </div>
 
@@ -272,13 +591,15 @@ function AccountDetailModal({ account, auth, onClose, onRefresh }) {
                   <th>Race</th>
                   <th>Class</th>
                   <th>Level</th>
+                  <th>Playtime</th>
                   <th>Status</th>
+                  {canAdmin && <th>Actions</th>}
                 </tr>
               </thead>
               <tbody>
                 {characters.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="empty-cell">No characters on this account</td>
+                    <td colSpan={canAdmin ? 7 : 6} className="empty-cell">No characters on this account</td>
                   </tr>
                 ) : (
                   characters.map((c) => (
@@ -287,35 +608,64 @@ function AccountDetailModal({ account, auth, onClose, onRefresh }) {
                       <td>{RACES[c.race] ?? c.race}</td>
                       <td>{CLASSES[c.class] ?? c.class}</td>
                       <td>{c.level}</td>
+                      <td className="td-muted">{fmtPlaytime(c.totaltime)}</td>
                       <td>
                         {c.online
                           ? <span style={{ color: 'var(--green)' }}>● Online</span>
                           : <span className="td-muted">○ Offline</span>
                         }
                       </td>
+                      {canAdmin && (
+                        <td>
+                          <div style={{ display: 'flex', gap: 4 }}>
+                            <button className="btn btn-warning btn-xs"
+                              onClick={() => setMuteTarget(c.name)}>
+                              Mute
+                            </button>
+                            <button className="btn btn-ghost btn-xs"
+                              onClick={() => handleUnmute(c.name)}>
+                              Unmute
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
           </div>
+
         </div>
       </div>
 
       {showResetPassword && (
-        <ResetPasswordModal
-          accountId={detail.id}
-          username={detail.username}
-          onClose={() => setShowResetPassword(false)}
-        />
+        <ResetPasswordModal accountId={detail.id} username={detail.username}
+          onClose={() => setShowResetPassword(false)} />
       )}
-
       {showLockConfirm && (
-        <LockConfirmModal
+        <LockConfirmModal username={detail.username} onConfirm={handleConfirmLock}
+          onClose={() => setShowLockConfirm(false)} />
+      )}
+      {showDeleteConfirm && (
+        <DeleteAccountModal username={detail.username} onConfirm={handleDelete}
+          onClose={() => setShowDeleteConfirm(false)} />
+      )}
+      {showEditEmail && (
+        <EditEmailModal accountId={detail.id} currentEmail={detail.email}
+          onClose={() => setShowEditEmail(false)}
+          onSaved={(email) => setDetail((prev) => ({ ...prev, email }))} />
+      )}
+      {muteTarget && (
+        <MuteModal characterName={muteTarget}
+          onClose={() => setMuteTarget(null)}
+          onMuted={() => {}} />
+      )}
+      {showBan && (
+        <BanModal
           username={detail.username}
-          onConfirm={handleConfirmLock}
-          onClose={() => setShowLockConfirm(false)}
-        />
+          lastIp={detail.last_ip}
+          onClose={() => setShowBan(false)} />
       )}
     </>
   );
@@ -325,8 +675,8 @@ function AccountDetailModal({ account, auth, onClose, onRefresh }) {
 function CreateAccountModal({ onClose, onCreated }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const [busy, setBusy] = useState(false);
+  const [confirm, setConfirm]   = useState('');
+  const [busy, setBusy]         = useState(false);
 
   const passwordsMatch = password === confirm;
   const valid = username.trim() && password.length >= 1 && passwordsMatch;
@@ -350,48 +700,27 @@ function CreateAccountModal({ onClose, onCreated }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h3>Create Account</h3>
-
         <div className="form-group">
           <label>Username</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Username"
-            autoFocus
-          />
+          <input type="text" value={username} onChange={(e) => setUsername(e.target.value)}
+            placeholder="Username" autoFocus />
         </div>
-
         <div className="form-group">
           <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-          />
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password" />
         </div>
-
         <div className="form-group">
           <label>Confirm Password</label>
-          <input
-            type="password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
+          <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)}
             placeholder="Confirm password"
-            onKeyDown={(e) => { if (e.key === 'Enter') handleCreate(); }}
-          />
+            onKeyDown={(e) => { if (e.key === 'Enter') handleCreate(); }} />
           {confirm.length > 0 && !passwordsMatch && (
             <small style={{ color: 'var(--red)' }}>Passwords do not match</small>
           )}
         </div>
-
         <div className="modal-actions">
-          <button
-            className="btn btn-primary"
-            onClick={handleCreate}
-            disabled={!valid || busy}
-          >
+          <button className="btn btn-primary" onClick={handleCreate} disabled={!valid || busy}>
             {busy ? 'Creating…' : 'Create Account'}
           </button>
           <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
@@ -403,13 +732,13 @@ function CreateAccountModal({ onClose, onCreated }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function AccountsPage({ auth }) {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
-  const [searched, setSearched] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [query, setQuery]               = useState('');
+  const [results, setResults]           = useState([]);
+  const [searched, setSearched]         = useState(false);
+  const [loading, setLoading]           = useState(false);
+  const [error, setError]               = useState('');
   const [selectedAccount, setSelectedAccount] = useState(null);
-  const [showCreate, setShowCreate] = useState(false);
+  const [showCreate, setShowCreate]     = useState(false);
 
   const canCreateAccount = auth.gmlevel >= 3;
 
@@ -428,10 +757,6 @@ export default function AccountsPage({ auth }) {
       setLoading(false);
     }
   }, [query]);
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') doSearch();
-  };
 
   const handleViewAccount = async (row) => {
     try {
@@ -453,7 +778,6 @@ export default function AccountsPage({ auth }) {
 
   return (
     <div className="page">
-      {/* Page header */}
       <div className="page-header">
         <div>
           <h2 className="page-title">Account Management</h2>
@@ -468,26 +792,17 @@ export default function AccountsPage({ auth }) {
 
       {error && <div className="alert alert-error">{error}</div>}
 
-      {/* Search bar */}
       <div className="filter-row">
-        <input
-          className="filter-input"
-          type="text"
+        <input className="filter-input" type="text"
           placeholder="Search username, email or IP…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-        <button
-          className="btn btn-secondary"
-          onClick={() => doSearch()}
-          disabled={loading || !query.trim()}
-        >
+          value={query} onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') doSearch(); }} />
+        <button className="btn btn-secondary" onClick={() => doSearch()}
+          disabled={loading || !query.trim()}>
           {loading ? 'Searching…' : 'Search'}
         </button>
       </div>
 
-      {/* Results */}
       {loading ? (
         <div className="loading-text">Searching accounts…</div>
       ) : !searched ? (
@@ -539,10 +854,7 @@ export default function AccountsPage({ auth }) {
                     </span>
                   </td>
                   <td>
-                    <button
-                      className="btn btn-secondary btn-xs"
-                      onClick={() => handleViewAccount(row)}
-                    >
+                    <button className="btn btn-secondary btn-xs" onClick={() => handleViewAccount(row)}>
                       View
                     </button>
                   </td>
@@ -553,17 +865,16 @@ export default function AccountsPage({ auth }) {
         </div>
       )}
 
-      {/* Account detail modal */}
       {selectedAccount && (
         <AccountDetailModal
           account={selectedAccount}
           auth={auth}
           onClose={() => setSelectedAccount(null)}
           onRefresh={handleRefresh}
+          onDeleted={() => { setSelectedAccount(null); if (searched) doSearch(); }}
         />
       )}
 
-      {/* Create account modal */}
       {showCreate && (
         <CreateAccountModal
           onClose={() => setShowCreate(false)}

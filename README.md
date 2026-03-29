@@ -194,10 +194,15 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser and log
 ### 👤 Accounts (GM level 2+)
 - Search accounts by username, email, or IP address (up to 50 results)
 - Results table with GM level badge, online/locked status indicators
-- **View** any account: full details grid (ID, email, join date, last login, last IP, GM level, status) plus character list
-- **GM Level** — change role via dropdown (Administrators only)
+- **View** any account: full details grid (ID, email, join date, last login, last IP, GM level, expansion, status) plus character list with playtime
+- **GM Level** — change role via dropdown; uses `account_access` table (Administrators only)
+- **Expansion** — set allowed expansion via `.account set addon` (Administrators only)
+- **Email** — edit account email directly (Administrators only)
+- **Ban** — ban by account name or last known IP with duration presets (1h / 1d / 7d / 30d / permanent) and custom duration; uses `.ban account` / `.ban ip` (GM level 2+)
 - **Lock / Unlock** — prevent or restore login access (GM level 2+)
-- **Reset Password** — set a new password via GM command (Administrators only)
+- **Reset Password** — set a new password via `.account set password` (Administrators only)
+- **Delete Account** — permanently delete account and characters via `.account delete`; requires typing the account name to confirm (Administrators only)
+- **Mute / Unmute** — per-character chat silence via `.mute` / `.unmute` with duration presets and reason (Administrators only)
 - **Create Account** — create new accounts directly from the dashboard (Administrators only)
 
 ### 📣 Autobroadcast (GM level 2+)

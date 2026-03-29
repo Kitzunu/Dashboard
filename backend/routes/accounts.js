@@ -12,7 +12,7 @@ router.get('/', requireGMLevel(2), async (req, res) => {
   try {
     const [rows] = await authPool.query(
       `SELECT a.id, a.username, a.email, a.joindate, a.last_ip,
-              a.last_login, a.online, a.locked,
+              a.last_login, a.online, a.locked, a.expansion,
               COALESCE(MAX(aa.gmlevel), 0) AS gmlevel
        FROM account a
        LEFT JOIN account_access aa ON a.id = aa.id
@@ -32,9 +32,9 @@ router.get('/', requireGMLevel(2), async (req, res) => {
 router.get('/:id', requireGMLevel(2), async (req, res) => {
   const id = parseInt(req.params.id, 10);
   try {
-    const [[accounts]] = await authPool.query(
+    const [[account]] = await authPool.query(
       `SELECT a.id, a.username, a.email, a.joindate, a.last_ip,
-              a.last_login, a.online, a.locked,
+              a.last_login, a.online, a.locked, a.expansion,
               COALESCE(MAX(aa.gmlevel), 0) AS gmlevel
        FROM account a
        LEFT JOIN account_access aa ON a.id = aa.id
@@ -42,7 +42,7 @@ router.get('/:id', requireGMLevel(2), async (req, res) => {
        GROUP BY a.id`,
       [id]
     );
-    if (!accounts) return res.status(404).json({ error: 'Account not found' });
+    if (!account) return res.status(404).json({ error: 'Account not found' });
 
     const [characters] = await charPool.query(
       `SELECT guid, name, race, \`class\`, level, zone, online, totaltime
@@ -50,7 +50,7 @@ router.get('/:id', requireGMLevel(2), async (req, res) => {
       [id]
     );
 
-    res.json({ ...accounts, characters });
+    res.json({ ...account, characters });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -61,13 +61,13 @@ router.post('/', requireGMLevel(3), (req, res) => {
   const { username, password } = req.body;
   if (!username || !password)
     return res.status(400).json({ error: 'Username and password are required' });
-  res.json(processManager.sendCommand(`.account create ${username} ${password}`));
+  res.json(processManager.sendCommand(`account create ${username} ${password}`));
 });
 
 // PATCH /api/accounts/:id/gmlevel  { gmlevel: 0-6 }
 router.patch('/:id/gmlevel', requireGMLevel(3), async (req, res) => {
   const id = parseInt(req.params.id, 10);
-  const level = parseInt(req.body.gmlevel);
+  const level = parseInt(req.body.gmlevel, 10);
   if (isNaN(level) || level < 0 || level > 6)
     return res.status(400).json({ error: 'gmlevel must be 0–6' });
   try {
@@ -86,12 +86,43 @@ router.patch('/:id/gmlevel', requireGMLevel(3), async (req, res) => {
   }
 });
 
+// PATCH /api/accounts/:id/expansion  { expansion: 0-6 }
+router.patch('/:id/expansion', requireGMLevel(3), async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const expansion = parseInt(req.body.expansion, 10);
+  if (isNaN(expansion) || expansion < 0 || expansion > 6)
+    return res.status(400).json({ error: 'expansion must be 0–6' });
+  try {
+    const [[account]] = await authPool.query('SELECT username FROM account WHERE id = ?', [id]);
+    if (!account) return res.status(404).json({ error: 'Account not found' });
+    const result = processManager.sendCommand(`account set addon ${account.username} ${expansion}`);
+    if (!result.success) return res.status(503).json({ error: result.error });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // PATCH /api/accounts/:id/lock  { locked: true|false }
 router.patch('/:id/lock', requireGMLevel(2), async (req, res) => {
   const id = parseInt(req.params.id, 10);
   const locked = req.body.locked ? 1 : 0;
   try {
     await authPool.query('UPDATE account SET locked = ? WHERE id = ?', [locked, id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/accounts/:id/email  { email: string }
+router.patch('/:id/email', requireGMLevel(3), async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const { email } = req.body;
+  if (typeof email !== 'string' || !email.trim())
+    return res.status(400).json({ error: 'Email is required' });
+  try {
+    await authPool.query('UPDATE account SET email = ?, reg_mail = ? WHERE id = ?', [email.trim(), email.trim(), id]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -108,11 +139,46 @@ router.post('/:id/password', requireGMLevel(3), async (req, res) => {
     const [[account]] = await authPool.query('SELECT username FROM account WHERE id = ?', [id]);
     if (!account) return res.status(404).json({ error: 'Account not found' });
     res.json(processManager.sendCommand(
-      `.account set password ${account.username} ${password} ${password}`
+      `account set password ${account.username} ${password} ${password}`
     ));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// DELETE /api/accounts/:id  — delete account via GM command
+router.delete('/:id', requireGMLevel(3), async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  try {
+    const [[account]] = await authPool.query('SELECT username FROM account WHERE id = ?', [id]);
+    if (!account) return res.status(404).json({ error: 'Account not found' });
+    const result = processManager.sendCommand(`account delete ${account.username}`);
+    if (!result.success) return res.status(503).json({ error: result.error });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/accounts/mute  { name, minutes, reason }
+router.post('/mute', requireGMLevel(3), (req, res) => {
+  const { name, minutes, reason } = req.body;
+  if (!name?.trim()) return res.status(400).json({ error: 'Character name is required' });
+  const mins = parseInt(minutes, 10);
+  if (!mins || mins < 1) return res.status(400).json({ error: 'Duration must be at least 1 minute' });
+  if (!reason?.trim()) return res.status(400).json({ error: 'Reason is required' });
+  const result = processManager.sendCommand(`mute ${name.trim()} ${mins} ${reason.trim()}`);
+  if (!result.success) return res.status(503).json({ error: result.error });
+  res.json({ success: true });
+});
+
+// POST /api/accounts/unmute  { name }
+router.post('/unmute', requireGMLevel(3), (req, res) => {
+  const { name } = req.body;
+  if (!name?.trim()) return res.status(400).json({ error: 'Character name is required' });
+  const result = processManager.sendCommand(`unmute ${name.trim()}`);
+  if (!result.success) return res.status(503).json({ error: result.error });
+  res.json({ success: true });
 });
 
 module.exports = router;
