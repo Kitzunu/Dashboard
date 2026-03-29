@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { api } from '../api.js';
 import { parseAnsi } from '../ansi.js';
 
-function AnsiLine({ text }) {
+// Memoized — only re-renders when `text` actually changes (i.e. new lines only)
+const AnsiLine = memo(function AnsiLine({ text }) {
   const segments = parseAnsi(text);
   return (
     <span className="console-line">
@@ -15,7 +16,7 @@ function AnsiLine({ text }) {
       })}
     </span>
   );
-}
+});
 
 function ConsolePanel({ title, serverName, socket, canSendCommands }) {
   const [lines, setLines] = useState([]);
@@ -33,8 +34,25 @@ function ConsolePanel({ title, serverName, socket, canSendCommands }) {
     () => localStorage.getItem(`console-autoscroll-${serverName}`) !== 'false'
   );
   const [sending, setSending] = useState(false);
-  const outputRef = useRef(null);
-  const endRef = useRef(null);
+  const outputRef   = useRef(null);
+  const pendingRef  = useRef([]);   // buffer for incoming lines between RAF flushes
+  const rafRef      = useRef(null); // pending requestAnimationFrame id
+  const autoScrollRef = useRef(autoScroll); // mirror for use inside RAF callback
+
+  // Keep autoScrollRef in sync
+  useEffect(() => { autoScrollRef.current = autoScroll; }, [autoScroll]);
+
+  // Flush buffered lines in one state update per animation frame
+  const flush = useCallback(() => {
+    rafRef.current = null;
+    const batch = pendingRef.current;
+    if (!batch.length) return;
+    pendingRef.current = [];
+    setLines((prev) => {
+      const next = prev.concat(batch);
+      return next.length > 2000 ? next.slice(-2000) : next;
+    });
+  }, []);
 
   // Load buffered logs on mount
   useEffect(() => {
@@ -51,23 +69,29 @@ function ConsolePanel({ title, serverName, socket, canSendCommands }) {
 
     const handler = ({ server, line }) => {
       if (server !== serverName) return;
-      setLines((prev) => {
-        const next = [...prev, line];
-        return next.length > 2000 ? next.slice(-2000) : next;
-      });
+      pendingRef.current.push(line);
+      // Schedule a flush if one isn't already pending
+      if (!rafRef.current) {
+        rafRef.current = requestAnimationFrame(flush);
+      }
     };
 
     socket.on('console-line', handler);
     return () => {
       socket.off('console-line', handler);
       socket.emit('unsubscribe', serverName);
+      // Cancel any pending flush on unmount
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
     };
-  }, [socket, serverName]);
+  }, [socket, serverName, flush]);
 
-  // Auto-scroll
+  // Auto-scroll — direct scrollTop assignment avoids scrollIntoView layout thrashing
   useEffect(() => {
-    if (autoScroll && endRef.current) {
-      endRef.current.scrollIntoView({ behavior: 'auto' });
+    if (autoScroll && outputRef.current) {
+      outputRef.current.scrollTop = outputRef.current.scrollHeight;
     }
   }, [lines, autoScroll]);
 
@@ -136,7 +160,6 @@ function ConsolePanel({ title, serverName, socket, canSendCommands }) {
         ) : (
           lines.map((line, i) => <AnsiLine key={i} text={line} />)
         )}
-        <div ref={endRef} />
       </div>
       {canSendCommands && (
         <form onSubmit={handleSubmit} className="console-input-row">
