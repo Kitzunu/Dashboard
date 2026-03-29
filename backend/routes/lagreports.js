@@ -1,6 +1,7 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const { charPool } = require('../db');
+const dbc = require('../dbc');
 
 const router = express.Router();
 
@@ -73,6 +74,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
       lagType:     r.lagType,
       lagTypeLabel: lagTypeLabel(r.lagType),
       mapId:       r.mapId,
+      mapName:     dbc.getMapName(r.mapId),
       posX:        parseFloat(r.posX.toFixed(2)),
       posY:        parseFloat(r.posY.toFixed(2)),
       posZ:        parseFloat(r.posZ.toFixed(2)),
@@ -133,7 +135,7 @@ router.get('/stats', requireGMLevel(1), async (req, res) => {
       movementCount: Number(stats.movementCount),
       spellCount:    Number(stats.spellCount),
       topChars:    topChars.map((r) => ({ ...r, reports: Number(r.reports), avgLat: Number(r.avgLat) })),
-      topMaps:     topMaps.map((r) => ({ ...r, reports: Number(r.reports), avgLat: Number(r.avgLat) })),
+      topMaps:     topMaps.map((r) => ({ ...r, reports: Number(r.reports), avgLat: Number(r.avgLat), mapName: dbc.getMapName(r.mapId) })),
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

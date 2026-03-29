@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../App.jsx';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
@@ -15,14 +15,14 @@ const LAG_TYPE_OPTIONS = [
 ];
 
 const LAT_PRESETS = [
-  { label: 'Any',    value: 0 },
+  { label: 'Any',     value: 0 },
   { label: '≥ 100ms', value: 100 },
   { label: '≥ 250ms', value: 250 },
   { label: '≥ 500ms', value: 500 },
-  { label: '≥ 1s',   value: 1000 },
+  { label: '≥ 1s',    value: 1000 },
 ];
 
-// Colour-code latency value
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function latencyClass(ms) {
   if (ms >= 500) return 'latency-critical';
   if (ms >= 250) return 'latency-warn';
@@ -31,13 +31,19 @@ function latencyClass(ms) {
 }
 
 function lagTypeBadgeClass(type) {
-  if (type === 0) return 'badge badge-gold';       // Loot
-  if (type === 1) return 'badge badge-info';        // Auction House
-  if (type === 2) return 'badge badge-success';     // Mail
-  if (type === 3) return 'badge badge-dim';         // Chat
-  if (type === 4) return 'badge badge-warn';        // Movement
-  if (type === 5) return 'badge badge-danger';      // Spells & Abilities
+  if (type === 0) return 'badge badge-gold';    // Loot
+  if (type === 1) return 'badge badge-info';    // Auction House
+  if (type === 2) return 'badge badge-success'; // Mail
+  if (type === 3) return 'badge badge-dim';     // Chat
+  if (type === 4) return 'badge badge-warn';    // Movement
+  if (type === 5) return 'badge badge-danger';  // Spells & Abilities
   return 'badge badge-dim';
+}
+
+// Render a map name resolved by the backend (DBC) — fallback to "Map {id}"
+function MapCell({ mapId, mapName }) {
+  if (mapName) return <span title={`Map ID: ${mapId}`}>{mapName}</span>;
+  return <span className="td-muted">Map {mapId}</span>;
 }
 
 // ── Stats bar ─────────────────────────────────────────────────────────────────
@@ -45,15 +51,15 @@ function StatsBar({ stats }) {
   if (!stats) return null;
   return (
     <div className="lag-stats-bar">
-      <StatPill label="Total"          value={stats.total} />
-      <StatPill label="Avg Latency"    value={`${stats.avgLatency} ms`} color={stats.avgLatency >= 250 ? 'warn' : null} />
-      <StatPill label="Peak Latency"   value={`${stats.maxLatency} ms`} color={stats.maxLatency >= 500 ? 'red' : stats.maxLatency >= 250 ? 'warn' : null} />
-      <StatPill label="Loot"           value={stats.lootCount} />
-      <StatPill label="Auction House"  value={stats.ahCount} />
-      <StatPill label="Mail"           value={stats.mailCount} />
-      <StatPill label="Chat"           value={stats.chatCount} />
-      <StatPill label="Movement"       value={stats.movementCount} />
-      <StatPill label="Spells"         value={stats.spellCount} />
+      <StatPill label="Total"         value={stats.total} />
+      <StatPill label="Avg Latency"   value={`${stats.avgLatency} ms`}  color={stats.avgLatency >= 250 ? 'warn' : null} />
+      <StatPill label="Peak Latency"  value={`${stats.maxLatency} ms`}  color={stats.maxLatency >= 500 ? 'red' : stats.maxLatency >= 250 ? 'warn' : null} />
+      <StatPill label="Loot"          value={stats.lootCount} />
+      <StatPill label="Auction House" value={stats.ahCount} />
+      <StatPill label="Mail"          value={stats.mailCount} />
+      <StatPill label="Chat"          value={stats.chatCount} />
+      <StatPill label="Movement"      value={stats.movementCount} />
+      <StatPill label="Spells"        value={stats.spellCount} />
     </div>
   );
 }
@@ -106,7 +112,7 @@ function TopListsPanel({ stats }) {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Map ID</th>
+                <th>Map</th>
                 <th style={{ textAlign: 'right' }}>Reports</th>
                 <th style={{ textAlign: 'right' }}>Avg Latency</th>
               </tr>
@@ -114,7 +120,7 @@ function TopListsPanel({ stats }) {
             <tbody>
               {stats.topMaps.map((m) => (
                 <tr key={m.mapId}>
-                  <td><MapName id={m.mapId} /></td>
+                  <td><MapCell mapId={m.mapId} mapName={m.mapName} /></td>
                   <td style={{ textAlign: 'right' }}>{m.reports}</td>
                   <td style={{ textAlign: 'right' }}>
                     <span className={latencyClass(m.avgLat)}>{m.avgLat} ms</span>
@@ -127,109 +133,6 @@ function TopListsPanel({ stats }) {
       )}
     </div>
   );
-}
-
-// ── Map name lookup (well-known WotLK maps) ───────────────────────────────────
-const MAP_NAMES = {
-  0:   'Eastern Kingdoms',
-  1:   'Kalimdor',
-  30:  'Alterac Valley',
-  37:  'Azshara Crater',
-  43:  'Warsong Gulch',
-  44:  'Scarlet Monastery',
-  48:  'Blackfathom Deeps',
-  70:  'Uldaman',
-  90:  'Gnomeregan',
-  109: 'Sunken Temple',
-  129: 'Razorfen Downs',
-  169: 'Arathi Basin',
-  189: 'Razorfen Kraul',
-  209: 'Zul\'Farrak',
-  229: 'Blackrock Spire',
-  230: 'Blackrock Depths',
-  249: 'Onyxia\'s Lair',
-  269: 'Opening Caverns of Time',
-  289: 'Scholomance',
-  309: 'Zul\'Gurub',
-  329: 'Stratholme',
-  349: 'Mauradon',
-  369: 'Deeprun Tram',
-  389: 'Ragefire Chasm',
-  409: 'Molten Core',
-  429: 'Dire Maul',
-  449: 'Alliance PVP Barracks',
-  450: 'Horde PVP Barracks',
-  469: 'Blackwing Lair',
-  489: 'Warsong Gulch',
-  509: 'Ruins of Ahn\'Qiraj',
-  529: 'Arathi Basin',
-  530: 'Outland',
-  532: 'Karazhan',
-  533: 'Naxxramas',
-  534: 'The Battle for Mount Hyjal',
-  540: 'The Shattered Halls',
-  542: 'The Blood Furnace',
-  543: 'Hellfire Ramparts',
-  544: 'Magtheridon\'s Lair',
-  545: 'The Steamvault',
-  546: 'The Underbog',
-  547: 'The Slave Pens',
-  548: 'Serpentshrine Cavern',
-  550: 'The Eye',
-  552: 'The Arcatraz',
-  553: 'The Botanica',
-  554: 'The Mechanar',
-  555: 'Shadow Labyrinth',
-  556: 'Sethekk Halls',
-  557: 'Mana-Tombs',
-  558: 'Auchenai Crypts',
-  560: 'The Escape from Durnholde',
-  562: 'Blade\'s Edge Arena',
-  564: 'Black Temple',
-  565: 'Gruul\'s Lair',
-  566: 'Eye of the Storm',
-  568: 'Zul\'Aman',
-  571: 'Northrend',
-  572: 'Ruins of Lordaeron',
-  574: 'Utgrade Keep',
-  575: 'Utgarde Pinnacle',
-  576: 'The Nexus',
-  578: 'The Oculus',
-  580: 'The Sunwell',
-  582: 'Isle of Conquest (Old)',
-  584: 'Isle of Quel\'Danas',
-  585: 'Magisters\' Terrace',
-  595: 'The Culling of Stratholme',
-  598: 'Sunwell Plateau',
-  599: 'Halls of Stone',
-  600: 'Drak\'Tharon Keep',
-  601: 'Azjol-Nerub',
-  602: 'Halls of Lightning',
-  603: 'Ulduar',
-  604: 'Gundrak',
-  608: 'Violet Hold',
-  615: 'The Obsidian Sanctum',
-  616: 'The Eye of Eternity',
-  617: 'Dalaran Arena',
-  618: 'The Ring of Valor',
-  619: 'Ahn\'kahet: The Old Kingdom',
-  620: 'Halls of Reflection',
-  624: 'Vault of Archavon',
-  628: 'Isle of Conquest',
-  631: 'Icecrown Citadel',
-  632: 'The Forge of Souls',
-  641: 'Pit of Saron',
-  649: 'Trial of the Crusader',
-  650: 'Trial of the Champion',
-  658: 'Pit of Saron',
-  668: 'Halls of Reflection',
-  724: 'The Ruby Sanctum',
-};
-
-function MapName({ id }) {
-  const name = MAP_NAMES[id];
-  if (name) return <span title={`Map ID: ${id}`}>{name}</span>;
-  return <span className="td-muted">Map {id}</span>;
 }
 
 // ── Clear-all confirmation modal ──────────────────────────────────────────────
@@ -261,22 +164,22 @@ function ClearAllModal({ count, onConfirm, onClose, busy }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function LagReportsPage() {
   const { auth } = useAuth();
-  const canDelete  = auth.gmlevel >= 2;
-  const canClear   = auth.gmlevel >= 3;
+  const canDelete = auth.gmlevel >= 2;
+  const canClear  = auth.gmlevel >= 3;
 
-  const [reports, setReports]         = useState([]);
-  const [stats, setStats]             = useState(null);
-  const [loading, setLoading]         = useState(true);
+  const [reports,      setReports]      = useState([]);
+  const [stats,        setStats]        = useState(null);
+  const [loading,      setLoading]      = useState(true);
   const [statsLoading, setStatsLoading] = useState(true);
-  const [page, setPage]               = useState(1);
-  const [totalPages, setTotalPages]   = useState(1);
-  const [totalCount, setTotalCount]   = useState(0);
-  const [lagFilter, setLagFilter]     = useState('all');
-  const [minLatency, setMinLatency]   = useState(0);
+  const [page,         setPage]         = useState(1);
+  const [totalPages,   setTotalPages]   = useState(1);
+  const [totalCount,   setTotalCount]   = useState(0);
+  const [lagFilter,    setLagFilter]    = useState('all');
+  const [minLatency,   setMinLatency]   = useState(0);
   const [showTopLists, setShowTopLists] = useState(false);
-  const [clearModal, setClearModal]   = useState(false);
-  const [clearing, setClearing]       = useState(false);
-  const [deletingId, setDeletingId]   = useState(null);
+  const [clearModal,   setClearModal]   = useState(false);
+  const [clearing,     setClearing]     = useState(false);
+  const [deletingId,   setDeletingId]   = useState(null);
 
   const fetchReports = useCallback(async (p, lf, ml) => {
     setLoading(true);
@@ -304,13 +207,8 @@ export default function LagReportsPage() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchReports(page, lagFilter, minLatency);
-  }, [page, lagFilter, minLatency, fetchReports]);
-
-  useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
+  useEffect(() => { fetchReports(page, lagFilter, minLatency); }, [page, lagFilter, minLatency, fetchReports]);
+  useEffect(() => { fetchStats(); }, [fetchStats]);
 
   const handleLagFilterChange = (val) => { setLagFilter(val); setPage(1); };
   const handleMinLatChange    = (val) => { setMinLatency(val); setPage(1); };
@@ -339,7 +237,13 @@ export default function LagReportsPage() {
       setTotalCount(0);
       setTotalPages(1);
       setPage(1);
-      setStats((s) => s ? { ...s, total: 0, avgLatency: 0, maxLatency: 0, worldCount: 0, chatCount: 0, topChars: [], topMaps: [] } : s);
+      setStats((s) => s ? {
+        ...s,
+        total: 0, avgLatency: 0, maxLatency: 0,
+        lootCount: 0, ahCount: 0, mailCount: 0,
+        chatCount: 0, movementCount: 0, spellCount: 0,
+        topChars: [], topMaps: [],
+      } : s);
       setClearModal(false);
     } catch (err) {
       toast(err.message, 'error');
@@ -353,10 +257,7 @@ export default function LagReportsPage() {
       <div className="page-header">
         <h2 className="page-title">Lag Reports</h2>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button
-            className="btn btn-ghost btn-xs"
-            onClick={() => setShowTopLists((v) => !v)}
-          >
+          <button className="btn btn-ghost btn-xs" onClick={() => setShowTopLists((v) => !v)}>
             {showTopLists ? '▲ Hide Stats' : '▼ Show Stats'}
           </button>
           {canClear && totalCount > 0 && (
@@ -386,7 +287,6 @@ export default function LagReportsPage() {
             </button>
           ))}
         </div>
-
         <div className="lag-latency-filter">
           <span className="filter-label">Min latency:</span>
           {LAT_PRESETS.map((p) => (
@@ -437,7 +337,7 @@ export default function LagReportsPage() {
                   <td className="td-muted mono">{r.id}</td>
                   <td><span className={lagTypeBadgeClass(r.lagType)}>{r.lagTypeLabel}</span></td>
                   <td>{r.character}</td>
-                  <td><MapName id={r.mapId} /></td>
+                  <td><MapCell mapId={r.mapId} mapName={r.mapName} /></td>
                   <td className="td-muted mono" style={{ fontSize: 12 }}>
                     {r.posX}, {r.posY}, {r.posZ}
                   </td>
@@ -446,9 +346,7 @@ export default function LagReportsPage() {
                       {r.latency} ms
                     </span>
                   </td>
-                  <td className="td-muted" style={{ fontSize: 12 }}>
-                    {r.createTime ?? '—'}
-                  </td>
+                  <td className="td-muted" style={{ fontSize: 12 }}>{r.createTime ?? '—'}</td>
                   {canDelete && (
                     <td>
                       <button

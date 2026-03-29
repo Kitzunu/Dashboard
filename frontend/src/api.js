@@ -100,6 +100,11 @@ export const api = {
   getConfig:       (name)         => request('GET', `/api/config/${name}`),
   saveConfig:      (name, content) => request('PUT', `/api/config/${name}`, { content }),
 
+  // DBC data
+  getDBCStatus: ()  => request('GET', '/api/dbc/status'),
+  getDBCMaps:   ()  => request('GET', '/api/dbc/maps'),
+  getDBCAreas:  ()  => request('GET', '/api/dbc/areas'),
+
   // Mail Server Templates
   getMailServerTemplates:  ()          => request('GET',    '/api/mailserver'),
   getMailServerTemplate:   (id)        => request('GET',    `/api/mailserver/${id}`),

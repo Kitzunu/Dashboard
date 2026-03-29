@@ -24,10 +24,12 @@ const thresholdsRoutes   = require('./routes/thresholds');
 const bugreportRoutes    = require('./routes/bugreports');
 const lagreportRoutes    = require('./routes/lagreports');
 const mailserverRoutes   = require('./routes/mailserver');
+const dbcRoutes          = require('./routes/dbc');
 const playerHistory      = require('./playerHistory');
 const { authenticateToken } = require('./middleware/auth');
 const ipAllowlist = require('./middleware/ipAllowlist');
 const processManager = require('./processManager');
+const dbc = require('./dbc');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -60,6 +62,7 @@ app.use('/api/thresholds',     authenticateToken, thresholdsRoutes);
 app.use('/api/bugreports',    authenticateToken, bugreportRoutes);
 app.use('/api/lagreports',    authenticateToken, lagreportRoutes);
 app.use('/api/mailserver',    authenticateToken, mailserverRoutes);
+app.use('/api/dbc',           authenticateToken, dbcRoutes);
 
 // Authenticate socket connections with JWT
 io.use((socket, next) => {
@@ -84,6 +87,9 @@ io.on('connection', (socket) => {
 });
 
 processManager.setIO(io);
+
+// Pre-load DBC lookup tables (gracefully no-ops if DBC_PATH is not set)
+dbc.init();
 
 // Poll player count every 30 s and store in rolling history
 const { charPool } = require('./db');

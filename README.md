@@ -237,7 +237,7 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser and log
 - **▼ Show Stats** toggle reveals:
   - Top 5 most-reporting characters with their average latency
   - Top 5 most-affected maps with report count and average latency
-- Each row shows: ID, type badge (World / Chat), character name, map (human-readable for all WotLK maps), X/Y/Z coordinates, colour-coded latency badge, and timestamp
+- Each row shows: ID, type badge (Loot / Auction House / Mail / Chat / Movement / Spells & Abilities), character name, map name (resolved from Map.dbc when `DBC_PATH` is configured, otherwise `Map {id}`), X/Y/Z coordinates, colour-coded latency badge, and timestamp
 - **Dismiss** button per row (GM level 2+) removes a single report
 - **Clear All** button (Administrator only) deletes all reports with a confirmation modal
 
@@ -262,6 +262,27 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser and log
 - Unsaved-changes indicator (amber dot on tab, badge in header and footer)
 - **Save** writes the file and automatically creates a `.bak` backup of the previous version
 - **Discard** reverts all edits back to the last saved state
+
+## DBC File Integration (Optional)
+
+The dashboard can resolve map and zone IDs to human-readable names by reading WotLK 3.3.5a client DBC files. Set `DBC_PATH` in your `.env` to the `DBFilesClient` folder inside your WoW client data directory:
+
+```env
+# Windows example
+DBC_PATH=C:\World of Warcraft\Data\enUS\DBFilesClient
+
+# Linux example
+DBC_PATH=/opt/wow/Data/enUS/DBFilesClient
+```
+
+When configured, the backend reads `Map.dbc` and `AreaTable.dbc` at startup and serves the lookup tables to the frontend. If `DBC_PATH` is not set or the files are missing the dashboard gracefully falls back to `Map {id}` / `Area {id}` placeholders — everything still works, just without pretty names.
+
+Files read:
+
+| File | Data |
+|------|------|
+| `Map.dbc` | Map names shown in Lag Reports (e.g. *Azeroth*, *Outland*, *Warsong Gulch*) |
+| `AreaTable.dbc` | Zone/area names shown in Bug Reports |
 
 ## Project Structure
 
@@ -288,8 +309,10 @@ azerothcore-dashboard/
 │   │   ├── tickets.js            # GM ticket CRUD (respond, comment, assign, escalate)
 │   │   ├── bugreports.js         # Bug report list, detail, and dismiss endpoints
 │   │   ├── lagreports.js         # Lag report list, stats, dismiss, and clear-all endpoints
-│   │   └── mailserver.js         # Mail server template CRUD + items, conditions, recipients
+│   │   ├── mailserver.js         # Mail server template CRUD + items, conditions, recipients
+│   │   └── dbc.js                # DBC lookup endpoints (maps, areas, status)
 │   ├── db.js                     # MySQL connection pools (auth, world, characters)
+│   ├── dbc.js                    # WotLK DBC binary parser; resolves map/area IDs to names
 │   ├── playerHistory.js          # Rolling in-memory player count history (max 120 points)
 │   ├── processManager.js         # Server process lifecycle + Socket.IO broadcast
 │   └── server.js                 # Express + Socket.IO entry point
