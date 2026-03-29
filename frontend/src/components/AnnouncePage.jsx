@@ -8,8 +8,6 @@ const MAX_LEN = 200;
 const TEMPLATES = [
   'Server restart in 15 minutes',
   'Server restart in 5 minutes',
-  'Server is back online!',
-  'Welcome to the server!',
   'Maintenance starting soon — please log out',
   'Event starting now — head to Dalaran!',
 ];
