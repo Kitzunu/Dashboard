@@ -13,6 +13,7 @@ import HomePage from './HomePage.jsx';
 import AnnouncePage from './AnnouncePage.jsx';
 import AutobroadcastPage from './AutobroadcastPage.jsx';
 import AccountsPage from './AccountsPage.jsx';
+import MailPage from './MailPage.jsx';
 
 const GM_LABELS = {
   1: 'Moderator',
@@ -30,6 +31,7 @@ const NAV = [
   { id: 'announce',      label: '📢 Announce',       minLevel: 2 },
   { id: 'accounts',      label: '👤 Accounts',       minLevel: 2 },
   { id: 'autobroadcast', label: '📣 Autobroadcast',  minLevel: 2 },
+  { id: 'mail',          label: '✉ Send Mail',        minLevel: 2 },
   { id: 'servers',       label: '⚙ Servers',         minLevel: 3 },
   { id: 'dbquery',       label: '🗄 DB Query',        minLevel: 3 },
   { id: 'config',        label: '📄 Config',          minLevel: 3 },
@@ -168,6 +170,7 @@ export default function Layout() {
         {page === 'announce'      && <AnnouncePage />}
         {page === 'accounts'      && <AccountsPage auth={auth} />}
         {page === 'autobroadcast' && <AutobroadcastPage />}
+        {page === 'mail'          && <MailPage />}
         {page === 'servers'       && <ServersPage serverStatus={serverStatus} setServerStatus={setServerStatus} />}
         {page === 'dbquery'       && <DBQueryPage />}
         {page === 'config'        && <ConfigPage />}

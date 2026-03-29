@@ -203,6 +203,8 @@ export default function HomePage() {
   const bans = overview?.bans ?? {};
   const system = overview?.system ?? {};
   const playerHistory = overview?.playerHistory ?? [];
+  const motd    = overview?.motd ?? '';
+  const version = overview?.version ?? null;
 
   return (
     <div className="page">
@@ -237,6 +239,44 @@ export default function HomePage() {
         playerHistory={playerHistory}
         currentCount={players.current ?? 0}
       />
+
+      {version && (
+        <div className="overview-version">
+          {version.core_version && (
+            <>
+              <span className="overview-version-label">Core Version</span>
+              <span className="overview-version-value">{version.core_version}</span>
+            </>
+          )}
+          <div className="overview-version-row">
+            {version.core_revision && (
+              <div className="overview-version-cell">
+                <span className="overview-version-label">Core Revision</span>
+                <span className="overview-version-value">{version.core_revision}</span>
+              </div>
+            )}
+            {version.db_version && (
+              <div className="overview-version-cell">
+                <span className="overview-version-label">DB Version</span>
+                <span className="overview-version-value">{version.db_version}</span>
+              </div>
+            )}
+            {version.cache_id != null && (
+              <div className="overview-version-cell">
+                <span className="overview-version-label">Cache ID</span>
+                <span className="overview-version-value">{version.cache_id}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {motd && (
+        <div className="motd-current" style={{ marginBottom: 0 }}>
+          <span className="motd-current-label">Message of the Day</span>
+          <span className="motd-current-value">{motd}</span>
+        </div>
+      )}
     </div>
   );
 }

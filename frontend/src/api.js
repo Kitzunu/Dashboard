@@ -79,6 +79,15 @@ export const api = {
   setAccountLock:    (id, locked)   => request('PATCH', `/api/accounts/${id}/lock`, { locked }),
   resetPassword:     (id, password) => request('POST',  `/api/accounts/${id}/password`, { password }),
 
+  getMOTD:         ()             => request('GET',  '/api/servertools/motd'),
+  setMOTD:         (motd)        => request('PUT',  '/api/servertools/motd', { motd }),
+  restartServer:   (delay)       => request('POST', '/api/servertools/restart', { delay }),
+  cancelRestart:   ()            => request('POST', '/api/servertools/restart/cancel'),
+
+  sendMail:        (player, subject, body)          => request('POST', '/api/mail', { type: 'text', player, subject, body }),
+  sendMailItems:   (player, subject, body, items)   => request('POST', '/api/mail', { type: 'items', player, subject, body, items }),
+  sendMailMoney:   (player, subject, body, money)   => request('POST', '/api/mail', { type: 'money', player, subject, body, money }),
+
   getConfigs:      ()             => request('GET', '/api/config'),
   getConfig:       (name)         => request('GET', `/api/config/${name}`),
   saveConfig:      (name, content) => request('PUT', `/api/config/${name}`, { content }),

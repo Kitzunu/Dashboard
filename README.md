@@ -12,7 +12,9 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 - **Announcements** — Broadcast server-wide messages (chat announce or on-screen notify) with quick-fill templates and a sent-history log
 - **Accounts** — Search accounts by username / email / IP, view details and characters, set GM level, lock/unlock accounts, reset passwords
 - **Autobroadcast** — Manage the in-game autobroadcast rotation: add, edit, delete, and weight messages
-- **Servers** — Start, stop (immediate exit or graceful shutdown with delay), and auto-restart worldserver / authserver
+- **Send Mail** — Send in-game mail, items, or money to any character directly from the dashboard
+- **Servers** — Start, stop, scheduled restart, auto-restart, and MOTD editor for worldserver / authserver
+- **IP Allowlist** — Backend access restricted to an allowlist of IPs (default: localhost only), configurable via `ALLOWED_IPS` in `.env`
 - **DB Query** — Run preset SQL queries against the auth, world, and characters databases
 - **Config** — View and edit `worldserver.conf` / `authserver.conf` in the browser with a find bar, unsaved-change indicators, and automatic `.bak` backups on save
 - **Role-based access** — GM level controls what each user can see and do
@@ -76,6 +78,9 @@ JWT_SECRET=change-this-to-a-random-secret
 # Backend port and frontend URL (for CORS)
 PORT=3001
 FRONTEND_URL=http://localhost:5173
+
+# IP allowlist — comma-separated. Defaults to localhost only if omitted.
+ALLOWED_IPS=127.0.0.1,::1
 ```
 
 > **Important:** Generate a strong `JWT_SECRET`. You can use `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` to create one.
@@ -87,8 +92,8 @@ The dashboard authenticates against the AzerothCore `account` table using SRP6 �
 | GM Level | Role          | Access                                                                                          |
 |----------|---------------|-------------------------------------------------------------------------------------------------|
 | 1        | Moderator     | Overview, Console (read + send), Players list, GM Tickets                                       |
-| 2        | Game Master   | + Kick/ban players, manage bans, issue announcements, accounts (view/lock), autobroadcast (view/add/edit) |
-| 3        | Administrator | + Start/stop servers, DB Query, auto-restart, Config editor, create accounts, reset passwords, delete autobroadcasts |
+| 2        | Game Master   | + Kick/ban players, manage bans, issue announcements, accounts (view/lock), autobroadcast (view/add/edit), send in-game mail |
+| 3        | Administrator | + Start/stop servers, scheduled restart, MOTD editor, DB Query, auto-restart, Config editor, create accounts, reset passwords, delete autobroadcasts |
 
 To grant a GM level, run this in your auth database:
 
@@ -151,12 +156,20 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser and log
 - **Issue Ban** button — choose type, enter target, duration (e.g. `1h`, `7d`, `-1` for permanent), and reason
 - **Unban** button on each row with a confirmation modal showing the ban reason
 
-### ⚙ Servers
+### ⚙ Servers (Administrators only)
 - Start and stop worldserver and authserver directly from the dashboard
 - **Exit** — sends `server exit` for an immediate clean shutdown
 - **Shutdown** — sends `server shutdown <delay>` with a configurable countdown (seconds)
 - **Auto-restart** — toggle per-server; automatically restarts the process after a crash (does not restart on manual stop)
+- **Scheduled Restart** — preset delays (1m – 1h) or custom seconds; sends `server restart <delay>` so the core handles in-game countdown announcements automatically; cancel button available
+- **Message of the Day** — read and update the MOTD via `server set motd`; unsaved-changes indicator and discard option
 - Live status indicators in the sidebar footer
+
+### ✉ Send Mail (GM level 2+)
+- **Mail** — send a plain in-game mail to any character using `send mail`
+- **Items** — attach up to 12 items by entry ID and count using `send items`
+- **Money** — send gold/silver/copper with separate denomination inputs (auto-converts to copper) using `send money`
+- Player name and subject are preserved after send for quick follow-up messages
 
 ### 🗄 DB Query
 - Run preset SQL queries against auth, world, or characters databases
@@ -167,6 +180,8 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser and log
 - Three stat cards: Players Online, Open Tickets, Active Bans
 - System memory bar showing used / total RAM and percentage
 - SVG sparkline graph of player count over the last hour (sampled every 30 s, up to 120 points)
+- Core and DB version strings read from the `version` table
+- Current Message of the Day displayed at the bottom
 - Auto-refreshes every 30 seconds
 
 ### 📢 Announcements (GM level 2+)
@@ -206,7 +221,8 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser and log
 azerothcore-dashboard/
 ├── backend/
 │   ├── middleware/
-│   │   └── auth.js               # JWT verification, GM level guards
+│   │   ├── auth.js               # JWT verification, GM level guards
+│   │   └── ipAllowlist.js        # IP allowlist enforcement (ALLOWED_IPS env var)
 │   ├── routes/
 │   │   ├── auth.js               # Login (SRP6 verification + rate limiting)
 │   │   ├── accounts.js           # Account search, GM level, lock, password, create
@@ -216,9 +232,11 @@ azerothcore-dashboard/
 │   │   ├── config.js             # Read and save worldserver/authserver config files
 │   │   ├── console.js            # GM command execution
 │   │   ├── db.js                 # Preset database query endpoint
+│   │   ├── mail.js               # Send in-game mail / items / money via GM commands
 │   │   ├── overview.js           # Dashboard summary: servers, players, tickets, bans, memory
 │   │   ├── players.js            # Online players, kick, multi-type ban, count
 │   │   ├── servers.js            # Start, stop, status, logs, auto-restart
+│   │   ├── servertools.js        # Scheduled restart, cancel restart, MOTD get/set
 │   │   └── tickets.js            # GM ticket CRUD (respond, comment, assign, escalate)
 │   ├── db.js                     # MySQL connection pools (auth, world, characters)
 │   ├── playerHistory.js          # Rolling in-memory player count history (max 120 points)
@@ -235,6 +253,7 @@ azerothcore-dashboard/
 │       │   ├── ConfigPage.jsx
 │       │   ├── DBQueryPage.jsx
 │       │   ├── HomePage.jsx       # Overview: server cards, stat cards, memory bar, sparkline
+│       │   ├── MailPage.jsx       # Send in-game mail / items / money to characters
 │       │   ├── Layout.jsx         # Sidebar, nav badges, toast container
 │       │   ├── Login.jsx
 │       │   ├── PlayersPage.jsx
