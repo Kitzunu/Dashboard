@@ -1576,3 +1576,160 @@ code {
   text-decoration: underline;
   color: var(--gold-dim);
 }
+
+/* ── Bug Reports ─────────────────────────────────────────────── */
+.bug-reports-toolbar {
+  margin-bottom: 16px;
+}
+
+.tab-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  padding: 6px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.tab-btn:hover  { color: var(--text); border-color: var(--gold-dim); }
+.tab-btn.active { color: var(--gold); border-color: var(--gold); background: rgba(201,162,39,0.08); }
+
+.data-row.clickable { cursor: pointer; }
+.data-row.clickable:hover td { background: var(--surface2); }
+
+.mono { font-family: var(--font-mono); }
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.pagination-info {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+/* ── Bug Report Modal ─────────────────────────────────────────── */
+.bug-report-modal {
+  width: 760px;
+  max-width: 95vw;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.bug-report-detail {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.bug-report-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.bug-report-date {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  margin-left: auto;
+}
+
+.bug-report-section {
+  margin-bottom: 18px;
+}
+
+.bug-report-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--gold-dim);
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.bug-report-user-text {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.6;
+}
+
+.bug-report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px 20px;
+}
+
+.bug-report-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bug-report-field-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.bug-report-field-value {
+  font-size: 13px;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.bug-report-field-value.mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.bug-report-auras {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 180px;
+  overflow-y: auto;
+  line-height: 1.5;
+}
+
+/* ── Extra badge variants ─────────────────────────────────────── */
+.badge-danger {
+  background: rgba(224,92,92,0.12);
+  color: var(--red);
+  border: 1px solid rgba(224,92,92,0.25);
+}
+
+.badge-info {
+  background: rgba(91,155,213,0.12);
+  color: var(--blue);
+  border: 1px solid rgba(91,155,213,0.25);
+}

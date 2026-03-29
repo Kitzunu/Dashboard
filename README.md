@@ -13,6 +13,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 - **Accounts** — Search accounts by username / email / IP, view details and characters, set GM level, lock/unlock accounts, reset passwords
 - **Autobroadcast** — Manage the in-game autobroadcast rotation: add, edit, delete, and weight messages
 - **Send Mail** — Send in-game mail, items, or money to any character directly from the dashboard
+- **Bug Reports** — Browse and inspect in-game FeedbackUI bug reports, suggestions, and feedback; paginated table with character, zone, subject, and type; full detail modal with reporter info, location, system specs, aura list, and addon data; dismiss (delete) reports at GM level 2+
 - **Servers** — Start, stop, scheduled restart, auto-restart, and MOTD editor for worldserver / authserver
 - **IP Allowlist** — Backend access restricted to an allowlist of IPs (default: localhost only), configurable via `ALLOWED_IPS` in `.env`
 - **DB Query** — Run preset SQL queries against the auth, world, and characters databases
@@ -214,6 +215,20 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser and log
 - **Delete** with confirmation modal
 - Weight controls how often a message is selected relative to others
 
+### 🐛 Bug Reports (GM level 1+)
+- Paginated table (25 per page) of all in-game FeedbackUI reports from the `bugreport` characters database table
+- Filter by type: **All**, **Bugs**, **Suggestions**, **Feedback**
+- Table shows: ID, type badge (Bug / Suggestion / Feedback), character name, zone, subject, and report date
+- Click any row (or the **View** button) to open a full detail modal with sections:
+  - **Description** — the player's free-text report
+  - **Reporter** — character name, account, realm, and character description
+  - **Location** — zone, map, coordinates, and position string
+  - **Subject** — subject name, subject type, target name, and target GUID
+  - **System** — OS, computer model, memory, CPU info, WoW version, build, and locale
+  - **Addons** — related addon title/version, loaded addons list, and disabled addons list
+  - **Active Auras** — full aura list at time of report
+- **Dismiss** button (GM level 2+) removes the report from the database
+
 ### 📄 Config (Administrators only)
 - View and edit `worldserver.conf` and `authserver.conf` directly in the browser
 - Full monospace editor with line numbers
@@ -244,7 +259,8 @@ azerothcore-dashboard/
 │   │   ├── players.js            # Online players, kick, multi-type ban, count
 │   │   ├── servers.js            # Start, stop, status, logs, auto-restart
 │   │   ├── servertools.js        # Scheduled restart, cancel restart, MOTD get/set
-│   │   └── tickets.js            # GM ticket CRUD (respond, comment, assign, escalate)
+│   │   ├── tickets.js            # GM ticket CRUD (respond, comment, assign, escalate)
+│   │   └── bugreports.js         # Bug report list, detail, and dismiss endpoints
 │   ├── db.js                     # MySQL connection pools (auth, world, characters)
 │   ├── playerHistory.js          # Rolling in-memory player count history (max 120 points)
 │   ├── processManager.js         # Server process lifecycle + Socket.IO broadcast
@@ -259,7 +275,8 @@ azerothcore-dashboard/
 │       │   ├── ConsolePage.jsx
 │       │   ├── ConfigPage.jsx
 │       │   ├── DBQueryPage.jsx
-│       │   ├── HomePage.jsx       # Overview: server cards, stat cards, memory bar, sparkline
+│       │   ├── BugReportsPage.jsx # FeedbackUI bug report browser with detail modal
+│       │   ├── HomePage.jsx       # Overview: server cards, stat cards, memory/CPU bars, sparkline
 │       │   ├── MailPage.jsx       # Send in-game mail / items / money to characters
 │       │   ├── Layout.jsx         # Sidebar, nav badges, toast container
 │       │   ├── Login.jsx

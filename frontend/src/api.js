@@ -100,6 +100,14 @@ export const api = {
   getConfig:       (name)         => request('GET', `/api/config/${name}`),
   saveConfig:      (name, content) => request('PUT', `/api/config/${name}`, { content }),
 
+  getBugReports:  (page, feedbackType) => {
+    const params = new URLSearchParams({ page: page || 1 });
+    if (feedbackType != null && feedbackType !== 'all') params.set('feedbackType', feedbackType);
+    return request('GET', `/api/bugreports?${params}`);
+  },
+  getBugReport:   (id)  => request('GET',    `/api/bugreports/${id}`),
+  deleteBugReport:(id)  => request('DELETE', `/api/bugreports/${id}`),
+
   getBans: () => request('GET', '/api/bans'),
   banTarget: (type, target, duration, reason) =>
     request('POST', '/api/bans', { type, target, duration, reason }),
