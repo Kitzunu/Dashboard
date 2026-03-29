@@ -243,9 +243,13 @@ html, body, #root {
 
 input[type="text"],
 input[type="password"],
+input[type="number"],
+input[type="email"],
+input[type="search"],
+input:not([type]),
 textarea,
 select {
-  background: var(--bg);
+  background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text);
@@ -534,6 +538,52 @@ input:focus, textarea:focus, select:focus { border-color: var(--gold-dim); }
 .modal-wide { width: 700px; max-width: 95vw; }
 
 .modal h3 { font-size: 16px; color: var(--text); }
+
+/* Structured modal header / footer (used by tabbed modals) */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: var(--radius);
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+}
+.modal-close:hover {
+  color: var(--text);
+  background: var(--surface2);
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
 .player-name-em { color: var(--gold); }
 
 /* ── Account detail ──────────────────────────────────────────── */
@@ -1616,6 +1666,9 @@ code {
   max-height: 88vh;
   display: flex;
   flex-direction: column;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
 }
 
 .ms-tab-bar {
@@ -1652,20 +1705,22 @@ code {
   min-height: 110px;
   font-family: inherit;
   line-height: 1.5;
+  width: 100%;
 }
 
 .ms-money-row {
   display: flex;
-  align-items: center;
-  gap: 16px;
+  flex-direction: column;
+  gap: 6px;
   margin-bottom: 14px;
 }
 
 .ms-money-label {
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--text-dim);
-  width: 130px;
-  flex-shrink: 0;
 }
 
 .ms-toggle {
@@ -1724,7 +1779,22 @@ code {
   white-space: nowrap;
 }
 
-/* ── Shared small form helpers ───────────────────────────────── */
+/* ── Shared form helpers ─────────────────────────────────────── */
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.form-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+
 .form-row-sm {
   margin-bottom: 0;
 }
@@ -1886,12 +1956,15 @@ code {
   max-height: 85vh;
   display: flex;
   flex-direction: column;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
 }
 
 .bug-report-detail {
   flex: 1;
   overflow-y: auto;
-  padding: 4px 0;
+  padding: 20px 24px;
 }
 
 .bug-report-summary-row {
