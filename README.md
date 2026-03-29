@@ -61,6 +61,10 @@ Open `.env` and set the following values:
 # AzerothCore executable paths
 WORLDSERVER_PATH=C:\AzerothCore\worldserver.exe
 AUTHSERVER_PATH=C:\AzerothCore\authserver.exe
+# Host and game port used for server latency measurement (TCP ping).
+# Only needed if your worldserver is NOT on localhost or uses a non-default port.
+# WORLDSERVER_HOST=127.0.0.1
+# WORLDSERVER_PORT=8085
 # Working directories for the servers (defaults to the exe's directory if omitted)
 # WORLDSERVER_DIR=C:\AzerothCore
 # AUTHSERVER_DIR=C:\AzerothCore
@@ -201,6 +205,7 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser and log
 - **CPU Usage bar** — sampled across all cores over 200 ms; turns amber then red when warning threshold is exceeded
 - **Configurable alert thresholds** — ⚙ button in the page header to set CPU % and memory % warning levels; saved to `backend/thresholds.json` and persisted across restarts (save requires Administrator)
 - **Browser alert notifications** — 🔔 button in the Overview header requests notification permission; when CPU or memory crosses its threshold a browser notification pops up with a distinct two-tone sound (ascending beep for CPU, descending for memory); alerts fire once on threshold crossing, not on every poll
+- **World Server Latency** — TCP round-trip time to the worldserver game port (8085) sampled every 30 s; displays Mean, Median, P95, P99, and Max over a rolling 60-minute window; colour-coded green/amber/red; configurable via `WORLDSERVER_HOST` / `WORLDSERVER_PORT` env vars
 - SVG sparkline graph of player count over the last hour (sampled every 30 s, up to 120 points)
 - Core, DB version, and Cache ID read from the `version` table; **Core Revision** is a clickable link to the AzerothCore GitHub commit
 - Current Message of the Day displayed at the bottom
@@ -329,6 +334,7 @@ azerothcore-dashboard/
 │   │   └── dbc.js                # DBC lookup endpoints (maps, areas, status)
 │   ├── db.js                     # MySQL connection pools (auth, world, characters)
 │   ├── dbc.js                    # WotLK DBC binary parser; resolves map/area IDs to names
+│   ├── latencyMonitor.js         # TCP ping to worldserver port; rolling latency history + percentiles
 │   ├── playerHistory.js          # Rolling in-memory player count history (max 120 points)
 │   ├── processManager.js         # Server process lifecycle + Socket.IO broadcast
 │   └── server.js                 # Express + Socket.IO entry point

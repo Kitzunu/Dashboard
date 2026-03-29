@@ -2,9 +2,10 @@ const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const os = require('os');
 const { authPool, charPool, worldPool } = require('../db');
-const processManager = require('../processManager');
-const playerHistory  = require('../playerHistory');
-const thresholds     = require('../thresholds');
+const processManager   = require('../processManager');
+const playerHistory    = require('../playerHistory');
+const thresholds       = require('../thresholds');
+const latencyMonitor   = require('../latencyMonitor');
 
 const router = express.Router();
 
@@ -67,6 +68,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
       motd:          motdRow[0]?.text ?? '',
       version:       versionRow[0] ?? null,
       playerHistory: playerHistory.getHistory(),
+      serverLatency: latencyMonitor.getStats(),
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

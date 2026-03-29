@@ -26,6 +26,7 @@ const lagreportRoutes    = require('./routes/lagreports');
 const mailserverRoutes   = require('./routes/mailserver');
 const dbcRoutes          = require('./routes/dbc');
 const playerHistory      = require('./playerHistory');
+const latencyMonitor     = require('./latencyMonitor');
 const { authenticateToken } = require('./middleware/auth');
 const ipAllowlist = require('./middleware/ipAllowlist');
 const processManager = require('./processManager');
@@ -101,6 +102,9 @@ async function pollPlayerCount() {
 }
 pollPlayerCount();
 setInterval(pollPlayerCount, 30000);
+
+// Poll worldserver TCP latency every 30 s
+latencyMonitor.start(30000);
 
 const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, () => {

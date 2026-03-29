@@ -1805,6 +1805,69 @@ code {
   height: 32px;
 }
 
+/* ── Latency panel (Overview) ────────────────────────────────── */
+.latency-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+}
+
+.latency-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.latency-panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.latency-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+@media (max-width: 600px) {
+  .latency-stats-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.latency-stat-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.latency-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+
+.latency-stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+
+.latency-stat-unit {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
 /* ── Lag Reports ─────────────────────────────────────────────── */
 .lag-stats-bar {
   display: flex;

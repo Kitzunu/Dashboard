@@ -221,6 +221,54 @@ function Sparkline({ playerHistory, currentCount }) {
   );
 }
 
+// ── Latency panel ─────────────────────────────────────────────────────────────
+function latencyColor(ms) {
+  if (ms >= 10)  return 'var(--red)';
+  if (ms >= 5)   return 'var(--warn)';
+  if (ms >= 2)   return 'var(--text)';
+  return 'var(--green)';
+}
+
+function LatencyPanel({ latency }) {
+  if (!latency) {
+    return (
+      <div className="latency-panel">
+        <div className="latency-panel-header">
+          <span className="latency-panel-title">World Server Latency</span>
+          <span className="td-muted" style={{ fontSize: 12 }}>No data yet — collecting samples…</span>
+        </div>
+      </div>
+    );
+  }
+
+  const stats = [
+    { label: 'Mean',   value: latency.mean   },
+    { label: 'Median', value: latency.median  },
+    { label: 'P95',    value: latency.p95     },
+    { label: 'P99',    value: latency.p99     },
+    { label: 'Max',    value: latency.max     },
+  ];
+
+  return (
+    <div className="latency-panel">
+      <div className="latency-panel-header">
+        <span className="latency-panel-title">World Server Latency</span>
+        <span className="td-muted" style={{ fontSize: 12 }}>{latency.count} sample{latency.count !== 1 ? 's' : ''}</span>
+      </div>
+      <div className="latency-stats-grid">
+        {stats.map(({ label, value }) => (
+          <div key={label} className="latency-stat-cell">
+            <span className="latency-stat-label">{label}</span>
+            <span className="latency-stat-value" style={{ color: latencyColor(value) }}>
+              {value} <span className="latency-stat-unit">ms</span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Threshold settings ────────────────────────────────────────────────────────
 function ThresholdSettings({ thresholds, onSaved }) {
   const [open, setOpen]   = useState(false);
@@ -356,6 +404,7 @@ export default function HomePage() {
   const playerHistory = overview?.playerHistory ?? [];
   const motd          = overview?.motd          ?? '';
   const version       = overview?.version       ?? null;
+  const serverLatency = overview?.serverLatency  ?? null;
 
   const memPct = system.memPct ?? (system.totalMem > 0
     ? Math.round(((system.totalMem - system.freeMem) / system.totalMem) * 100)
@@ -404,6 +453,9 @@ export default function HomePage() {
           />
         </>
       )}
+
+      {/* Server latency */}
+      <LatencyPanel latency={serverLatency} />
 
       {/* Sparkline */}
       <Sparkline playerHistory={playerHistory} currentCount={players.current ?? 0} />
