@@ -20,6 +20,7 @@ const autobroadcastRoutes= require('./routes/autobroadcast');
 const accountRoutes      = require('./routes/accounts');
 const servertoolsRoutes  = require('./routes/servertools');
 const mailRoutes         = require('./routes/mail');
+const thresholdsRoutes   = require('./routes/thresholds');
 const playerHistory      = require('./playerHistory');
 const { authenticateToken } = require('./middleware/auth');
 const ipAllowlist = require('./middleware/ipAllowlist');
@@ -52,6 +53,7 @@ app.use('/api/tickets',        authenticateToken, ticketRoutes);
 app.use('/api/config',         authenticateToken, configRoutes);
 app.use('/api/servertools',    authenticateToken, servertoolsRoutes);
 app.use('/api/mail',           authenticateToken, mailRoutes);
+app.use('/api/thresholds',     authenticateToken, thresholdsRoutes);
 
 // Authenticate socket connections with JWT
 io.use((socket, next) => {

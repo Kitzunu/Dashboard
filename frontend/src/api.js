@@ -64,6 +64,9 @@ export const api = {
 
   getOverview: () => request('GET', '/api/overview'),
 
+  getThresholds: ()      => request('GET', '/api/thresholds'),
+  saveThresholds: (data) => request('PUT', '/api/thresholds', data),
+
   getAnnouncements:  ()                   => request('GET',  '/api/announcements/history'),
   sendAnnouncement:  (type, message)      => request('POST', '/api/announcements', { type, message }),
 

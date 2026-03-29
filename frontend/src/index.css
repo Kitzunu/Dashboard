@@ -1498,3 +1498,81 @@ code {
   flex-direction: column;
   gap: 4px;
 }
+
+/* ── Resource bar warnings ───────────────────────────────────── */
+.resource-warn-icon {
+  color: var(--warn);
+}
+
+.resource-warn-text {
+  color: var(--warn);
+}
+
+.threshold-badge {
+  font-size: 11px;
+  color: var(--text-dim);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1px 7px;
+}
+
+/* ── Threshold settings panel ────────────────────────────────── */
+.threshold-settings {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.threshold-toggle {
+  font-size: 12px;
+}
+
+.threshold-panel {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 260px;
+}
+
+.threshold-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.threshold-row label {
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.threshold-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.threshold-input-wrap input {
+  width: 64px;
+  text-align: center;
+}
+
+/* ── Clickable version link ──────────────────────────────────── */
+.overview-version-link {
+  color: var(--gold);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.overview-version-link:hover {
+  text-decoration: underline;
+  color: var(--gold-dim);
+}

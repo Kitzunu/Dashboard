@@ -178,9 +178,11 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser and log
 ### 📊 Overview
 - Two server cards showing live status, PID, and per-second uptime timer for worldserver and authserver
 - Three stat cards: Players Online, Open Tickets, Active Bans
-- System memory bar showing used / total RAM and percentage
+- **System Memory bar** — used/total GB with percentage; turns amber then red when warning threshold is exceeded
+- **CPU Usage bar** — sampled across all cores over 200 ms; turns amber then red when warning threshold is exceeded
+- **Configurable alert thresholds** — ⚙ button in the page header to set CPU % and memory % warning levels; saved to `backend/thresholds.json` and persisted across restarts (save requires Administrator)
 - SVG sparkline graph of player count over the last hour (sampled every 30 s, up to 120 points)
-- Core and DB version strings read from the `version` table
+- Core, DB version, and Cache ID read from the `version` table; **Core Revision** is a clickable link to the AzerothCore GitHub commit
 - Current Message of the Day displayed at the bottom
 - Auto-refreshes every 30 seconds
 
