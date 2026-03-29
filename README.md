@@ -35,8 +35,8 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 **1. Clone the repository**
 
 ```bash
-git clone https://github.com/your-username/azerothcore-dashboard.git
-cd azerothcore-dashboard
+git clone https://github.com/Kitzunu/Dashboard.git
+cd Dashboard
 ```
 
 **2. Install all dependencies**
