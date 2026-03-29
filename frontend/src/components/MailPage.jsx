@@ -174,7 +174,7 @@ export default function MailPage() {
             ))}
           </div>
           <small className="type-hint">
-            {type === 'text'  && 'Send a plain mail message — uses the server set motd command'}
+            {type === 'text'  && 'Send a plain mail message — uses the send mail command'}
             {type === 'items' && 'Attach up to 12 items by entry ID — uses send items command'}
             {type === 'money' && 'Send gold, silver, and/or copper — uses send money command'}
           </small>
@@ -187,7 +187,7 @@ export default function MailPage() {
             type="text"
             value={player}
             onChange={(e) => setPlayer(e.target.value)}
-            placeholder="Exact character name (case-insensitive)"
+            placeholder="Exact character name"
             style={{ maxWidth: 280 }}
           />
         </div>
