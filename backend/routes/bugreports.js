@@ -15,25 +15,55 @@ function parseType(raw) {
 }
 
 // Parse the tab-delimited `content` column into a plain object.
-// Format per line: "Key:\t\tValue" or "Key:\tValue"
+//
+// Three line formats exist in practice:
+//   "Key:\t\tValue"      — standard key/value (tab at some position > 0)
+//   "Key:"               — bare key with no value on the same line (e.g. "Auras:")
+//   "\tValue"            — tab-indented continuation item (e.g. each aura entry)
 function parseContent(raw) {
   if (!raw) return {};
   const result = {};
   const lines = raw.split('\n');
   let lastKey = null;
+
   for (const line of lines) {
     if (!line.trim()) continue;
     const tabIdx = line.indexOf('\t');
+
     if (tabIdx === -1) {
-      // Continuation of a multi-line value (e.g. Auras list)
-      if (lastKey) result[lastKey] += '\n' + line.trim();
+      // No tab at all — either a bare key like "Auras:" or a plain continuation line.
+      const trimmed = line.trim();
+      const bareKey = trimmed.match(/^([A-Za-z][A-Za-z0-9 &/]+?):\s*$/);
+      if (bareKey) {
+        const key = bareKey[1].trim();
+        result[key] = '';
+        lastKey = key;
+      } else if (lastKey !== null) {
+        result[lastKey] = result[lastKey]
+          ? result[lastKey] + '\n' + trimmed
+          : trimmed;
+      }
       continue;
     }
+
+    if (tabIdx === 0) {
+      // Line starts with a tab — tab-indented value continuation (e.g. aura list items).
+      const value = line.replace(/^\t+/, '').trim();
+      if (lastKey !== null) {
+        result[lastKey] = result[lastKey]
+          ? result[lastKey] + '\n' + value
+          : value;
+      }
+      continue;
+    }
+
+    // Standard "Key:\t\tValue" line.
     const rawKey = line.slice(0, tabIdx).replace(/:$/, '').trim();
     const value  = line.slice(tabIdx).replace(/^\t+/, '').trim();
     result[rawKey] = value;
     lastKey = rawKey;
   }
+
   return result;
 }
 

@@ -1577,6 +1577,109 @@ code {
   color: var(--gold-dim);
 }
 
+/* ── Lag Reports ─────────────────────────────────────────────── */
+.lag-stats-bar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.lag-stat-pill {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 110px;
+}
+
+.lag-stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.lag-stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.lag-top-lists {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.lag-top-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.lag-top-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold-dim);
+  margin-bottom: 10px;
+}
+
+.lag-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.lag-latency-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  margin-right: 2px;
+}
+
+.lag-result-count {
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+/* Latency colour classes */
+.latency-badge {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+.latency-good     { color: var(--green);  background: rgba(61,220,132,0.10); }
+.latency-ok       { color: var(--text);   background: var(--surface2); }
+.latency-warn     { color: var(--warn);   background: rgba(232,168,56,0.12); }
+.latency-critical { color: var(--red);    background: rgba(224,92,92,0.12); }
+
+.table-empty {
+  text-align: center;
+  padding: 32px;
+  color: var(--text-dim);
+}
+
 /* ── Bug Reports ─────────────────────────────────────────────── */
 .bug-reports-toolbar {
   margin-bottom: 16px;
@@ -1732,4 +1835,16 @@ code {
   background: rgba(91,155,213,0.12);
   color: var(--blue);
   border: 1px solid rgba(91,155,213,0.25);
+}
+
+.badge-gold {
+  background: rgba(201,162,39,0.12);
+  color: var(--gold);
+  border: 1px solid rgba(201,162,39,0.25);
+}
+
+.badge-warn {
+  background: rgba(232,168,56,0.12);
+  color: var(--warn);
+  border: 1px solid rgba(232,168,56,0.25);
 }

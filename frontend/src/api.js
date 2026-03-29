@@ -100,6 +100,16 @@ export const api = {
   getConfig:       (name)         => request('GET', `/api/config/${name}`),
   saveConfig:      (name, content) => request('PUT', `/api/config/${name}`, { content }),
 
+  getLagReports: (page, lagType, minLatency) => {
+    const params = new URLSearchParams({ page: page || 1 });
+    if (lagType != null && lagType !== 'all') params.set('lagType', lagType);
+    if (minLatency > 0) params.set('minLatency', minLatency);
+    return request('GET', `/api/lagreports?${params}`);
+  },
+  getLagStats:      ()   => request('GET',    '/api/lagreports/stats'),
+  deleteLagReport:  (id) => request('DELETE', `/api/lagreports/${id}`),
+  clearLagReports:  ()   => request('DELETE', '/api/lagreports'),
+
   getBugReports:  (page, feedbackType) => {
     const params = new URLSearchParams({ page: page || 1 });
     if (feedbackType != null && feedbackType !== 'all') params.set('feedbackType', feedbackType);

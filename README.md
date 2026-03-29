@@ -13,6 +13,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 - **Accounts** — Search accounts by username / email / IP, view details and characters, set GM level, lock/unlock accounts, reset passwords
 - **Autobroadcast** — Manage the in-game autobroadcast rotation: add, edit, delete, and weight messages
 - **Send Mail** — Send in-game mail, items, or money to any character directly from the dashboard
+- **Lag Reports** — Browse player-submitted lag reports from the `lag_reports` characters table; filterable by type and minimum latency; aggregate stats with top-reporter and top-map breakdowns; dismiss individual reports (GM 2+) or clear all (Administrator)
 - **Bug Reports** — Browse and inspect in-game FeedbackUI bug reports, suggestions, and feedback; paginated table with character, zone, subject, and type; full detail modal with reporter info, location, system specs, aura list, and addon data; dismiss (delete) reports at GM level 2+
 - **Servers** — Start, stop, scheduled restart, auto-restart, and MOTD editor for worldserver / authserver
 - **IP Allowlist** — Backend access restricted to an allowlist of IPs (default: localhost only), configurable via `ALLOWED_IPS` in `.env`
@@ -215,6 +216,18 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser and log
 - **Delete** with confirmation modal
 - Weight controls how often a message is selected relative to others
 
+### 📶 Lag Reports (GM level 1+)
+- Paginated table (50 per page) of all player-submitted lag events from the `lag_reports` characters database table
+- **Filter by type** — All / Loot / Auction House / Mail / Chat / Movement / Spells & Abilities
+- **Filter by minimum latency** — Any / ≥100 ms / ≥250 ms / ≥500 ms / ≥1 s
+- **Summary bar** — Total reports, average latency, peak latency, and individual counts for all six lag types; latency values turn amber/red when high
+- **▼ Show Stats** toggle reveals:
+  - Top 5 most-reporting characters with their average latency
+  - Top 5 most-affected maps with report count and average latency
+- Each row shows: ID, type badge (World / Chat), character name, map (human-readable for all WotLK maps), X/Y/Z coordinates, colour-coded latency badge, and timestamp
+- **Dismiss** button per row (GM level 2+) removes a single report
+- **Clear All** button (Administrator only) deletes all reports with a confirmation modal
+
 ### 🐛 Bug Reports (GM level 1+)
 - Paginated table (25 per page) of all in-game FeedbackUI reports from the `bugreport` characters database table
 - Filter by type: **All**, **Bugs**, **Suggestions**, **Feedback**
@@ -260,7 +273,8 @@ azerothcore-dashboard/
 │   │   ├── servers.js            # Start, stop, status, logs, auto-restart
 │   │   ├── servertools.js        # Scheduled restart, cancel restart, MOTD get/set
 │   │   ├── tickets.js            # GM ticket CRUD (respond, comment, assign, escalate)
-│   │   └── bugreports.js         # Bug report list, detail, and dismiss endpoints
+│   │   ├── bugreports.js         # Bug report list, detail, and dismiss endpoints
+│   │   └── lagreports.js         # Lag report list, stats, dismiss, and clear-all endpoints
 │   ├── db.js                     # MySQL connection pools (auth, world, characters)
 │   ├── playerHistory.js          # Rolling in-memory player count history (max 120 points)
 │   ├── processManager.js         # Server process lifecycle + Socket.IO broadcast
@@ -276,6 +290,7 @@ azerothcore-dashboard/
 │       │   ├── ConfigPage.jsx
 │       │   ├── DBQueryPage.jsx
 │       │   ├── BugReportsPage.jsx # FeedbackUI bug report browser with detail modal
+│       │   ├── LagReportsPage.jsx # Lag report browser with stats, filters, and latency colouring
 │       │   ├── HomePage.jsx       # Overview: server cards, stat cards, memory/CPU bars, sparkline
 │       │   ├── MailPage.jsx       # Send in-game mail / items / money to characters
 │       │   ├── Layout.jsx         # Sidebar, nav badges, toast container
