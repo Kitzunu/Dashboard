@@ -20,6 +20,7 @@ const autobroadcastRoutes= require('./routes/autobroadcast');
 const accountRoutes      = require('./routes/accounts');
 const playerHistory      = require('./playerHistory');
 const { authenticateToken } = require('./middleware/auth');
+const ipAllowlist = require('./middleware/ipAllowlist');
 const processManager = require('./processManager');
 
 const app = express();
@@ -33,6 +34,7 @@ const io = new Server(httpServer, {
 
 app.use(cors({ origin: frontendUrl }));
 app.use(express.json());
+app.use(ipAllowlist);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/servers', authenticateToken, serverRoutes);
