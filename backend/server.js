@@ -107,6 +107,7 @@ setInterval(pollPlayerCount, 30000);
 latencyMonitor.start(30000);
 
 const PORT = process.env.PORT || 3001;
-httpServer.listen(PORT, '0.0.0.0', () => { // todo: make configurable?
-  console.log(`AzerothCore Dashboard backend running on http://0.0.0.0:${PORT}`);
+httpServer.listen(PORT, '0.0.0.0', () => {
+  console.log(`AzerothCore Dashboard backend listening on port ${PORT}`);
+  console.log(`  Frontend: ${frontendUrl}`);
 });
