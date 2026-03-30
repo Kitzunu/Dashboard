@@ -21,8 +21,8 @@ router.post('/', requireGMLevel(2), (req, res) => {
     return res.status(400).json({ error: "type must be 'announce' or 'notify'" });
 
   const cmd = type === 'announce'
-    ? `.server announce ${message.trim()}`
-    : `.server notify ${message.trim()}`;
+    ? `.announce ${message.trim()}`
+    : `.notify ${message.trim()}`;
 
   const result = processManager.sendCommand(cmd);
 
