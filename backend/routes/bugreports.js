@@ -6,7 +6,227 @@ const router = express.Router();
 
 const PAGE_SIZE = 25;
 
-const FEEDBACK_TYPES = { 0: 'Bug', 1: 'Suggestion', 2: 'Feedback' };
+const FEEDBACK_TYPES = { 0: 'Bug', 1: 'Suggestion', 2: 'Survey' };
+
+// ── Classification lookup tables ──────────────────────────────────────────────
+
+const SURVEY_SCHEMAS = {
+  Areas:  [
+    { label: 'Difficulty', opts: ['Easy', 'Manageable', 'Challenging', 'Hard'] },
+    { label: 'Reward',     opts: ['Awful', 'Bad', 'Good', 'Awesome'] },
+    { label: 'Fun',        opts: ['Not fun at all', 'Not very fun', 'Pretty fun', 'A lot of fun'] },
+  ],
+  Items:  [
+    { label: 'Difficulty', opts: ['Easy', 'Manageable', 'Challenging', 'Hard'] },
+    { label: 'Utility',    opts: ['Quite Useless', 'Somewhat Useless', 'Useful', 'Quite Useful'] },
+    { label: 'Appearance', opts: ['Ugly', 'Below Average', 'Above Average', 'Beautiful'] },
+  ],
+  Mobs:   [
+    { label: 'Difficulty', opts: ['Easy', 'Manageable', 'Challenging', 'Hard', 'N/A'] },
+    { label: 'Reward',     opts: ['Awful', 'Bad', 'Good', 'Awesome', 'N/A'] },
+    { label: 'Fun',        opts: ['Not fun at all', 'Not very fun', 'Pretty fun', 'A lot of fun'] },
+    { label: 'Appearance', opts: ['Ugly', 'Below Average', 'Above Average', 'Beautiful'] },
+  ],
+  Quests: [
+    { label: 'Clarity',    opts: ['Extremely vague', 'Somewhat vague', 'Fairly clear', 'Perfectly clear'] },
+    { label: 'Difficulty', opts: ['Easy', 'Manageable', 'Challenging', 'Hard'] },
+    { label: 'Reward',     opts: ['Awful', 'Bad', 'Good', 'Awesome'] },
+    { label: 'Fun',        opts: ['Not fun at all', 'Not very fun', 'Pretty fun', 'A lot of fun'] },
+  ],
+  Spells: [
+    { label: 'Power',           opts: ['Very Weak', 'Weak', 'Powerful', 'Very Powerful'] },
+    { label: 'Frequency',       opts: ['Rarely', 'Occasionally', 'Frequently', 'Whenever Possible'] },
+    { label: 'Appropriateness', opts: ['Very Inappropriate', 'Somewhat Inappropriate', 'Good Fit', 'Perfect Fit'] },
+    { label: 'Fun',             opts: ['Not fun at all', 'Not very fun', 'Pretty fun', 'A lot of fun'] },
+  ],
+};
+
+// `where` stores the summary.value from FEEDBACKUI_AREATABLE.
+// Value 1 = everywhere; 2–11 = Outland zones; 12–43 = Eastern Kingdoms zones;
+// 44–69 = Kalimdor zones; 70–72 = non-game locations; 73 = Isle of Quel'Danas;
+// 74–87 = Northrend zones.
+const WHERE_NAMED = {
+  '1':  'Everywhere in-game',
+  // Outland
+  '2':  'Outland — all zones',
+  '3':  'Blade\'s Edge Mountains',
+  '4':  'Hellfire Peninsula',
+  '5':  'Nagrand',
+  '6':  'Netherstorm',
+  '7':  'Shadowmoon Valley',
+  '8':  'Shattrath City',
+  '9':  'Terokkar Forest',
+  '10': 'Twisting Nether',
+  '11': 'Zangarmarsh',
+  // Eastern Kingdoms
+  '12': 'Eastern Kingdoms — all zones',
+  '13': 'Alterac Mountains',
+  '14': 'Alterac Valley',
+  '15': 'Arathi Basin',
+  '16': 'Arathi Highlands',
+  '17': 'Badlands',
+  '18': 'Blackrock Mountain',
+  '19': 'Blasted Lands',
+  '20': 'Burning Steppes',
+  '21': 'Deadwind Pass',
+  '22': 'Dun Morogh',
+  '23': 'Duskwood',
+  '24': 'Eastern Plaguelands',
+  '25': 'Elwynn Forest',
+  '26': 'Eversong Woods',
+  '27': 'Ghostlands',
+  '28': 'Hillsbrad Foothills',
+  '29': 'The Hinterlands',
+  '30': 'Ironforge',
+  '31': 'Loch Modan',
+  '32': 'Redridge Mountains',
+  '33': 'Searing Gorge',
+  '34': 'Silvermoon City',
+  '35': 'Silverpine Forest',
+  '36': 'Stormwind City',
+  '37': 'Stranglethorn Vale',
+  '38': 'Swamp of Sorrows',
+  '39': 'Tirisfal Glades',
+  '40': 'Undercity',
+  '41': 'Western Plaguelands',
+  '42': 'Westfall',
+  '43': 'Wetlands',
+  // Kalimdor
+  '44': 'Kalimdor — all zones',
+  '45': 'Ashenvale',
+  '46': 'Azshara',
+  '47': 'Azuremyst Isle',
+  '48': 'The Barrens',
+  '49': 'Bloodmyst Isle',
+  '50': 'Darkshore',
+  '51': 'Darnassus',
+  '52': 'Desolace',
+  '53': 'Durotar',
+  '54': 'Dustwallow Marsh',
+  '55': 'The Exodar',
+  '56': 'Felwood',
+  '57': 'Feralas',
+  '58': 'Moonglade',
+  '59': 'Mulgore',
+  '60': 'Orgrimmar',
+  '61': 'Silithus',
+  '62': 'Stonetalon Mountains',
+  '63': 'Tanaris',
+  '64': 'Teldrassil',
+  '65': 'Thunder Bluff',
+  '66': 'Thousand Needles',
+  '67': 'Un\'Goro Crater',
+  '68': 'Warsong Gulch',
+  '69': 'Winterspring',
+  // Non-game
+  '70': 'During installation',
+  '71': 'While downloading',
+  '72': 'While patching',
+  // Isle of Quel'Danas (Eastern Kingdoms)
+  '73': 'Isle of Quel\'Danas',
+  // Northrend
+  '74': 'Northrend — all zones',
+  '75': 'Borean Tundra',
+  '76': 'Dragonblight',
+  '77': 'Grizzly Hills',
+  '78': 'Howling Fjord',
+  '79': 'The Nexus',
+  '80': 'Utgarde Pinnacle',
+  '81': 'Crystalsong Forest',
+  '82': 'Dalaran',
+  '83': 'Icecrown',
+  '84': 'Sholazar Basin',
+  '85': 'The Storm Peaks',
+  '86': 'Wintergrasp',
+  '87': 'Zul\'Drak',
+};
+
+const WHO_LABELS = {
+  '1': 'My character',
+  '2': 'Party members',
+  '3': 'Raid members',
+  '4': 'An enemy player',
+  '5': 'A friendly player',
+  '6': 'An enemy creature',
+  '7': 'A friendly creature',
+};
+
+// Flat sequential index matching the Type tree top-to-bottom.
+// Values sourced directly from FEEDBACKUI_GENERICTYPETABLE and FEEDBACKUI_VOICECHATTABLE.
+// UI: 1-6, Graphical: 7-11, Functionality: 12-17, Stability: 18-22, Voice chat: 23-25.
+const TYPE_LABELS = {
+  // UI
+  '1':  'UI issue (general)',
+  '2':  'Item UI issue',
+  '3':  'Creature UI issue',
+  '4':  'Quest UI issue',
+  '5':  'Spell / talent UI issue',
+  '6':  'Tradeskill UI issue',
+  // Graphical
+  '7':  'Graphical issue (general)',
+  '8':  'Item graphics issue',
+  '9':  'Creature graphics issue',
+  '10': 'Spell / talent graphics issue',
+  '11': 'Environmental graphics issue',
+  // Functionality
+  '12': 'Functionality issue (general)',
+  '13': 'Item functionality issue',
+  '14': 'Creature functionality issue',
+  '15': 'Quest functionality issue',
+  '16': 'Spell / talent functionality issue',
+  '17': 'Tradeskill functionality issue',
+  // Stability
+  '18': 'Stability issue (general)',
+  '19': 'Stability — WoW crash',
+  '20': 'Stability — WoW stops responding',
+  '21': 'Stability — computer stops responding',
+  '22': 'Stability — lag',
+  // Voice chat
+  '23': 'Voice chat — USB headset',
+  '24': 'Voice chat — analog headset',
+  '25': 'Voice chat — hardwired microphone',
+};
+
+const WHEN_LABELS = {
+  '1': 'Only happened once',
+  '2': 'Occurs rarely',
+  '3': 'Occurs occasionally',
+  '4': 'Occurs all the time',
+};
+
+function decodeSurveyRatings(t) {
+  const schema = SURVEY_SCHEMAS[t.surveytype];
+  if (!schema) return null;
+  const cats = [t.category1, t.category2, t.category3, t.category4];
+  return schema.map((dim, i) => {
+    const n = parseInt(cats[i], 10);
+    const label = (n >= 1 && n <= dim.opts.length) ? dim.opts[n - 1] : null;
+    // N/A is a sentinel, not a real rating step — exclude any trailing N/A
+    // entries from the pip count so stars always reflect the true rating range.
+    const ratingMax = dim.opts.reduce(
+      (acc, opt, idx) => (opt !== 'N/A' ? idx + 1 : acc), 0
+    );
+    return { label: dim.label, value: n || 0, text: label, max: ratingMax };
+  });
+}
+
+function decodeWhere(val) {
+  if (!val) return null;
+  const s = String(val);
+  return WHERE_NAMED[s] || `Unknown location (where=${s})`;
+}
+
+function decodeWho(val) {
+  return val ? (WHO_LABELS[String(val)] || `Code ${val}`) : null;
+}
+
+function decodeType(val) {
+  return val ? (TYPE_LABELS[String(val)] || `Code ${val}`) : null;
+}
+
+function decodeWhen(val) {
+  return val ? (WHEN_LABELS[String(val)] || `Code ${val}`) : null;
+}
 
 // Safely parse the JSON `type` column — it is valid JSON but may be malformed on
 // some older rows.
@@ -69,6 +289,21 @@ function parseContent(raw) {
 
 // Extract the most useful summary fields from a parsed type object
 function summarise(t, c) {
+  const feedbackTypeNum = Number(t.feedbacktype ?? -1);
+
+  // Survey-specific: decode category ratings into labelled objects
+  const surveyRatings = feedbackTypeNum === 2 ? decodeSurveyRatings(t) : null;
+
+  // Bug/Suggestion-specific: decode where/who/type/when
+  const classification = (feedbackTypeNum === 0 || feedbackTypeNum === 1) ? {
+    where:    decodeWhere(t.where),
+    who:      decodeWho(t.who),
+    type:     decodeType(t.type),
+    when:     decodeWhen(t.when),
+    subjectId:   t.reportSubjectId   || null,
+    subjectType: t.reportSubjectType || null,
+  } : null;
+
   return {
     character:    t.name      || c.Character || '—',
     charDesc:     t.character || '—',
@@ -80,13 +315,16 @@ function summarise(t, c) {
     position:     c.Position  || t.playerPosition || '—',
     target:       c.Target    || t.surveyname || t.objectname || '—',
     targetGUID:   t.targetGUID || '—',
-    feedbackType: FEEDBACK_TYPES[t.feedbacktype] ?? `Type ${t.feedbacktype ?? '?'}`,
-    feedbackTypeNum: Number(t.feedbacktype ?? -1),
+    feedbackType: FEEDBACK_TYPES[feedbackTypeNum] ?? `Type ${feedbackTypeNum}`,
+    feedbackTypeNum,
     reportDate:   t.surveysubmitted || t.reportDate || t.reportCalendar || '—',
     reportSubject: t.surveyname || t.objectname || '—',
     reportSubjectType: t.reportSubjectType || t.reportSubjectSubType || '—',
     surveyType:   t.surveytype || '—',
     userText:     (t.text && !t.text.startsWith('Please')) ? t.text : '',
+    // decoded classification data
+    surveyRatings,
+    classification,
     // system info from content
     computer:     c.Computer  || '—',
     processors:   c.Processors || '—',
@@ -170,7 +408,12 @@ router.get('/:id', requireGMLevel(1), async (req, res) => {
     const c = parseContent(row.content);
     const s = summarise(t, c);
 
-    res.json({ id: row.id, ...s });
+    res.json({
+      id: row.id,
+      ...s,
+      surveyRatings:  s.surveyRatings,
+      classification: s.classification,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

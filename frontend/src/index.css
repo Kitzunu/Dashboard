@@ -2118,7 +2118,60 @@ code {
   line-height: 1.5;
 }
 
+/* Survey rating rows */
+.bug-report-ratings {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.bug-report-rating-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+
+.bug-report-rating-row:last-child {
+  border-bottom: none;
+}
+
+.bug-report-rating-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bug-report-stars {
+  display: flex;
+  gap: 3px;
+}
+
+.star {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.star-on  { background: var(--gold); }
+.star-off { background: var(--surface2); border: 1px solid var(--border); }
+
+.bug-report-rating-text {
+  font-size: 13px;
+  color: var(--text);
+  text-align: right;
+}
+
 /* ── Extra badge variants ─────────────────────────────────────── */
+.badge-dim {
+  background: rgba(122,133,160,0.12);
+  color: var(--text-dim);
+  border: 1px solid rgba(122,133,160,0.2);
+}
+
 .badge-danger {
   background: rgba(224,92,92,0.12);
   color: var(--red);

@@ -4,18 +4,39 @@ import { api } from '../api.js';
 import { toast } from '../toast.js';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const FEEDBACK_LABELS = { 0: 'Bug', 1: 'Suggestion', 2: 'Feedback' };
+const FEEDBACK_LABELS = { 0: 'Bug', 1: 'Suggestion', 2: 'Survey' };
 const FILTER_OPTIONS = [
   { value: 'all', label: 'All Types' },
   { value: '0',   label: 'Bugs' },
   { value: '1',   label: 'Suggestions' },
-  { value: '2',   label: 'Feedback' },
+  { value: '2',   label: 'Surveys' },
 ];
 
 function feedbackBadgeClass(num) {
   if (num === 0) return 'badge badge-danger';
   if (num === 1) return 'badge badge-info';
+  if (num === 2) return 'badge badge-gold';
   return 'badge badge-dim';
+}
+
+// ── Survey rating row (star pips + label) ────────────────────────────────────
+function SurveyRatingRow({ label, value, text, max }) {
+  const isNA = !text || text === 'N/A';
+  return (
+    <div className="bug-report-rating-row">
+      <span className="bug-report-field-label">{label}</span>
+      <div className="bug-report-rating-right">
+        {!isNA && (
+          <span className="bug-report-stars">
+            {Array.from({ length: max }, (_, i) => (
+              <span key={i} className={i < value ? 'star star-on' : 'star star-off'} />
+            ))}
+          </span>
+        )}
+        <span className={`bug-report-rating-text${isNA ? ' td-muted' : ''}`}>{text || 'N/A'}</span>
+      </div>
+    </div>
+  );
 }
 
 // ── Detail modal ──────────────────────────────────────────────────────────────
@@ -106,16 +127,47 @@ function ReportDetailModal({ id, onClose, canDelete, onDeleted }) {
               </div>
             )}
 
-            {/* Subject / target */}
-            {(report.reportSubject !== '—' || report.target !== '—') && (
+            {/* Survey ratings */}
+            {report.surveyRatings && report.surveyRatings.length > 0 && (
               <div className="bug-report-section">
-                <div className="bug-report-section-title">Subject</div>
+                <div className="bug-report-section-title">
+                  Survey Ratings
+                  {report.surveyType && report.surveyType !== '—' && (
+                    <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, marginLeft: 6, color: 'var(--text-dim)' }}>
+                      · {report.surveyType}
+                    </span>
+                  )}
+                </div>
+                <div className="bug-report-ratings">
+                  {report.surveyRatings.map((r) => (
+                    <SurveyRatingRow key={r.label} {...r} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Bug / Suggestion classification */}
+            {report.classification && (
+              <div className="bug-report-section">
+                <div className="bug-report-section-title">Classification</div>
                 <div className="bug-report-grid">
-                  <Field label="Subject"      value={report.reportSubject} />
-                  <Field label="Subject Type" value={report.reportSubjectType} />
-                  <Field label="Target"       value={report.target} />
-                  {report.targetGUID !== '—' && (
-                    <Field label="Target GUID" value={report.targetGUID} mono />
+                  {report.classification.subjectType && (
+                    <Field label="Subject Type" value={report.classification.subjectType} />
+                  )}
+                  {report.classification.subjectId && (
+                    <Field label="Subject ID" value={report.classification.subjectId} mono />
+                  )}
+                  {report.classification.where && (
+                    <Field label="Where" value={report.classification.where} />
+                  )}
+                  {report.classification.who && (
+                    <Field label="Who" value={report.classification.who} />
+                  )}
+                  {report.classification.type && (
+                    <Field label="Type" value={report.classification.type} />
+                  )}
+                  {report.classification.when && (
+                    <Field label="When" value={report.classification.when} />
                   )}
                 </div>
               </div>
