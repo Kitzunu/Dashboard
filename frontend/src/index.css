@@ -2097,6 +2097,14 @@ code {
   border-bottom: 1px solid var(--border);
 }
 
+.bug-report-admin-fields { display: flex; flex-direction: column; gap: 10px; }
+.bug-report-admin-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.bug-report-admin-row .bug-report-field-label { min-width: 72px; flex-shrink: 0; }
+
 .bug-report-user-text {
   background: var(--surface2);
   border: 1px solid var(--border);

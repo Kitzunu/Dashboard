@@ -345,22 +345,48 @@ function summarise(t, c) {
   };
 }
 
-// GET /api/bugreports?page=1&feedbackType=all
+// GET /api/bugreports?page=1&feedbackType=all&state=1&search=term
 router.get('/', requireGMLevel(1), async (req, res) => {
   const page   = Math.max(1, parseInt(req.query.page, 10) || 1);
   const filter = req.query.feedbackType; // '0', '1', '2' or omitted for all
+  const state  = req.query.state;        // '0'=closed, '1'=open, omitted=all
+  const search = (req.query.search || '').trim();
   const offset = (page - 1) * PAGE_SIZE;
 
   try {
-    let where = '';
+    const conditions = [];
     const params = [];
 
     if (filter !== undefined && filter !== 'all' && filter !== '') {
-      // feedbacktype is inside the JSON — use a JSON path contains check
-      // We match on the literal string to avoid a full JSON parse in SQL
-      where = `WHERE type LIKE ?`;
+      conditions.push(`type LIKE ?`);
       params.push(`%"feedbacktype" : "${filter}"%`);
     }
+
+    if (state !== undefined && state !== 'all' && state !== '') {
+      conditions.push(`state = ?`);
+      params.push(parseInt(state, 10));
+    }
+
+    if (search) {
+      // Split into words so "hello world" matches rows containing either word.
+      // Each word is matched against the extracted character name, zone, subject
+      // fields (via JSON_EXTRACT) and the assignee SQL column.
+      const words = search.split(/\s+/).filter(Boolean);
+      const wordClauses = words.map(() => `(
+        LOWER(JSON_UNQUOTE(JSON_EXTRACT(type, '$.name')))       LIKE ? OR
+        LOWER(JSON_UNQUOTE(JSON_EXTRACT(type, '$.zone')))       LIKE ? OR
+        LOWER(JSON_UNQUOTE(JSON_EXTRACT(type, '$.surveyname'))) LIKE ? OR
+        LOWER(JSON_UNQUOTE(JSON_EXTRACT(type, '$.objectname'))) LIKE ? OR
+        LOWER(assignee) LIKE ?
+      )`);
+      conditions.push(`(${wordClauses.join(' OR ')})`);
+      for (const word of words) {
+        const like = `%${word.toLowerCase()}%`;
+        params.push(like, like, like, like, like);
+      }
+    }
+
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const [[{ total }]] = await charPool.query(
       `SELECT COUNT(*) AS total FROM bugreport ${where}`,
@@ -368,7 +394,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
     );
 
     const [rows] = await charPool.query(
-      `SELECT id, type, content FROM bugreport ${where} ORDER BY id DESC LIMIT ? OFFSET ?`,
+      `SELECT id, type, content, state, assignee, comment FROM bugreport ${where} ORDER BY id DESC LIMIT ? OFFSET ?`,
       [...params, PAGE_SIZE, offset]
     );
 
@@ -377,17 +403,16 @@ router.get('/', requireGMLevel(1), async (req, res) => {
       const c = parseContent(row.content);
       const s = summarise(t, c);
       return {
-        id:           row.id,
-        character:    s.character,
-        charDesc:     s.charDesc,
-        account:      s.account,
-        realm:        s.realm,
-        zone:         s.zone,
-        reportDate:   s.reportDate,
-        reportSubject: s.reportSubject,
-        feedbackType: s.feedbackType,
+        id:              row.id,
+        state:           row.state ?? 1,
+        assignee:        row.assignee || null,
+        comment:         row.comment  || null,
+        character:       s.character,
+        zone:            s.zone,
+        reportDate:      s.reportDate,
+        reportSubject:   s.reportSubject,
+        feedbackType:    s.feedbackType,
         feedbackTypeNum: s.feedbackTypeNum,
-        surveyType:   s.surveyType,
       };
     });
 
@@ -401,7 +426,9 @@ router.get('/', requireGMLevel(1), async (req, res) => {
 router.get('/:id', requireGMLevel(1), async (req, res) => {
   const id = parseInt(req.params.id, 10);
   try {
-    const [[row]] = await charPool.query('SELECT id, type, content FROM bugreport WHERE id = ?', [id]);
+    const [[row]] = await charPool.query(
+      'SELECT id, type, content, state, assignee, comment FROM bugreport WHERE id = ?', [id]
+    );
     if (!row) return res.status(404).json({ error: 'Report not found' });
 
     const t = parseType(row.type);
@@ -409,7 +436,10 @@ router.get('/:id', requireGMLevel(1), async (req, res) => {
     const s = summarise(t, c);
 
     res.json({
-      id: row.id,
+      id:       row.id,
+      state:    row.state ?? 1,
+      assignee: row.assignee || null,
+      comment:  row.comment  || null,
       ...s,
       surveyRatings:  s.surveyRatings,
       classification: s.classification,
@@ -419,11 +449,22 @@ router.get('/:id', requireGMLevel(1), async (req, res) => {
   }
 });
 
-// DELETE /api/bugreports/:id  — dismiss a report
-router.delete('/:id', requireGMLevel(2), async (req, res) => {
+// PATCH /api/bugreports/:id  — update state, assignee, and/or comment
+router.patch('/:id', requireGMLevel(2), async (req, res) => {
   const id = parseInt(req.params.id, 10);
+  const { state, assignee, comment } = req.body;
+  const updates = [];
+  const params  = [];
+
+  if (state    !== undefined) { updates.push('state = ?');    params.push(state); }
+  if (assignee !== undefined) { updates.push('assignee = ?'); params.push(assignee || null); }
+  if (comment  !== undefined) { updates.push('comment = ?');  params.push(comment  || null); }
+
+  if (updates.length === 0) return res.status(400).json({ error: 'Nothing to update' });
+  params.push(id);
+
   try {
-    await charPool.query('DELETE FROM bugreport WHERE id = ?', [id]);
+    await charPool.query(`UPDATE bugreport SET ${updates.join(', ')} WHERE id = ?`, params);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

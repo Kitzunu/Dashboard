@@ -23,7 +23,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 
 **Reports**
 - **Lag Reports** — Browse player-submitted lag events; filter by type and minimum latency; aggregate stats with top reporters and top maps; dismiss or clear all
-- **Bug Reports** — Browse FeedbackUI bug reports, suggestions, and feedback; detail modal with system info, addon data, aura list, and location; dismiss reports
+- **Bug Reports** — Browse FeedbackUI bug reports, suggestions, and feedback; separated into Open/Closed tabs with type filter; assignee and comment fields; close/reopen per report
 
 **Other**
 - **IP Allowlist** — Backend access restricted to a configurable list of IPs (default: localhost only)
@@ -258,8 +258,13 @@ npm run start:frontend  # Vite frontend on port 5173
 - Colour-coded latency badges; **Dismiss** per row (GM 2+); **Clear All** (Administrator)
 
 ### Bug Reports
-- Paginated table (25 per page) of FeedbackUI bug reports, suggestions, and feedback
-- Filter by type; detail modal with description, reporter info, location, system specs, aura list, and addon data
+- Paginated table (25 per page) separated into **Open** and **Closed** tabs; type filter (All / Bugs / Suggestions / Surveys)
+- **Search** by character name, zone, subject, assignee, or any field in the report — filters server-side across all pages
+- **Sortable columns** — click any column header to sort ascending/descending on the current page
+- Table shows assignee; inline **Close / Reopen** button per row (GM 2+)
+- Detail modal shows description, reporter info, location, system specs, aura list, addon data, and state badge
+- Editable **Assignee** and **Comment** fields in the detail modal (GM 2+)
+- **Close / Reopen** toggle in the modal footer (GM 2+)
 - **Dismiss** removes the report from the database (GM 2+)
 
 ### Mail Server
