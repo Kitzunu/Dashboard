@@ -264,7 +264,8 @@ npm run start:frontend  # Vite frontend on port 5173
 
 ### Mail Server
 - Template list with ID, active status, subject, per-faction money, item count, condition count, and recipient count
-- Create/Edit modal with four tabs: **General** (subject, body, Alliance/Horde money, active toggle), **Items** (per-faction item attachments), **Conditions** (eligibility rules: Level, PlayTime, Quest, Achievement, Reputation, Faction, Race, Class, AccountFlags), **Recipients** (characters who have already received the template)
+- Create/Edit modal with four tabs: **General** (subject, body, Alliance/Horde money, active toggle), **Items** (per-faction item attachments), **Conditions** (eligibility rules: Level, PlayTime, Quest, Achievement, Reputation, Faction, Race, Class, AccountFlags), **Recipients** (characters who have already received the template — edit only)
+- Items and conditions can be added before saving when creating a new template; they are batch-created alongside the template on save
 - Delete with confirmation (cascades to items, conditions, and recipients)
 
 ## Project Structure

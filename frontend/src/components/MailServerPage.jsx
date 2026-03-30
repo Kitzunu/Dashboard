@@ -139,6 +139,7 @@ function GeneralTab({ form, onChange, canEdit }) {
 
 // ── Items tab ─────────────────────────────────────────────────────────────────
 function ItemsTab({ templateId, items, onItemAdded, onItemDeleted, canEdit }) {
+  const isNew = templateId == null;
   const [faction,   setFaction]   = useState('Alliance');
   const [itemId,    setItemId]    = useState('');
   const [itemCount, setItemCount] = useState(1);
@@ -146,10 +147,17 @@ function ItemsTab({ templateId, items, onItemAdded, onItemDeleted, canEdit }) {
 
   const handleAdd = async () => {
     if (!itemId || parseInt(itemId) <= 0) { toast('Enter a valid item ID', 'error'); return; }
+    const entry = { faction, item: parseInt(itemId), itemCount: parseInt(itemCount) || 1 };
+    if (isNew) {
+      onItemAdded({ _key: Date.now(), ...entry });
+      setItemId('');
+      setItemCount(1);
+      return;
+    }
     setAdding(true);
     try {
-      const res = await api.addMailServerItem(templateId, { faction, item: parseInt(itemId), itemCount: parseInt(itemCount) || 1 });
-      onItemAdded({ id: res.id, templateID: templateId, faction, item: parseInt(itemId), itemCount: parseInt(itemCount) || 1 });
+      const res = await api.addMailServerItem(templateId, entry);
+      onItemAdded({ id: res.id, templateID: templateId, ...entry });
       setItemId('');
       setItemCount(1);
       toast('Item added');
@@ -161,6 +169,7 @@ function ItemsTab({ templateId, items, onItemAdded, onItemDeleted, canEdit }) {
   };
 
   const handleDelete = async (itemEntry) => {
+    if (isNew) { onItemDeleted(itemEntry._key); return; }
     try {
       await api.deleteMailServerItem(templateId, itemEntry.id);
       onItemDeleted(itemEntry.id);
@@ -186,7 +195,7 @@ function ItemsTab({ templateId, items, onItemAdded, onItemDeleted, canEdit }) {
           </thead>
           <tbody>
             {items.map((item) => (
-              <tr key={item.id} className="data-row">
+              <tr key={item.id ?? item._key} className="data-row">
                 <td>
                   <span className={`badge ${item.faction === 'Alliance' ? 'badge-info' : 'badge-danger'}`}>
                     {item.faction}
@@ -243,6 +252,7 @@ function ItemsTab({ templateId, items, onItemAdded, onItemDeleted, canEdit }) {
 
 // ── Conditions tab ────────────────────────────────────────────────────────────
 function ConditionsTab({ templateId, conditions, onConditionAdded, onConditionDeleted, canEdit }) {
+  const isNew = templateId == null;
   const [condType,  setCondType]  = useState('Level');
   const [condValue, setCondValue] = useState(0);
   const [condState, setCondState] = useState(0);
@@ -251,14 +261,21 @@ function ConditionsTab({ templateId, conditions, onConditionAdded, onConditionDe
   const hint = CONDITION_HINTS[condType] || { valueLabel: 'Value', stateLabel: 'State' };
 
   const handleAdd = async () => {
+    const entry = {
+      conditionType: condType,
+      conditionValue: parseInt(condValue) || 0,
+      conditionState: parseInt(condState) || 0,
+    };
+    if (isNew) {
+      onConditionAdded({ _key: Date.now(), ...entry });
+      setCondValue(0);
+      setCondState(0);
+      return;
+    }
     setAdding(true);
     try {
-      const res = await api.addMailServerCondition(templateId, {
-        conditionType: condType,
-        conditionValue: parseInt(condValue) || 0,
-        conditionState: parseInt(condState) || 0,
-      });
-      onConditionAdded({ id: res.id, templateID: templateId, conditionType: condType, conditionValue: parseInt(condValue) || 0, conditionState: parseInt(condState) || 0 });
+      const res = await api.addMailServerCondition(templateId, entry);
+      onConditionAdded({ id: res.id, templateID: templateId, ...entry });
       setCondValue(0);
       setCondState(0);
       toast('Condition added');
@@ -270,6 +287,7 @@ function ConditionsTab({ templateId, conditions, onConditionAdded, onConditionDe
   };
 
   const handleDelete = async (cond) => {
+    if (isNew) { onConditionDeleted(cond._key); return; }
     try {
       await api.deleteMailServerCondition(templateId, cond.id);
       onConditionDeleted(cond.id);
@@ -299,7 +317,7 @@ function ConditionsTab({ templateId, conditions, onConditionAdded, onConditionDe
             {conditions.map((cond) => {
               const h = CONDITION_HINTS[cond.conditionType] || {};
               return (
-                <tr key={cond.id} className="data-row">
+                <tr key={cond.id ?? cond._key} className="data-row">
                   <td><span className="badge badge-dim">{cond.conditionType}</span></td>
                   <td title={h.valueLabel}>{cond.conditionValue}</td>
                   <td title={h.stateLabel}>{cond.conditionState}</td>
@@ -435,8 +453,24 @@ function TemplateModal({ templateId, onClose, onSaved, canEdit }) {
     try {
       if (isNew) {
         const res = await api.createMailServerTemplate(form);
+        const newId = res.id;
+        // batch-create any items and conditions staged before save
+        let itemCount = 0;
+        for (const item of items) {
+          try {
+            await api.addMailServerItem(newId, { faction: item.faction, item: item.item, itemCount: item.itemCount });
+            itemCount++;
+          } catch {}
+        }
+        let conditionCount = 0;
+        for (const cond of conditions) {
+          try {
+            await api.addMailServerCondition(newId, { conditionType: cond.conditionType, conditionValue: cond.conditionValue, conditionState: cond.conditionState });
+            conditionCount++;
+          } catch {}
+        }
         toast('Template created');
-        onSaved({ id: res.id, ...form, itemCount: 0, conditionCount: 0, recipientCount: 0 });
+        onSaved({ id: newId, ...form, itemCount, conditionCount, recipientCount: 0 });
       } else {
         await api.updateMailServerTemplate(templateId, form);
         toast('Template saved');
@@ -452,11 +486,9 @@ function TemplateModal({ templateId, onClose, onSaved, canEdit }) {
 
   const tabs = [
     { id: 'general',    label: 'General' },
-    ...(!isNew ? [
-      { id: 'items',      label: `Items (${items.length})` },
-      { id: 'conditions', label: `Conditions (${conditions.length})` },
-      { id: 'recipients', label: 'Recipients' },
-    ] : []),
+    { id: 'items',      label: `Items (${items.length})` },
+    { id: 'conditions', label: `Conditions (${conditions.length})` },
+    ...(!isNew ? [{ id: 'recipients', label: 'Recipients' }] : []),
   ];
 
   return (
@@ -484,7 +516,7 @@ function TemplateModal({ templateId, onClose, onSaved, canEdit }) {
           <button className="btn btn-ghost btn-sm" onClick={onClose}>
             {canEdit ? 'Cancel' : 'Close'}
           </button>
-          {canEdit && (tab === 'general') && (
+          {canEdit && (isNew || tab === 'general') && (
             <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={saving}>
               {saving ? 'Saving…' : isNew ? 'Create Template' : 'Save Changes'}
             </button>
