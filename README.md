@@ -4,21 +4,28 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 
 ## Features
 
+**Server**
 - **Overview** — Server status cards with live uptime timers, online player/ticket/ban counts, system memory and CPU bars with configurable alert thresholds, browser notifications with audio cues, worldserver TCP latency stats (mean/median/P95/P99/max over a rolling 60-minute window), and a player count sparkline
 - **Console** — Real-time worldserver and authserver log streaming via Socket.IO with full ANSI colour rendering, GM command input, persistent per-session command history, and auto-scroll toggle
+- **Servers** — Start, stop, scheduled restart, auto-restart toggle, and MOTD editor for worldserver and authserver
+- **Autobroadcast** — Manage the in-game autobroadcast rotation: add, edit, delete, and weight messages
+- **Mail Server** — Full CRUD editor for the `mail_server_template` system with subject, body, per-faction money and items, eligibility conditions, and a recipients list
+- **DB Query** — Run SQL queries against the auth, world, or characters databases
+- **Config** — Edit worldserver.conf, authserver.conf, and any module `.conf` files directly in the browser with line numbers, a find bar, unsaved-change indicators, and automatic `.bak` backups
+
+**Game**
 - **Players** — Live online player list with race, class, level, zone, and account; filter by name or account; kick with optional reason; ban by character, account, or IP
 - **Tickets** — View, respond to, comment on, assign, escalate, and close GM tickets; sidebar badge shows open ticket count
 - **Bans** — Three-tab view of active account, character, and IP bans; issue new bans and unban with confirmation
-- **Announcements** — Broadcast server-wide messages (chat announce or on-screen notify) with quick-fill templates and session history
+- **Announce** — Broadcast server-wide messages (chat announce or on-screen notify) with quick-fill templates and session history
 - **Accounts** — Search by username, email, or IP; view full account detail and characters; set GM level, expansion, email, lock/unlock, reset password, mute/unmute characters, create accounts, and delete accounts
-- **Autobroadcast** — Manage the in-game autobroadcast rotation: add, edit, delete, and weight messages
 - **Send Mail** — Send in-game mail, items (up to 12), or money (gold/silver/copper) to any character
-- **Mail Server** — Full CRUD editor for the `mail_server_template` system with subject, body, per-faction money and items, eligibility conditions, and a recipients list
+
+**Reports**
 - **Lag Reports** — Browse player-submitted lag events; filter by type and minimum latency; aggregate stats with top reporters and top maps; dismiss or clear all
 - **Bug Reports** — Browse FeedbackUI bug reports, suggestions, and feedback; detail modal with system info, addon data, aura list, and location; dismiss reports
-- **Servers** — Start, stop, scheduled restart, auto-restart toggle, and MOTD editor for worldserver and authserver
-- **DB Query** — Run SQL queries against the auth, world, or characters databases
-- **Config** — Edit worldserver.conf, authserver.conf, and any module `.conf` files directly in the browser with line numbers, a find bar, unsaved-change indicators, and automatic `.bak` backups
+
+**Other**
 - **IP Allowlist** — Backend access restricted to a configurable list of IPs (default: localhost only)
 - **Role-based access** — GM level controls what each user can see and do
 

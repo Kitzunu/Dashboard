@@ -702,6 +702,33 @@ kbd {
   color: var(--text-dim);
 }
 
+/* ── Nav groups ──────────────────────────────────────────────── */
+.nav-group { margin-bottom: 4px; }
+.nav-group-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 12px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+}
+.nav-group-label:hover { color: var(--text); }
+.nav-group-chevron {
+  font-size: 14px;
+  line-height: 1;
+  transform: rotate(90deg);
+  transition: transform 0.15s ease;
+}
+.nav-group-chevron.collapsed { transform: rotate(0deg); }
+
 /* ── Nav badge ───────────────────────────────────────────────── */
 .nav-item { display: flex; align-items: center; justify-content: space-between; }
 .nav-label { flex: 1; }

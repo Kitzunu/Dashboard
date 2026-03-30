@@ -25,27 +25,43 @@ const GM_LABELS = {
   4: 'Console',
 };
 
-const NAV = [
-  { id: 'home',          label: '📊 Overview',      minLevel: 1 },
-  { id: 'console',       label: '🖥 Console',        minLevel: 1 },
-  { id: 'players',       label: '👥 Players',        minLevel: 1 },
-  { id: 'tickets',       label: '🎫 Tickets',        minLevel: 1 },
-  { id: 'bans',          label: '🔨 Bans',           minLevel: 2 },
-  { id: 'announce',      label: '📢 Announce',       minLevel: 2 },
-  { id: 'accounts',      label: '👤 Accounts',       minLevel: 2 },
-  { id: 'autobroadcast', label: '📣 Autobroadcast',  minLevel: 2 },
-  { id: 'mail',          label: '✉ Send Mail',        minLevel: 2 },
-  { id: 'bugreports',    label: '🐛 Bug Reports',     minLevel: 1 },
-  { id: 'lagreports',    label: '📶 Lag Reports',     minLevel: 1 },
-  { id: 'mailserver',    label: '📬 Mail Server',     minLevel: 3 },
-  { id: 'servers',       label: '⚙ Servers',         minLevel: 3 },
-  { id: 'dbquery',       label: '🗄 DB Query',        minLevel: 3 },
-  { id: 'config',        label: '📄 Config',          minLevel: 3 },
+const NAV_GROUPS = [
+  {
+    group: 'Server',
+    items: [
+      { id: 'home',          label: '📊 Overview',     minLevel: 1 },
+      { id: 'console',       label: '🖥 Console',       minLevel: 1 },
+      { id: 'servers',       label: '⚙ Servers',        minLevel: 3 },
+      { id: 'autobroadcast', label: '📣 Autobroadcast', minLevel: 2 },
+      { id: 'mailserver',    label: '📬 Mail Server',   minLevel: 3 },
+      { id: 'dbquery',       label: '🗄 DB Query',       minLevel: 3 },
+      { id: 'config',        label: '📄 Config',         minLevel: 3 },
+    ],
+  },
+  {
+    group: 'Game',
+    items: [
+      { id: 'players',  label: '👥 Players',  minLevel: 1 },
+      { id: 'tickets',  label: '🎫 Tickets',  minLevel: 1 },
+      { id: 'bans',     label: '🔨 Bans',     minLevel: 2 },
+      { id: 'announce', label: '📢 Announce', minLevel: 2 },
+      { id: 'accounts', label: '👤 Accounts', minLevel: 2 },
+      { id: 'mail',     label: '✉ Send Mail', minLevel: 2 },
+    ],
+  },
+  {
+    group: 'Reports',
+    items: [
+      { id: 'lagreports', label: '📶 Lag Reports', minLevel: 1 },
+      { id: 'bugreports', label: '🐛 Bug Reports', minLevel: 1 },
+    ],
+  },
 ];
 
 export default function Layout() {
   const { auth, logout } = useAuth();
   const [page, setPage] = useState('home');
+  const [collapsedGroups, setCollapsedGroups] = useState({});
   const [socket, setSocket] = useState(null);
   const [serverStatus, setServerStatus] = useState({
     worldserver: { running: false },
@@ -115,8 +131,6 @@ export default function Layout() {
     return () => window.removeEventListener('toast', handler);
   }, []);
 
-  const navItems = NAV.filter((item) => auth.gmlevel >= item.minLevel);
-
   return (
     <div className="layout">
       <aside className="sidebar">
@@ -131,25 +145,39 @@ export default function Layout() {
         </div>
 
         <nav className="sidebar-nav">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              className={`nav-item ${page === item.id ? 'active' : ''}`}
-              onClick={() => setPage(item.id)}
-            >
-              <span className="nav-label">{item.label}</span>
-              {item.id === 'players' && playerCount != null && (
-                <span className={`nav-badge ${playerCount > 0 ? 'nav-badge-active' : ''}`}>
-                  {playerCount}
-                </span>
-              )}
-              {item.id === 'tickets' && ticketCount != null && (
-                <span className={`nav-badge ${ticketCount > 0 ? 'nav-badge-warn' : ''}`}>
-                  {ticketCount}
-                </span>
-              )}
-            </button>
-          ))}
+          {NAV_GROUPS.map(({ group, items }) => {
+            const visible = items.filter((item) => auth.gmlevel >= item.minLevel);
+            if (visible.length === 0) return null;
+            const collapsed = !!collapsedGroups[group];
+            const toggle = () => setCollapsedGroups((prev) => ({ ...prev, [group]: !prev[group] }));
+            return (
+              <div key={group} className="nav-group">
+                <button className="nav-group-label" onClick={toggle}>
+                  <span>{group}</span>
+                  <span className={`nav-group-chevron ${collapsed ? 'collapsed' : ''}`}>›</span>
+                </button>
+                {!collapsed && visible.map((item) => (
+                  <button
+                    key={item.id}
+                    className={`nav-item ${page === item.id ? 'active' : ''}`}
+                    onClick={() => setPage(item.id)}
+                  >
+                    <span className="nav-label">{item.label}</span>
+                    {item.id === 'players' && playerCount != null && (
+                      <span className={`nav-badge ${playerCount > 0 ? 'nav-badge-active' : ''}`}>
+                        {playerCount}
+                      </span>
+                    )}
+                    {item.id === 'tickets' && ticketCount != null && (
+                      <span className={`nav-badge ${ticketCount > 0 ? 'nav-badge-warn' : ''}`}>
+                        {ticketCount}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            );
+          })}
         </nav>
 
         <div className="sidebar-footer">
