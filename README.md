@@ -214,7 +214,7 @@ npm run start:frontend  # Vite frontend on port 5173
 - Session history table of all sent announcements
 
 ### Accounts
-- Search by username, email, or IP (up to 50 results)
+- Loads all accounts on page open with pagination (50 per page); search by username, email, or IP with ← Prev / Next → page controls
 - Account detail view: ID, email, join date, last login, last IP, GM level, expansion, status, and character list with playtime
 - **GM Level** change (Administrator), **Expansion** (Administrator), **Email** (Administrator)
 - **Ban** with duration presets (1h / 1d / 7d / 30d / permanent) and custom duration

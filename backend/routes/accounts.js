@@ -5,11 +5,20 @@ const processManager = require('../processManager');
 
 const router = express.Router();
 
-// GET /api/accounts?q=searchterm  — search by username, email, or IP (max 50)
+// GET /api/accounts?q=searchterm&page=1  — search by username, email, or IP (50 per page)
+const PAGE_SIZE = 50;
 router.get('/', requireGMLevel(2), async (req, res) => {
-  const q = (req.query.q || '').trim();
+  const q    = (req.query.q || '').trim();
+  const page = Math.max(1, parseInt(req.query.page) || 1);
   const like = `%${q}%`;
+  const offset = (page - 1) * PAGE_SIZE;
   try {
+    const [[{ total }]] = await authPool.query(
+      `SELECT COUNT(DISTINCT a.id) AS total
+       FROM account a
+       WHERE a.username LIKE ? OR a.email LIKE ? OR a.last_ip LIKE ?`,
+      [like, like, like]
+    );
     const [rows] = await authPool.query(
       `SELECT a.id, a.username, a.email, a.joindate, a.last_ip,
               a.last_login, a.online, a.locked, a.expansion,
@@ -19,10 +28,10 @@ router.get('/', requireGMLevel(2), async (req, res) => {
        WHERE a.username LIKE ? OR a.email LIKE ? OR a.last_ip LIKE ?
        GROUP BY a.id
        ORDER BY a.username
-       LIMIT 50`,
-      [like, like, like]
+       LIMIT ? OFFSET ?`,
+      [like, like, like, PAGE_SIZE, offset]
     );
-    res.json(rows);
+    res.json({ rows, total, page, pageSize: PAGE_SIZE, totalPages: Math.ceil(total / PAGE_SIZE) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

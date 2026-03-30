@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 
@@ -734,7 +734,9 @@ function CreateAccountModal({ onClose, onCreated }) {
 export default function AccountsPage({ auth }) {
   const [query, setQuery]               = useState('');
   const [results, setResults]           = useState([]);
-  const [searched, setSearched]         = useState(false);
+  const [total, setTotal]               = useState(0);
+  const [totalPages, setTotalPages]     = useState(1);
+  const [page, setPage]                 = useState(1);
   const [loading, setLoading]           = useState(false);
   const [error, setError]               = useState('');
   const [selectedAccount, setSelectedAccount] = useState(null);
@@ -742,21 +744,25 @@ export default function AccountsPage({ auth }) {
 
   const canCreateAccount = auth.gmlevel >= 3;
 
-  const doSearch = useCallback(async (q) => {
-    const term = (q ?? query).trim();
-    if (!term) return;
+  const doSearch = useCallback(async (q, p = 1) => {
+    const term = q ?? query;
     setLoading(true);
     setError('');
     try {
-      const data = await api.searchAccounts(term);
-      setResults(data);
-      setSearched(true);
+      const data = await api.searchAccounts(term.trim(), p);
+      setResults(data.rows);
+      setTotal(data.total);
+      setTotalPages(data.totalPages);
+      setPage(data.page);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
   }, [query]);
+
+  // Load all accounts on mount
+  useEffect(() => { doSearch(''); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleViewAccount = async (row) => {
     try {
@@ -773,7 +779,7 @@ export default function AccountsPage({ auth }) {
         .then((detail) => setSelectedAccount(detail))
         .catch((err) => toast(err.message, 'error'));
     }
-    if (searched) doSearch();
+    doSearch(query, page);
   };
 
   return (
@@ -781,7 +787,7 @@ export default function AccountsPage({ auth }) {
       <div className="page-header">
         <div>
           <h2 className="page-title">Account Management</h2>
-          <p className="page-sub">Search by username, email, or IP address</p>
+          <p className="page-sub">{total > 0 ? `${total} account${total !== 1 ? 's' : ''}` : 'Accounts'} — search by username, email, or IP</p>
         </div>
         {canCreateAccount && (
           <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
@@ -794,26 +800,23 @@ export default function AccountsPage({ auth }) {
 
       <div className="filter-row">
         <input className="filter-input" type="text"
-          placeholder="Search username, email or IP…"
+          placeholder="Search by username, email or IP…"
           value={query} onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') doSearch(); }} />
-        <button className="btn btn-secondary" onClick={() => doSearch()}
-          disabled={loading || !query.trim()}>
-          {loading ? 'Searching…' : 'Search'}
+          onKeyDown={(e) => { if (e.key === 'Enter') doSearch(query, 1); }} />
+        <button className="btn btn-secondary" onClick={() => doSearch(query, 1)}
+          disabled={loading}>
+          {loading ? 'Loading…' : 'Search'}
         </button>
       </div>
 
       {loading ? (
-        <div className="loading-text">Searching accounts…</div>
-      ) : !searched ? (
-        <div className="empty-state" style={{ padding: '48px 0', textAlign: 'center', color: 'var(--text-dim)' }}>
-          Enter a search term above to find accounts.
-        </div>
+        <div className="loading-text">Loading accounts…</div>
       ) : results.length === 0 ? (
         <div className="empty-state" style={{ padding: '48px 0', textAlign: 'center', color: 'var(--text-dim)' }}>
-          No accounts found for <strong>"{query}"</strong>.
+          {query.trim() ? <>No accounts match <strong>"{query}"</strong>.</> : 'No accounts found.'}
         </div>
       ) : (
+        <>
         <div className="table-wrap">
           <table className="data-table">
             <thead>
@@ -863,6 +866,18 @@ export default function AccountsPage({ auth }) {
             </tbody>
           </table>
         </div>
+        {totalPages > 1 && (
+          <div className="pagination-row">
+            <button className="btn btn-ghost btn-sm" onClick={() => doSearch(query, page - 1)} disabled={page <= 1 || loading}>
+              &laquo; Prev
+            </button>
+            <span className="pagination-info">Page {page} of {totalPages}</span>
+            <button className="btn btn-ghost btn-sm" onClick={() => doSearch(query, page + 1)} disabled={page >= totalPages || loading}>
+              Next &raquo;
+            </button>
+          </div>
+        )}
+        </>
       )}
 
       {selectedAccount && (
@@ -871,14 +886,14 @@ export default function AccountsPage({ auth }) {
           auth={auth}
           onClose={() => setSelectedAccount(null)}
           onRefresh={handleRefresh}
-          onDeleted={() => { setSelectedAccount(null); if (searched) doSearch(); }}
+          onDeleted={() => { setSelectedAccount(null); doSearch(); }}
         />
       )}
 
       {showCreate && (
         <CreateAccountModal
           onClose={() => setShowCreate(false)}
-          onCreated={() => { if (searched) doSearch(); }}
+          onCreated={() => doSearch()}
         />
       )}
     </div>

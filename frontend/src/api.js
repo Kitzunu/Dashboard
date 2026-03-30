@@ -75,7 +75,7 @@ export const api = {
   updateAutobroadcast:  (id, text, weight) => request('PUT', `/api/autobroadcast/${id}`, { text, weight }),
   deleteAutobroadcast:  (id)         => request('DELETE', `/api/autobroadcast/${id}`),
 
-  searchAccounts:    (q)          => request('GET',   `/api/accounts?q=${encodeURIComponent(q)}`),
+  searchAccounts:    (q, page = 1) => request('GET',   `/api/accounts?q=${encodeURIComponent(q)}&page=${page}`),
   getAccount:        (id)         => request('GET',   `/api/accounts/${id}`),
   createAccount:     (username, password) => request('POST', '/api/accounts', { username, password }),
   setGMLevel:        (id, gmlevel)    => request('PATCH',   `/api/accounts/${id}/gmlevel`,   { gmlevel }),

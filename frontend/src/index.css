@@ -746,6 +746,16 @@ kbd {
 }
 .nav-badge-active { background: rgba(201,162,39,0.15); border-color: var(--gold-dim); color: var(--gold); }
 
+/* ── Pagination ─────────────────────────────────────────────── */
+.pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 0 4px;
+}
+.pagination-info { font-size: 13px; color: var(--text-muted); }
+
 /* ── Toasts ──────────────────────────────────────────────────── */
 .toast-container {
   position: fixed;
