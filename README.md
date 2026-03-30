@@ -19,7 +19,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 - **Servers** — Start, stop, scheduled restart, auto-restart, and MOTD editor for worldserver / authserver
 - **IP Allowlist** — Backend access restricted to an allowlist of IPs (default: localhost only), configurable via `ALLOWED_IPS` in `.env`
 - **DB Query** — Run preset SQL queries against the auth, world, and characters databases
-- **Config** — View and edit `worldserver.conf` / `authserver.conf` in the browser with a find bar, unsaved-change indicators, and automatic `.bak` backups on save
+- **Config** — View and edit `worldserver.conf`, `authserver.conf`, and any module `.conf` files in the browser with a find bar, unsaved-change indicators, and automatic `.bak` backups on save; set `CONFIG_PATH` to auto-load all `.conf` files from a directory
 - **Role-based access** — GM level controls what each user can see and do
 - **Toast notifications** — Non-blocking feedback for every action
 - **Session management** — JWT-based auth with automatic logout on token expiry
@@ -69,10 +69,10 @@ AUTHSERVER_PATH=C:\AzerothCore\authserver.exe
 # WORLDSERVER_DIR=C:\AzerothCore
 # AUTHSERVER_DIR=C:\AzerothCore
 
-# Config file paths (optional — defaults to the .conf file next to each executable)
-# Set these explicitly if your config files live in a different directory
-# WORLDSERVER_CONF=C:\AzerothCore\worldserver.conf
-# AUTHSERVER_CONF=C:\AzerothCore\authserver.conf
+# Config directory (optional) — all .conf files found here are loaded in the Config
+# page, including worldserver.conf, authserver.conf, and any module configs.
+# If omitted, worldserver.conf and authserver.conf are read from the exe directory.
+# CONFIG_PATH=C:\AzerothCore\configs
 
 # Database connection
 DB_HOST=127.0.0.1
@@ -277,7 +277,9 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser and log
 - **Dismiss** button (GM level 2+) removes the report from the database
 
 ### 📄 Config (Administrators only)
-- View and edit `worldserver.conf` and `authserver.conf` directly in the browser
+- View and edit `worldserver.conf`, `authserver.conf`, and any module `.conf` files directly in the browser
+- Set `CONFIG_PATH` in `.env` to a directory and all `.conf` files in it are automatically loaded as tabs — worldserver and authserver always appear first, then module configs alphabetically
+- Without `CONFIG_PATH`, worldserver.conf and authserver.conf are loaded from the exe directory
 - Full monospace editor with line numbers
 - **Find** bar — search for any setting by name and jump to it instantly
 - Unsaved-changes indicator (amber dot on tab, badge in header and footer)

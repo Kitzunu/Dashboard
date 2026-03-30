@@ -5,19 +5,35 @@ const path = require('path');
 
 const router = express.Router();
 
-// Use explicit config path env vars; fall back to deriving from exe path if not set
-function getConfigMap() {
+// If CONFIG_PATH is set, all .conf files in that directory are loaded (including
+// worldserver.conf and authserver.conf if present). Otherwise falls back to
+// deriving worldserver/authserver paths from their exe locations.
+async function getConfigMap() {
   const map = {};
 
-  const worldConf = process.env.WORLDSERVER_CONF
-    || (process.env.WORLDSERVER_PATH
-        ? path.join(path.dirname(process.env.WORLDSERVER_PATH), 'worldserver.conf')
-        : null);
+  const configDir = process.env.CONFIG_PATH;
+  if (configDir) {
+    try {
+      const entries = await fs.readdir(configDir);
+      for (const entry of entries) {
+        if (!entry.endsWith('.conf')) continue;
+        const name = entry.slice(0, -5); // strip .conf
+        map[name] = path.join(configDir, entry);
+      }
+    } catch (err) {
+      console.warn(`[config] Could not read CONFIG_PATH (${configDir}): ${err.message}`);
+    }
+    return map;
+  }
 
-  const authConf = process.env.AUTHSERVER_CONF
-    || (process.env.AUTHSERVER_PATH
-        ? path.join(path.dirname(process.env.AUTHSERVER_PATH), 'authserver.conf')
-        : null);
+  // No CONFIG_PATH — derive paths from exe locations
+  const worldConf = process.env.WORLDSERVER_PATH
+    ? path.join(path.dirname(process.env.WORLDSERVER_PATH), 'worldserver.conf')
+    : null;
+
+  const authConf = process.env.AUTHSERVER_PATH
+    ? path.join(path.dirname(process.env.AUTHSERVER_PATH), 'authserver.conf')
+    : null;
 
   if (worldConf) map['worldserver'] = worldConf;
   if (authConf)  map['authserver']  = authConf;
@@ -25,14 +41,14 @@ function getConfigMap() {
   return map;
 }
 
-function resolvePath(name) {
-  const map = getConfigMap();
+async function resolvePath(name) {
+  const map = await getConfigMap();
   return map[name] || null;
 }
 
 // GET /api/config — list known config files and whether they exist on disk
 router.get('/', requireGMLevel(3), async (req, res) => {
-  const map = getConfigMap();
+  const map = await getConfigMap();
   const result = await Promise.all(
     Object.entries(map).map(async ([name, filePath]) => {
       let exists = false;
@@ -40,12 +56,21 @@ router.get('/', requireGMLevel(3), async (req, res) => {
       return { name, filePath, exists };
     })
   );
+  const order = ['worldserver', 'authserver'];
+  result.sort((a, b) => {
+    const ai = order.indexOf(a.name);
+    const bi = order.indexOf(b.name);
+    if (ai !== -1 && bi !== -1) return ai - bi;
+    if (ai !== -1) return -1;
+    if (bi !== -1) return 1;
+    return a.name.localeCompare(b.name);
+  });
   res.json(result);
 });
 
 // GET /api/config/:name — read a config file
 router.get('/:name', requireGMLevel(3), async (req, res) => {
-  const filePath = resolvePath(req.params.name);
+  const filePath = await resolvePath(req.params.name);
   if (!filePath) return res.status(404).json({ error: 'Unknown config file' });
 
   try {
@@ -58,7 +83,7 @@ router.get('/:name', requireGMLevel(3), async (req, res) => {
 
 // PUT /api/config/:name — save a config file (creates a .bak backup first)
 router.put('/:name', requireGMLevel(3), async (req, res) => {
-  const filePath = resolvePath(req.params.name);
+  const filePath = await resolvePath(req.params.name);
   if (!filePath) return res.status(404).json({ error: 'Unknown config file' });
 
   const { content } = req.body;
