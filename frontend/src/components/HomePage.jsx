@@ -431,7 +431,7 @@ export default function HomePage() {
 
       {/* Stat cards */}
       <div className="home-metrics-row">
-        <StatCard label="Players Online" value={players.current ?? 0} />
+        <StatCard label="Players Online" value={servers.worldserver?.running ? (players.current ?? 0) : 0} />
         <StatCard label="Open Tickets"   value={tickets.open    ?? 0} />
         <StatCard label="Active Bans"    value={bans.active     ?? 0} />
       </div>
@@ -458,7 +458,7 @@ export default function HomePage() {
       <LatencyPanel latency={serverLatency} />
 
       {/* Sparkline */}
-      <Sparkline playerHistory={playerHistory} currentCount={players.current ?? 0} />
+      <Sparkline playerHistory={playerHistory} currentCount={servers.worldserver?.running ? (players.current ?? 0) : 0} />
 
       {/* Version */}
       {version && (
