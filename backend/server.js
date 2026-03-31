@@ -26,6 +26,7 @@ const lagreportRoutes    = require('./routes/lagreports');
 const mailserverRoutes   = require('./routes/mailserver');
 const dbcRoutes          = require('./routes/dbc');
 const channelRoutes      = require('./routes/channels');
+const spamreportRoutes   = require('./routes/spamreports');
 const playerHistory      = require('./playerHistory');
 const latencyMonitor     = require('./latencyMonitor');
 const { authenticateToken } = require('./middleware/auth');
@@ -66,6 +67,7 @@ app.use('/api/lagreports',    authenticateToken, lagreportRoutes);
 app.use('/api/mailserver',    authenticateToken, mailserverRoutes);
 app.use('/api/dbc',           authenticateToken, dbcRoutes);
 app.use('/api/channels',     authenticateToken, channelRoutes);
+app.use('/api/spamreports',  authenticateToken, spamreportRoutes);
 
 // Authenticate socket connections with JWT
 io.use((socket, next) => {

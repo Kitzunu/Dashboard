@@ -127,6 +127,11 @@ export const api = {
   deleteLagReport:  (id) => request('DELETE', `/api/lagreports/${id}`),
   clearLagReports:  ()   => request('DELETE', '/api/lagreports'),
 
+  getSpamReports: (page = 1, type = 'all', search = '') =>
+    request('GET', `/api/spamreports?page=${page}&type=${encodeURIComponent(type)}&search=${encodeURIComponent(search)}`),
+  deleteSpamReport: (id) => request('DELETE', `/api/spamreports/${id}`),
+  clearSpamReports: () => request('DELETE', '/api/spamreports'),
+
   getChannels:       () => request('GET', '/api/channels'),
   getChannel:        (id) => request('GET', `/api/channels/${id}`),
   unbanChannelPlayer:(channelId, guid) => request('DELETE', `/api/channels/${channelId}/bans/${guid}`),

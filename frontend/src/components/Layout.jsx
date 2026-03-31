@@ -18,6 +18,7 @@ import BugReportsPage from './BugReportsPage.jsx';
 import LagReportsPage from './LagReportsPage.jsx';
 import MailServerPage from './MailServerPage.jsx';
 import ChannelsPage from './ChannelsPage.jsx';
+import SpamReportsPage from './SpamReportsPage.jsx';
 
 const GM_LABELS = {
   1: 'Moderator',
@@ -54,8 +55,9 @@ const NAV_GROUPS = [
   {
     group: 'Reports',
     items: [
-      { id: 'lagreports', label: '📶 Lag Reports', minLevel: 1 },
-      { id: 'bugreports', label: '🐛 Bug Reports', minLevel: 1 },
+      { id: 'lagreports',  label: '📶 Lag Reports',  minLevel: 1 },
+      { id: 'bugreports',  label: '🐛 Bug Reports',  minLevel: 1 },
+      { id: 'spamreports', label: '🚫 Spam Reports', minLevel: 1 },
     ],
   },
 ];
@@ -214,6 +216,7 @@ export default function Layout() {
         {page === 'dbquery'       && <DBQueryPage />}
         {page === 'config'        && <ConfigPage />}
         {page === 'channels'      && <ChannelsPage />}
+        {page === 'spamreports'   && <SpamReportsPage />}
       </main>
 
       <ToastContainer toasts={toasts} />
