@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../App.jsx';
 import { connectSocket, disconnectSocket } from '../socket.js';
 import { api } from '../api.js';
@@ -69,6 +69,74 @@ const NAV_GROUPS = [
   },
 ];
 
+const WARN_BEFORE_SEC = 60;
+
+function useIdleTimeout(timeoutMinutes, onLogout) {
+  const [showWarning, setShowWarning]   = useState(false);
+  const [countdown, setCountdown]       = useState(WARN_BEFORE_SEC);
+  const timers        = useRef({ warn: null, logout: null, tick: null });
+  const warningActive = useRef(false);
+
+  const clearAll = () => {
+    clearTimeout(timers.current.warn);
+    clearTimeout(timers.current.logout);
+    clearInterval(timers.current.tick);
+  };
+
+  const startTimers = useCallback(() => {
+    if (!timeoutMinutes || timeoutMinutes <= 0) return;
+    clearAll();
+    const totalMs = timeoutMinutes * 60 * 1000;
+    const warnMs  = Math.max(0, totalMs - WARN_BEFORE_SEC * 1000);
+
+    timers.current.warn = setTimeout(() => {
+      warningActive.current = true;
+      setShowWarning(true);
+      setCountdown(WARN_BEFORE_SEC);
+      timers.current.tick = setInterval(
+        () => setCountdown((c) => c - 1),
+        1000
+      );
+    }, warnMs);
+
+    timers.current.logout = setTimeout(() => {
+      clearAll();
+      onLogout();
+    }, totalMs);
+  }, [timeoutMinutes, onLogout]);
+
+  const resetIdle = useCallback(() => {
+    if (warningActive.current) return;
+    startTimers();
+  }, [startTimers]);
+
+  const stayLoggedIn = useCallback(() => {
+    warningActive.current = false;
+    setShowWarning(false);
+    startTimers();
+  }, [startTimers]);
+
+  useEffect(() => {
+    if (!timeoutMinutes || timeoutMinutes <= 0) return;
+    const EVENTS = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+    let lastActivity = 0;
+    const handleActivity = () => {
+      const now = Date.now();
+      if (now - lastActivity < 5000) return;
+      lastActivity = now;
+      resetIdle();
+    };
+    EVENTS.forEach((e) => document.addEventListener(e, handleActivity, { passive: true }));
+    startTimers();
+    return () => {
+      EVENTS.forEach((e) => document.removeEventListener(e, handleActivity));
+      clearAll();
+    };
+  }, [timeoutMinutes, resetIdle, startTimers]);
+
+  return { showWarning, countdown, stayLoggedIn };
+}
+
 export default function Layout() {
   const { auth, logout } = useAuth();
   const [page, setPage] = useState('home');
@@ -83,6 +151,11 @@ export default function Layout() {
   const [toasts, setToasts] = useState([]);
   const toastId        = useRef(0);
   const worldRunningRef = useRef(false); // tracks live world status for polling closure
+
+  const { showWarning, countdown, stayLoggedIn } = useIdleTimeout(
+    auth.idleTimeoutMinutes || 0,
+    logout
+  );
 
   useEffect(() => {
     api.getServerStatus()
@@ -228,6 +301,25 @@ export default function Layout() {
       </main>
 
       <ToastContainer toasts={toasts} />
+
+      {showWarning && (
+        <div className="modal-overlay">
+          <div className="modal idle-warning-modal">
+            <div className="modal-header">
+              <h3>Session Expiring</h3>
+            </div>
+            <div className="modal-body">
+              <p>You have been idle and will be automatically logged out in:</p>
+              <div className="idle-countdown">{Math.max(0, countdown)}</div>
+              <p className="td-muted" style={{ fontSize: 13 }}>Move your mouse or press any key to stay logged in.</p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-primary" onClick={stayLoggedIn}>Stay Logged In</button>
+              <button className="btn btn-ghost" onClick={logout}>Log Out Now</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

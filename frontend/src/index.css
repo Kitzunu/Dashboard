@@ -540,6 +540,31 @@ input:focus, textarea:focus, select:focus { border-color: var(--gold-dim); }
 
 .modal h3 { font-size: 16px; color: var(--text); }
 
+/* ── Idle warning modal ──────────────────────────────────────── */
+.idle-warning-modal {
+  width: 360px;
+  text-align: center;
+  padding: 0;
+  gap: 0;
+}
+.idle-warning-modal .modal-header { justify-content: center; }
+.idle-warning-modal .modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.idle-warning-modal .modal-footer { justify-content: center; }
+
+.idle-countdown {
+  font-size: 52px;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
 /* Structured modal header / footer (used by tabbed modals) */
 .modal-header {
   display: flex;

@@ -100,8 +100,9 @@ router.post('/login', loginLimiter, async (req, res) => {
       { expiresIn: '8h' }
     );
 
+    const idleTimeoutMinutes = parseInt(process.env.IDLE_TIMEOUT_MINUTES, 10) || 0;
     logAudit(account.username, getIP(req), 'login', `GM level ${account.gmlevel}`);
-    res.json({ token, username: account.username, gmlevel: account.gmlevel });
+    res.json({ token, username: account.username, gmlevel: account.gmlevel, idleTimeoutMinutes });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Database error' });
