@@ -27,6 +27,8 @@ const mailserverRoutes   = require('./routes/mailserver');
 const dbcRoutes          = require('./routes/dbc');
 const channelRoutes      = require('./routes/channels');
 const spamreportRoutes   = require('./routes/spamreports');
+const auditLogRoutes     = require('./routes/auditLogRoutes');
+const { startRetentionJob } = require('./audit');
 const playerHistory      = require('./playerHistory');
 const latencyMonitor     = require('./latencyMonitor');
 const { authenticateToken } = require('./middleware/auth');
@@ -68,6 +70,7 @@ app.use('/api/mailserver',    authenticateToken, mailserverRoutes);
 app.use('/api/dbc',           authenticateToken, dbcRoutes);
 app.use('/api/channels',     authenticateToken, channelRoutes);
 app.use('/api/spamreports',  authenticateToken, spamreportRoutes);
+app.use('/api/audit-log',    authenticateToken, auditLogRoutes);
 
 // Authenticate socket connections with JWT
 io.use((socket, next) => {
@@ -109,6 +112,9 @@ setInterval(pollPlayerCount, 30000);
 
 // Poll worldserver TCP latency every 30 s
 latencyMonitor.start(30000);
+
+// Start audit log retention job (honours AUDIT_LOG_RETENTION_DAYS env var)
+startRetentionJob();
 
 const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, '0.0.0.0', () => {

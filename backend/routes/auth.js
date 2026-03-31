@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const { authPool } = require('../db');
+const { logAudit, getIP } = require('../audit');
 
 const router = express.Router();
 
@@ -71,6 +72,7 @@ router.post('/login', loginLimiter, async (req, res) => {
     );
 
     if (rows.length === 0) {
+      logAudit(username.toUpperCase(), getIP(req), 'login', 'Account not found', false);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -83,10 +85,12 @@ router.post('/login', loginLimiter, async (req, res) => {
     const storedVerifierInt = bufferToBigIntLE(storedVerifier);
 
     if (computedVerifier !== storedVerifierInt) {
+      logAudit(account.username, getIP(req), 'login', 'Wrong password', false);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     if (account.gmlevel < 1) {
+      logAudit(account.username, getIP(req), 'login', 'Insufficient GM level', false);
       return res.status(403).json({ error: 'This account does not have GM access to the dashboard' });
     }
 
@@ -96,11 +100,19 @@ router.post('/login', loginLimiter, async (req, res) => {
       { expiresIn: '8h' }
     );
 
+    logAudit(account.username, getIP(req), 'login', `GM level ${account.gmlevel}`);
     res.json({ token, username: account.username, gmlevel: account.gmlevel });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Database error' });
   }
+});
+
+// POST /api/auth/logout — purely for audit logging (token invalidation is client-side)
+const { authenticateToken } = require('../middleware/auth');
+router.post('/logout', authenticateToken, (req, res) => {
+  logAudit(req.user.username, getIP(req), 'logout');
+  res.json({ success: true });
 });
 
 module.exports = router;

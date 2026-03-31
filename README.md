@@ -27,6 +27,9 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 - **Lag Reports** — Browse player-submitted lag events; filter by type and minimum latency; aggregate stats with top reporters and top maps; dismiss or clear all
 - **Bug Reports** — Browse FeedbackUI bug reports, suggestions, and feedback; separated into Open/Closed tabs with type filter; assignee and comment fields; close/reopen per report
 
+**Dashboard** *(Administrator only)*
+- **Audit Log** — Immutable record of all critical actions taken through the dashboard: logins (including failed attempts with reason), logouts, server start/stop/restart, config saves (with changed key→value diff), MOTD changes, bans/unbans, account changes, console commands, DB queries, announcements, mail sends, and more — with user, IP, timestamp, and success/failure status
+
 **Other**
 - **IP Allowlist** — Backend access restricted to a configurable list of IPs (default: localhost only)
 - **Role-based access** — GM level controls what each user can see and do
@@ -35,7 +38,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 
 - [Node.js](https://nodejs.org/) v18 or later
 - A running AzerothCore MySQL instance (`acore_auth`, `acore_world`, `acore_characters`)
-- A database user with read/write access to those three databases
+- A database user with read/write access to those three databases, plus the `acore_dashboard` database (see [Audit Log setup](#audit-log-setup))
 
 ## Installation
 
@@ -108,6 +111,7 @@ DB_PASSWORD=acore
 AUTH_DB=acore_auth
 WORLD_DB=acore_world
 CHARACTERS_DB=acore_characters
+DASHBOARD_DB=acore_dashboard
 ```
 
 ### Application
@@ -132,6 +136,16 @@ FRONTEND_URL=http://localhost:5173
 > node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 > ```
 
+### Audit Log Retention
+
+```env
+# Delete audit log entries older than this many days.
+# Set to 0 or leave blank (default) to keep logs forever.
+# AUDIT_LOG_RETENTION_DAYS=90
+```
+
+When set, the backend runs a purge on startup and then once every 24 hours, deleting rows from `audit_logs` whose `created_at` is older than the configured number of days.
+
 ### DBC Files (Optional)
 
 ```env
@@ -151,7 +165,7 @@ The dashboard uses AzerothCore's `account_access` GM levels for role-based acces
 |-------|---------------|--------|
 | 1     | Moderator     | Overview, Console, Players (view), Tickets (view), Lag Reports, Bug Reports, Spam Reports (view), Channels (view) |
 | 2     | Game Master   | + Kick/ban players, manage bans, announcements, send mail, accounts (view/lock/ban/mute), autobroadcast (add/edit), mail server (view), dismiss reports, delete spam reports, unban channel players |
-| 3     | Administrator | + Start/stop servers, scheduled restart, MOTD, DB Query, Config editor, autobroadcast (delete), accounts (GM level/email/password/create/delete), mail server (create/edit/delete), alert thresholds, clear all lag/spam reports, delete channels |
+| 3     | Administrator | + Start/stop servers, scheduled restart, MOTD, DB Query, Config editor, autobroadcast (delete), accounts (GM level/email/password/create/delete), mail server (create/edit/delete), alert thresholds, clear all lag/spam reports, delete channels, Audit Log |
 
 To grant GM level 3 (Administrator):
 
@@ -159,6 +173,45 @@ To grant GM level 3 (Administrator):
 INSERT INTO account_access (id, gmlevel, RealmID)
 SELECT id, 3, -1 FROM account WHERE username = 'YOUR_ACCOUNT';
 ```
+
+## Audit Log Setup
+
+The Audit Log requires a separate `acore_dashboard` database. Create it once by running the included SQL file as a privileged user:
+
+```bash
+mysql -u root -p < sql/acore_dashboard.sql
+```
+
+This will:
+1. Create the `acore_dashboard` database
+2. Grant full access to the `acore@localhost` user
+3. Create the `audit_logs` table with indexes
+
+> If your MySQL user connects from a host other than `localhost` (e.g. `acore@%`), edit the `GRANT` line in `sql/acore_dashboard.sql` before running.
+
+The dashboard will also auto-create the database and table on first startup if the configured user has `CREATE DATABASE` privileges — the SQL file is provided as a reliable, explicit alternative.
+
+### What is logged
+
+Every action that makes a change is recorded with the acting user, their IP address, a timestamp, and a details string describing what changed:
+
+| Category | Actions logged |
+|---|---|
+| Auth | Login (success + reason for failure), logout |
+| Accounts | Create, delete, set GM level, lock/unlock, set email, reset password, mute/unmute |
+| Bans | Ban account/character/IP, unban all three types |
+| Servers | Start, stop, scheduled restart, cancel restart |
+| MOTD | Full new MOTD text recorded on every change |
+| Config | File name + every changed `key: "old" → "new"` pair |
+| Announcements | Type and full message text |
+| Console | Every GM command executed |
+| DB Query | Database name and first 200 characters of the query |
+| Autobroadcast | Create (text + weight), update, delete |
+| Mail Server | Template create, update (subject + active state), delete |
+| Mail | Recipient, subject, and type (text/items/money) |
+| Channels | Unban player, delete channel |
+| Bug Reports | State change, assignee, comment updates |
+| Spam Reports | Delete individual report, clear all |
 
 ## Running
 
@@ -279,6 +332,16 @@ npm run start:frontend  # Vite frontend on port 5173
 - **Close / Reopen** toggle in the modal footer (GM 2+)
 - **Dismiss** removes the report from the database (GM 2+)
 
+### Audit Log *(Administrator only)*
+- Paginated table (50 per page) of all dashboard actions, newest first
+- **Success / Failed / All** tab filter — failed logins and blocked actions are highlighted in red
+- **Action filter** — searchable multi-select dropdown to show only specific action types (e.g. `config.save`, `ban.account`); multiple actions can be selected simultaneously
+- **Search** across username, IP, action, and details — filters server-side across all pages
+- **Sortable columns** — ID, time, user, IP, action, status
+- Colour-coded action badges by category: account changes (gold), bans (red), server ops (amber), console commands (red), config saves (amber), announcements/mail (green), channels (blue), reports (neutral)
+- Config saves show a per-key diff: `WorldServerPort: "8085" → "8086"` so you can see exactly what changed
+- Stored in the separate `acore_dashboard` database — unaffected by AzerothCore upgrades
+
 ### Mail Server
 - Template list with ID, active status, subject, per-faction money, item count, condition count, and recipient count
 - Create/Edit modal with four tabs: **General** (subject, body, Alliance/Horde money, active toggle), **Items** (per-faction item attachments), **Conditions** (eligibility rules: Level, PlayTime, Quest, Achievement, Reputation, Faction, Race, Class, AccountFlags), **Recipients** (characters who have already received the template — edit only)
@@ -295,13 +358,14 @@ Dashboard/
 │   │   └── ipAllowlist.js         # IP allowlist enforcement
 │   ├── routes/
 │   │   ├── accounts.js            # Account management
-│   │   ├── channels.js            # Chat channel browser and management
 │   │   ├── announcements.js       # Announce / notify broadcasts
-│   │   ├── auth.js                # SRP6 login + rate limiting
+│   │   ├── auditLogRoutes.js      # Audit Log read endpoint (Administrator)
+│   │   ├── auth.js                # SRP6 login + rate limiting + logout
 │   │   ├── autobroadcast.js       # Autobroadcast CRUD
 │   │   ├── bans.js                # Ban management
 │   │   ├── bugreports.js          # Bug report browser
-│   │   ├── config.js              # Config file read/write
+│   │   ├── channels.js            # Chat channel browser and management
+│   │   ├── config.js              # Config file read/write with diff logging
 │   │   ├── console.js             # GM command execution
 │   │   ├── db.js                  # Arbitrary SQL query endpoint
 │   │   ├── dbc.js                 # Map/area name lookup endpoints
@@ -312,9 +376,11 @@ Dashboard/
 │   │   ├── players.js             # Online players, kick, ban
 │   │   ├── servers.js             # Server start/stop/status/logs
 │   │   ├── servertools.js         # Scheduled restart, MOTD
+│   │   ├── spamreports.js         # Spam report browser
 │   │   ├── thresholds.js          # CPU/memory alert thresholds
 │   │   └── tickets.js             # GM ticket CRUD
-│   ├── db.js                      # MySQL connection pools (auth, world, characters)
+│   ├── audit.js                   # Audit log helper (fire-and-forget write to acore_dashboard)
+│   ├── db.js                      # MySQL connection pools (auth, world, characters, dashboard)
 │   ├── dbc.js                     # WotLK DBC binary parser
 │   ├── latencyMonitor.js          # TCP latency sampling + rolling stats
 │   ├── playerHistory.js           # Rolling player count history buffer
@@ -327,6 +393,7 @@ Dashboard/
 │       ├── components/
 │       │   ├── AccountsPage.jsx
 │       │   ├── AnnouncePage.jsx
+│       │   ├── AuditLogPage.jsx
 │       │   ├── AutobroadcastPage.jsx
 │       │   ├── BansPage.jsx
 │       │   ├── BugReportsPage.jsx
@@ -342,12 +409,15 @@ Dashboard/
 │       │   ├── MailServerPage.jsx
 │       │   ├── PlayersPage.jsx
 │       │   ├── ServersPage.jsx
+│       │   ├── SpamReportsPage.jsx
 │       │   └── TicketsPage.jsx
 │       ├── ansi.js                # ANSI SGR colour parser
 │       ├── api.js                 # Fetch wrapper with JWT auth and 401 handling
 │       ├── App.jsx                # Auth context and page routing
 │       ├── socket.js              # Socket.IO client
 │       └── toast.js               # Global toast notification helper
+├── sql/
+│   └── acore_dashboard.sql        # One-time setup: creates acore_dashboard DB, grants access, creates audit_logs table
 ├── .env.example
 └── package.json                   # Root scripts (start, install:all)
 ```
@@ -360,6 +430,7 @@ Dashboard/
 - Login is rate-limited to 10 attempts per 15 minutes per IP.
 - JWT session tokens expire after 8 hours; the frontend automatically redirects to the login page on expiry.
 - Console log buffers are capped at 2000 lines per server process.
+- **Audit Log** writes are fire-and-forget — a failure to write an audit entry never blocks or errors the main operation. The `acore_dashboard` database is kept separate from the AzerothCore databases so it is never affected by core upgrades or migrations.
 
 ## Credits
 

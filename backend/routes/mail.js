@@ -1,6 +1,7 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const processManager = require('../processManager');
+const { audit } = require('../audit');
 
 const router = express.Router();
 
@@ -46,6 +47,7 @@ router.post('/', requireGMLevel(2), (req, res) => {
 
   const result = processManager.sendCommand(command);
   if (!result.success) return res.status(503).json({ error: result.error });
+  audit(req, 'mail.send', `to=${p} subject=${s} type=${type}`);
   res.json({ success: true });
 });
 

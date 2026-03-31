@@ -1,6 +1,7 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const processManager = require('../processManager');
+const { audit } = require('../audit');
 
 const router = express.Router();
 const VALID_SERVERS = ['worldserver', 'authserver'];
@@ -21,6 +22,7 @@ router.get('/:name/logs', (req, res) => {
 router.post('/:name/start', requireGMLevel(3), (req, res) => {
   const { name } = req.params;
   if (!VALID_SERVERS.includes(name)) return res.status(400).json({ error: 'Invalid server name' });
+  audit(req, 'server.start', `server=${name}`);
   res.json(processManager.startServer(name));
 });
 
@@ -30,6 +32,7 @@ router.post('/:name/stop', requireGMLevel(3), (req, res) => {
   const { name } = req.params;
   if (!VALID_SERVERS.includes(name)) return res.status(400).json({ error: 'Invalid server name' });
   const { mode = 'exit', delay = 0 } = req.body;
+  audit(req, 'server.stop', `server=${name} mode=${mode} delay=${delay}`);
   res.json(processManager.stopServer(name, mode, parseInt(delay, 10) || 0));
 });
 

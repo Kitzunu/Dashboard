@@ -1,6 +1,7 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const { charPool } = require('../db');
+const { audit } = require('../audit');
 
 const router = express.Router();
 
@@ -465,6 +466,11 @@ router.patch('/:id', requireGMLevel(2), async (req, res) => {
 
   try {
     await charPool.query(`UPDATE bugreport SET ${updates.join(', ')} WHERE id = ?`, params);
+    const parts = [];
+    if (state    !== undefined) parts.push(`state=${state}`);
+    if (assignee !== undefined) parts.push(`assignee=${assignee || 'cleared'}`);
+    if (comment  !== undefined) parts.push('comment updated');
+    audit(req, 'bugreport.update', `id=${id} ${parts.join(' ')}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

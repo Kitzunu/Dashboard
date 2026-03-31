@@ -1,6 +1,7 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const processManager = require('../processManager');
+const { audit } = require('../audit');
 
 const router = express.Router();
 
@@ -29,6 +30,7 @@ router.post('/', requireGMLevel(2), (req, res) => {
   if (result.success !== false) {
     history.unshift({ type, message: message.trim(), by: req.user?.username || '?', time: Date.now() });
     if (history.length > MAX_HISTORY) history.pop();
+    audit(req, 'announcement.send', `type=${type} message=${message.trim()}`);
   }
 
   res.json(result);

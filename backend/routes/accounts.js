@@ -2,6 +2,7 @@ const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const { authPool, charPool } = require('../db');
 const processManager = require('../processManager');
+const { audit } = require('../audit');
 
 const router = express.Router();
 
@@ -70,7 +71,9 @@ router.post('/', requireGMLevel(3), (req, res) => {
   const { username, password } = req.body;
   if (!username || !password)
     return res.status(400).json({ error: 'Username and password are required' });
-  res.json(processManager.sendCommand(`account create ${username} ${password}`));
+  const result = processManager.sendCommand(`account create ${username} ${password}`);
+  audit(req, 'account.create', `username=${username}`);
+  return res.json(result);
 });
 
 // PATCH /api/accounts/:id/gmlevel  { gmlevel: 0-6 }
@@ -89,6 +92,7 @@ router.patch('/:id/gmlevel', requireGMLevel(3), async (req, res) => {
         [id, level, level]
       );
     }
+    audit(req, 'account.set_gmlevel', `account_id=${id} gmlevel=${level}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -118,6 +122,7 @@ router.patch('/:id/lock', requireGMLevel(2), async (req, res) => {
   const locked = req.body.locked ? 1 : 0;
   try {
     await authPool.query('UPDATE account SET locked = ? WHERE id = ?', [locked, id]);
+    audit(req, locked ? 'account.lock' : 'account.unlock', `account_id=${id}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -132,6 +137,7 @@ router.patch('/:id/email', requireGMLevel(3), async (req, res) => {
     return res.status(400).json({ error: 'Email is required' });
   try {
     await authPool.query('UPDATE account SET email = ?, reg_mail = ? WHERE id = ?', [email.trim(), email.trim(), id]);
+    audit(req, 'account.set_email', `account_id=${id}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -147,6 +153,7 @@ router.post('/:id/password', requireGMLevel(3), async (req, res) => {
   try {
     const [[account]] = await authPool.query('SELECT username FROM account WHERE id = ?', [id]);
     if (!account) return res.status(404).json({ error: 'Account not found' });
+    audit(req, 'account.set_password', `account_id=${id} username=${account.username}`);
     res.json(processManager.sendCommand(
       `account set password ${account.username} ${password} ${password}`
     ));
@@ -163,6 +170,7 @@ router.delete('/:id', requireGMLevel(3), async (req, res) => {
     if (!account) return res.status(404).json({ error: 'Account not found' });
     const result = processManager.sendCommand(`account delete ${account.username}`);
     if (!result.success) return res.status(503).json({ error: result.error });
+    audit(req, 'account.delete', `account_id=${id} username=${account.username}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -178,6 +186,7 @@ router.post('/mute', requireGMLevel(3), (req, res) => {
   if (!reason?.trim()) return res.status(400).json({ error: 'Reason is required' });
   const result = processManager.sendCommand(`mute ${name.trim()} ${mins} ${reason.trim()}`);
   if (!result.success) return res.status(503).json({ error: result.error });
+  audit(req, 'account.mute', `name=${name.trim()} minutes=${mins} reason=${reason.trim()}`);
   res.json({ success: true });
 });
 
@@ -187,6 +196,7 @@ router.post('/unmute', requireGMLevel(3), (req, res) => {
   if (!name?.trim()) return res.status(400).json({ error: 'Character name is required' });
   const result = processManager.sendCommand(`unmute ${name.trim()}`);
   if (!result.success) return res.status(503).json({ error: result.error });
+  audit(req, 'account.unmute', `name=${name.trim()}`);
   res.json({ success: true });
 });
 

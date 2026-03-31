@@ -31,6 +31,7 @@ async function request(method, path, body) {
 }
 
 export const api = {
+  logout: () => request('POST', '/api/auth/logout'),
   login: (username, password) =>
     request('POST', '/api/auth/login', { username, password }),
 
@@ -126,6 +127,9 @@ export const api = {
   getLagStats:      ()   => request('GET',    '/api/lagreports/stats'),
   deleteLagReport:  (id) => request('DELETE', `/api/lagreports/${id}`),
   clearLagReports:  ()   => request('DELETE', '/api/lagreports'),
+
+  getAuditLog: (page = 1, { user = '', actions = [], success = '', search = '' } = {}) =>
+    request('GET', `/api/audit-log?page=${page}&user=${encodeURIComponent(user)}&actions=${encodeURIComponent(actions.join(','))}&success=${success}&search=${encodeURIComponent(search)}`),
 
   getSpamReports: (page = 1, type = 'all', search = '') =>
     request('GET', `/api/spamreports?page=${page}&type=${encodeURIComponent(type)}&search=${encodeURIComponent(search)}`),

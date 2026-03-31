@@ -1,6 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import Login from './components/Login.jsx';
 import Layout from './components/Layout.jsx';
+import { api } from './api.js';
 
 export const AuthContext = createContext(null);
 
@@ -35,6 +36,8 @@ export default function App() {
   };
 
   const logout = () => {
+    // Call logout API before clearing localStorage so the token is still available
+    api.logout().catch(() => {});
     setAuth(null);
     localStorage.removeItem('ac_auth');
   };

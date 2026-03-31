@@ -2,6 +2,7 @@ const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const { authPool, charPool } = require('../db');
 const processManager = require('../processManager');
+const { audit } = require('../audit');
 
 const router = express.Router();
 
@@ -49,7 +50,9 @@ router.post('/', requireGMLevel(2), (req, res) => {
   if (!['character', 'account', 'ip'].includes(type)) {
     return res.status(400).json({ error: 'type must be character, account, or ip' });
   }
-  res.json(processManager.sendCommand(`.ban ${type} ${target} ${duration} ${reason}`));
+  const result = processManager.sendCommand(`.ban ${type} ${target} ${duration} ${reason}`);
+  audit(req, `ban.${type}`, `target=${target} duration=${duration} reason=${reason}`);
+  return res.json(result);
 });
 
 // DELETE /api/bans/accounts/:id
@@ -58,6 +61,7 @@ router.delete('/accounts/:id', requireGMLevel(2), async (req, res) => {
   if (!id) return res.status(400).json({ error: 'Invalid account id' });
   try {
     await authPool.query('UPDATE account_banned SET active = 0 WHERE id = ?', [id]);
+    audit(req, 'unban.account', `account_id=${id}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -70,6 +74,7 @@ router.delete('/characters/:guid', requireGMLevel(2), async (req, res) => {
   if (!guid) return res.status(400).json({ error: 'Invalid character guid' });
   try {
     await charPool.query('UPDATE character_banned SET active = 0 WHERE guid = ?', [guid]);
+    audit(req, 'unban.character', `guid=${guid}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -82,6 +87,7 @@ router.delete('/ips/:ip', requireGMLevel(2), async (req, res) => {
   if (!ip) return res.status(400).json({ error: 'Invalid IP' });
   try {
     await authPool.query('DELETE FROM ip_banned WHERE ip = ?', [ip]);
+    audit(req, 'unban.ip', `ip=${ip}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

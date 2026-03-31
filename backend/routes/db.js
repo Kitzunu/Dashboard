@@ -1,6 +1,7 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const { authPool, worldPool, charPool } = require('../db');
+const { audit } = require('../audit');
 
 const router = express.Router();
 
@@ -18,6 +19,7 @@ router.post('/query', requireGMLevel(3), async (req, res) => {
 
   const pool = POOLS[database] || charPool;
 
+  audit(req, 'dbquery.execute', `db=${database || 'characters'} query=${query.trim().slice(0, 200)}`);
   try {
     const [rows, fields] = await pool.query(query.trim());
     // Handle non-SELECT queries (INSERT, UPDATE, DELETE, etc.)

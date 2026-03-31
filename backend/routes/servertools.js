@@ -2,6 +2,7 @@ const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const processManager = require('../processManager');
 const { authPool } = require('../db');
+const { audit } = require('../audit');
 
 const router = express.Router();
 
@@ -23,6 +24,7 @@ router.put('/motd', requireGMLevel(3), (req, res) => {
   }
   const result = processManager.sendCommand(`server set motd ${motd.trim()}`);
   if (!result.success) return res.status(503).json({ error: result.error });
+  audit(req, 'motd.set', motd.trim());
   res.json({ success: true });
 });
 
@@ -31,6 +33,7 @@ router.post('/restart', requireGMLevel(3), (req, res) => {
   const delay = Math.max(1, parseInt(req.body.delay, 10) || 60);
   const result = processManager.sendCommand(`server restart ${delay}`);
   if (!result.success) return res.status(503).json({ error: result.error });
+  audit(req, 'server.restart', `delay=${delay}s`);
   res.json({ success: true, delay });
 });
 
@@ -38,6 +41,7 @@ router.post('/restart', requireGMLevel(3), (req, res) => {
 router.post('/restart/cancel', requireGMLevel(3), (req, res) => {
   const result = processManager.sendCommand('server restart cancel');
   if (!result.success) return res.status(503).json({ error: result.error });
+  audit(req, 'server.restart_cancel');
   res.json({ success: true });
 });
 

@@ -1,6 +1,7 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const { charPool } = require('../db');
+const { audit } = require('../audit');
 
 const router = express.Router();
 
@@ -69,6 +70,7 @@ router.post('/', requireGMLevel(3), async (req, res) => {
       'INSERT INTO mail_server_template (subject, body, moneyA, moneyH, active) VALUES (?, ?, ?, ?, ?)',
       [subject.trim(), body.trim(), Math.max(0, parseInt(moneyA) || 0), Math.max(0, parseInt(moneyH) || 0), active ? 1 : 0]
     );
+    audit(req, 'mailserver.template_create', `subject=${subject.trim()}`);
     res.json({ success: true, id: result.insertId });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -87,6 +89,7 @@ router.put('/:id', requireGMLevel(3), async (req, res) => {
       'UPDATE mail_server_template SET subject=?, body=?, moneyA=?, moneyH=?, active=? WHERE id=?',
       [subject.trim(), body.trim(), Math.max(0, parseInt(moneyA) || 0), Math.max(0, parseInt(moneyH) || 0), active ? 1 : 0, id]
     );
+    audit(req, 'mailserver.template_update', `id=${id} subject=${subject.trim()} active=${active ? 1 : 0}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -98,6 +101,7 @@ router.delete('/:id', requireGMLevel(3), async (req, res) => {
   const id = parseInt(req.params.id, 10);
   try {
     await charPool.query('DELETE FROM mail_server_template WHERE id = ?', [id]);
+    audit(req, 'mailserver.template_delete', `id=${id}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

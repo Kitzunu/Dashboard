@@ -1,0 +1,28 @@
+-- AzerothCore Dashboard database
+-- Run once as a privileged MySQL user (e.g. root):
+--   mysql -u root -p < sql/acore_dashboard.sql
+
+CREATE DATABASE IF NOT EXISTS `acore_dashboard`
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+GRANT ALL PRIVILEGES ON `acore_dashboard`.* TO 'acore'@'localhost';
+FLUSH PRIVILEGES;
+
+USE `acore_dashboard`;
+
+CREATE TABLE IF NOT EXISTS `audit_logs` (
+  `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `username`   VARCHAR(64)  NOT NULL DEFAULT '',
+  `ip`         VARCHAR(45)  NOT NULL DEFAULT '',
+  `action`     VARCHAR(128) NOT NULL,
+  `details`    TEXT         DEFAULT NULL,
+  `success`    TINYINT(1)   NOT NULL DEFAULT 1,
+  `created_at` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_username`  (`username`),
+  KEY `idx_action`    (`action`),
+  KEY `idx_created`   (`created_at`),
+  KEY `idx_success`   (`success`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Dashboard audit log';

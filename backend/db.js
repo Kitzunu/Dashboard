@@ -11,8 +11,9 @@ const baseConfig = {
   connectionLimit: 10,
 };
 
-const authPool = mysql2.createPool({ ...baseConfig, database: process.env.AUTH_DB || 'acore_auth' });
-const worldPool = mysql2.createPool({ ...baseConfig, database: process.env.WORLD_DB || 'acore_world' });
-const charPool = mysql2.createPool({ ...baseConfig, database: process.env.CHARACTERS_DB || 'acore_characters' });
+const authPool  = mysql2.createPool({ ...baseConfig, database: process.env.AUTH_DB       || 'acore_auth' });
+const worldPool = mysql2.createPool({ ...baseConfig, database: process.env.WORLD_DB      || 'acore_world' });
+const charPool  = mysql2.createPool({ ...baseConfig, database: process.env.CHARACTERS_DB || 'acore_characters' });
+const dashPool  = mysql2.createPool({ ...baseConfig, database: process.env.DASHBOARD_DB  || 'acore_dashboard' });
 
-module.exports = { authPool, worldPool, charPool };
+module.exports = { authPool, worldPool, charPool, dashPool };

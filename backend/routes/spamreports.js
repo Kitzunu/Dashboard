@@ -1,6 +1,7 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const { charPool } = require('../db');
+const { audit } = require('../audit');
 
 const router = express.Router();
 
@@ -83,6 +84,7 @@ router.delete('/:id', requireGMLevel(2), async (req, res) => {
   const id = parseInt(req.params.id, 10);
   try {
     await charPool.query('DELETE FROM spam_reports WHERE ID = ?', [id]);
+    audit(req, 'spamreport.delete', `id=${id}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -93,6 +95,7 @@ router.delete('/:id', requireGMLevel(2), async (req, res) => {
 router.delete('/', requireGMLevel(3), async (req, res) => {
   try {
     await charPool.query('DELETE FROM spam_reports');
+    audit(req, 'spamreport.clear_all');
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

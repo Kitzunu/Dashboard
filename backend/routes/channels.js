@@ -1,6 +1,7 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const { charPool } = require('../db');
+const { audit } = require('../audit');
 
 const router = express.Router();
 
@@ -151,6 +152,7 @@ router.delete('/:id/bans/:guid', requireGMLevel(2), async (req, res) => {
       'DELETE FROM channels_bans WHERE channelId = ? AND playerGUID = ?',
       [channelId, guid]
     );
+    audit(req, 'channel.unban', `channelId=${channelId} guid=${guid}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -163,6 +165,7 @@ router.delete('/:id', requireGMLevel(3), async (req, res) => {
   try {
     try { await charPool.query('DELETE FROM channels_bans WHERE channelId = ?', [id]); } catch {}
     await charPool.query('DELETE FROM channels WHERE channelId = ?', [id]);
+    audit(req, 'channel.delete', `channelId=${id}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

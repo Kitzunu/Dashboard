@@ -2,6 +2,7 @@ const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const fs = require('fs').promises;
 const path = require('path');
+const { audit } = require('../audit');
 
 const router = express.Router();
 
@@ -92,11 +93,34 @@ router.put('/:name', requireGMLevel(3), async (req, res) => {
 
   try {
     // Back up the existing file before overwriting
+    let oldContent = null;
     try {
+      oldContent = await fs.readFile(filePath, 'utf8');
       await fs.copyFile(filePath, filePath + '.bak');
     } catch {} // ignore if original doesn't exist yet
 
     await fs.writeFile(filePath, content, 'utf8');
+
+    // Build a compact diff summary: list key=value lines that changed
+    const changedKeys = [];
+    if (oldContent !== null) {
+      const kvRe = /^([A-Za-z][A-Za-z0-9_.]*)\s*=\s*(.*)$/;
+      const oldMap = {};
+      for (const line of oldContent.split('\n')) {
+        const m = line.trim().match(kvRe);
+        if (m) oldMap[m[1]] = m[2].trim();
+      }
+      for (const line of content.split('\n')) {
+        const m = line.trim().match(kvRe);
+        if (m && oldMap[m[1]] !== undefined && oldMap[m[1]] !== m[2].trim()) {
+          changedKeys.push(`${m[1]}: "${oldMap[m[1]]}" → "${m[2].trim()}"`);
+        }
+      }
+    }
+    const details = changedKeys.length
+      ? `file=${req.params.name} changes: ${changedKeys.join('; ')}`
+      : `file=${req.params.name}`;
+    audit(req, 'config.save', details);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: `Could not save file: ${err.message}` });
