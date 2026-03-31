@@ -2240,3 +2240,137 @@ code {
   color: var(--warn);
   border: 1px solid rgba(232,168,56,0.25);
 }
+
+/* ── Channels page ───────────────────────────────────────────── */
+.channels-layout {
+  display: flex;
+  gap: 16px;
+  height: calc(100vh - 120px);
+  overflow: hidden;
+}
+
+.channels-list-panel {
+  flex: 0 0 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.channels-list-panel .table-wrap {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.channels-search-bar {
+  display: flex;
+  gap: 8px;
+}
+
+.channels-search-bar .input {
+  flex: 1;
+}
+
+.channels-detail-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.channels-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.channels-detail-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.channels-detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+
+.channels-members-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.channel-name {
+  font-weight: 500;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.channel-lock {
+  font-size: 13px;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.clickable-row:hover td {
+  background: var(--surface2);
+}
+
+.row-selected td {
+  background: rgba(91,155,213,0.08);
+}
+
+.btn-xs {
+  padding: 2px 8px;
+  font-size: 11px;
+}
+
+.channels-rights-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+
+.channels-rights-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.channels-rights-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13px;
+}
+
+.channels-rights-row > span:first-child {
+  min-width: 110px;
+  flex-shrink: 0;
+}
+
+.channels-rights-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}

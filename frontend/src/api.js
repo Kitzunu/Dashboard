@@ -127,6 +127,11 @@ export const api = {
   deleteLagReport:  (id) => request('DELETE', `/api/lagreports/${id}`),
   clearLagReports:  ()   => request('DELETE', '/api/lagreports'),
 
+  getChannels:       () => request('GET', '/api/channels'),
+  getChannel:        (id) => request('GET', `/api/channels/${id}`),
+  unbanChannelPlayer:(channelId, guid) => request('DELETE', `/api/channels/${channelId}/bans/${guid}`),
+  deleteChannel:     (id) => request('DELETE', `/api/channels/${id}`),
+
   getBugReports:  (page, feedbackType, state, search) => {
     const params = new URLSearchParams({ page: page || 1 });
     if (feedbackType != null && feedbackType !== 'all') params.set('feedbackType', feedbackType);

@@ -17,6 +17,7 @@ import MailPage from './MailPage.jsx';
 import BugReportsPage from './BugReportsPage.jsx';
 import LagReportsPage from './LagReportsPage.jsx';
 import MailServerPage from './MailServerPage.jsx';
+import ChannelsPage from './ChannelsPage.jsx';
 
 const GM_LABELS = {
   1: 'Moderator',
@@ -45,8 +46,9 @@ const NAV_GROUPS = [
       { id: 'tickets',  label: '🎫 Tickets',  minLevel: 1 },
       { id: 'bans',     label: '🔨 Bans',     minLevel: 2 },
       { id: 'announce', label: '📢 Announce', minLevel: 2 },
-      { id: 'accounts', label: '👤 Accounts', minLevel: 2 },
-      { id: 'mail',     label: '✉ Send Mail', minLevel: 2 },
+      { id: 'accounts',  label: '👤 Accounts',  minLevel: 2 },
+      { id: 'mail',      label: '✉ Send Mail',  minLevel: 2 },
+      { id: 'channels',  label: '💬 Channels',  minLevel: 1 },
     ],
   },
   {
@@ -211,6 +213,7 @@ export default function Layout() {
         {page === 'servers'       && <ServersPage serverStatus={serverStatus} setServerStatus={setServerStatus} />}
         {page === 'dbquery'       && <DBQueryPage />}
         {page === 'config'        && <ConfigPage />}
+        {page === 'channels'      && <ChannelsPage />}
       </main>
 
       <ToastContainer toasts={toasts} />
