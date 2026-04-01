@@ -47,7 +47,7 @@ const io = new Server(httpServer, {
 });
 
 app.use(cors({ origin: frontendUrl }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(ipAllowlist);
 
 app.use('/api/auth', authRoutes);
