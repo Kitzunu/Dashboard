@@ -146,41 +146,6 @@ function StatCard({ label, value }) {
   );
 }
 
-// ── Resource bar (memory or CPU) ──────────────────────────────────────────────
-function ResourceBar({ title, pct, detail, threshold }) {
-  const warn     = threshold != null && pct >= threshold;
-  const critical = threshold != null && pct >= Math.min(threshold + 10, 95);
-  const barColor = critical ? 'var(--red)' : warn ? 'var(--warn)' : null;
-
-  return (
-    <div className="memory-bar-wrap">
-      <div className="memory-bar-header">
-        <span className="memory-bar-title">
-          {warn && <span className="resource-warn-icon" title={`Above ${threshold}% threshold`}>⚠ </span>}
-          {title}
-        </span>
-        <span className={`memory-bar-stats ${warn ? 'resource-warn-text' : ''}`}>
-          {detail}
-          {threshold != null && (
-            <span className="threshold-badge" style={{ marginLeft: 8 }}>
-              threshold {threshold}%
-            </span>
-          )}
-        </span>
-      </div>
-      <div className="memory-bar">
-        <div
-          className="memory-bar-fill"
-          style={{
-            width: `${pct}%`,
-            ...(barColor ? { background: barColor } : {}),
-          }}
-        />
-      </div>
-    </div>
-  );
-}
-
 // ── Sparkline ─────────────────────────────────────────────────────────────────
 function Sparkline({ playerHistory, currentCount }) {
   if (!playerHistory || playerHistory.length < 2) {
@@ -217,6 +182,67 @@ function Sparkline({ playerHistory, currentCount }) {
         <polyline points={linePoints} fill="none" stroke="var(--gold)"
           strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
       </svg>
+    </div>
+  );
+}
+
+// ── Resource graph (CPU or Memory) ────────────────────────────────────────────
+function ResourceGraph({ title, dataKey, detail, history, threshold, color, graphMinutes }) {
+  const W = 600, H = 100, PAD_X = 8, PAD_Y = 8;
+
+  const warn = threshold != null && history?.length > 0 &&
+    history[history.length - 1][dataKey] >= threshold;
+
+  const hasData = history && history.length >= 2;
+
+  let svgContent = null;
+  if (hasData) {
+    const toX = (i) => PAD_X + (i / (history.length - 1)) * (W - PAD_X * 2);
+    const toY = (v) => PAD_Y + (1 - v / 100) * (H - PAD_Y * 2);
+
+    const linePoints = history.map((p, i) => `${toX(i)},${toY(p[dataKey])}`).join(' ');
+    const firstX = toX(0), lastX = toX(history.length - 1), bottomY = H - PAD_Y;
+    const polyPoints = `${firstX},${bottomY} ` + linePoints + ` ${lastX},${bottomY}`;
+
+    const lineColor = warn ? 'var(--warn)' : color;
+    const FILL_COLORS = {
+      'var(--blue)':  'rgba(91,155,213,0.12)',
+      'var(--green)': 'rgba(61,220,132,0.10)',
+    };
+    const fillColor = warn ? 'rgba(232,168,56,0.10)' : (FILL_COLORS[color] ?? 'rgba(91,155,213,0.10)');
+    const threshY = threshold != null ? toY(threshold) : null;
+
+    svgContent = (
+      <svg className="resource-graph-svg" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+        {threshY != null && (
+          <line x1={PAD_X} y1={threshY} x2={W - PAD_X} y2={threshY}
+            stroke="rgba(232,168,56,0.4)" strokeWidth="1" strokeDasharray="4 3" />
+        )}
+        <polygon points={polyPoints} fill={fillColor} stroke="none" />
+        <polyline points={linePoints} fill="none" stroke={lineColor}
+          strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  return (
+    <div className={`resource-graph-card${warn ? ' resource-graph-warn' : ''}`}>
+      <div className="resource-graph-header">
+        <span className="resource-graph-title">
+          {warn && <span className="resource-warn-icon" title={`Above ${threshold}% threshold`}>⚠ </span>}
+          {title}
+          <span className="resource-graph-window">last {graphMinutes ?? 60} min</span>
+        </span>
+        <span className={`resource-graph-detail${warn ? ' resource-warn-text' : ''}`}>
+          {detail}
+          {threshold != null && (
+            <span className="threshold-badge" style={{ marginLeft: 8 }}>threshold {threshold}%</span>
+          )}
+        </span>
+      </div>
+      {hasData ? svgContent : (
+        <div className="sparkline-empty">No data yet</div>
+      )}
     </div>
   );
 }
@@ -271,19 +297,24 @@ function LatencyPanel({ latency }) {
 
 // ── Threshold settings ────────────────────────────────────────────────────────
 function ThresholdSettings({ thresholds, onSaved }) {
-  const [open, setOpen]   = useState(false);
-  const [cpu, setCpu]     = useState(thresholds.cpu);
-  const [mem, setMem]     = useState(thresholds.memory);
-  const [busy, setBusy]   = useState(false);
+  const [open, setOpen]       = useState(false);
+  const [cpu, setCpu]         = useState(thresholds.cpu);
+  const [mem, setMem]         = useState(thresholds.memory);
+  const [graphMin, setGraphMin] = useState(thresholds.graphMinutes ?? 60);
+  const [busy, setBusy]       = useState(false);
 
-  useEffect(() => { setCpu(thresholds.cpu); setMem(thresholds.memory); }, [thresholds]);
+  useEffect(() => {
+    setCpu(thresholds.cpu);
+    setMem(thresholds.memory);
+    setGraphMin(thresholds.graphMinutes ?? 60);
+  }, [thresholds]);
 
-  const isDirty = cpu !== thresholds.cpu || mem !== thresholds.memory;
+  const isDirty = cpu !== thresholds.cpu || mem !== thresholds.memory || graphMin !== (thresholds.graphMinutes ?? 60);
 
   const handleSave = async () => {
     setBusy(true);
     try {
-      const saved = await api.saveThresholds({ cpu, memory: mem });
+      const saved = await api.saveThresholds({ cpu, memory: mem, graphMinutes: graphMin });
       toast('Alert thresholds saved');
       onSaved(saved);
       setOpen(false);
@@ -318,6 +349,15 @@ function ThresholdSettings({ thresholds, onSaved }) {
               <span className="td-muted">%</span>
             </div>
           </div>
+          <div className="threshold-divider" />
+          <div className="threshold-row">
+            <label>Graph history</label>
+            <div className="threshold-input-wrap">
+              <input type="number" min="1" max="60" value={graphMin}
+                onChange={(e) => setGraphMin(Math.min(60, Math.max(1, parseInt(e.target.value, 10) || 1)))} />
+              <span className="td-muted">min</span>
+            </div>
+          </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
             <button className="btn btn-primary btn-xs" onClick={handleSave}
               disabled={!isDirty || busy}>
@@ -338,10 +378,10 @@ export default function HomePage() {
   const [overview, setOverview]     = useState(null);
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState(null);
-  const [thresholds, setThresholds] = useState({ cpu: 80, memory: 85 });
+  const [thresholds, setThresholds] = useState({ cpu: 80, memory: 85, graphMinutes: 60 });
 
   // Refs so the interval callback always reads current values without stale closures
-  const thresholdsRef  = useRef({ cpu: 80, memory: 85 });
+  const thresholdsRef  = useRef({ cpu: 80, memory: 85, graphMinutes: 60 });
   const alertStateRef  = useRef({ cpu: false, mem: false });
   const intervalRef    = useRef(null);
 
@@ -401,8 +441,9 @@ export default function HomePage() {
   const tickets       = overview?.tickets       ?? {};
   const bans          = overview?.bans          ?? {};
   const system        = overview?.system        ?? {};
-  const playerHistory = overview?.playerHistory ?? [];
-  const motd          = overview?.motd          ?? '';
+  const playerHistory   = overview?.playerHistory   ?? [];
+  const resourceHistory = overview?.resourceHistory ?? [];
+  const motd            = overview?.motd            ?? '';
   const version       = overview?.version       ?? null;
   const serverLatency = overview?.serverLatency  ?? null;
 
@@ -436,22 +477,28 @@ export default function HomePage() {
         <StatCard label="Active Bans"    value={bans.active     ?? 0} />
       </div>
 
-      {/* Resource bars */}
+      {/* Resource graphs */}
       {system.totalMem > 0 && (
-        <>
-          <ResourceBar
+        <div className="resource-graphs-row">
+          <ResourceGraph
             title="System Memory"
-            pct={memPct}
-            detail={`${formatGB(system.totalMem - system.freeMem)} GB used / ${formatGB(system.totalMem)} GB total (${memPct}%)`}
+            dataKey="memory"
+            detail={`${formatGB(system.totalMem - system.freeMem)} GB / ${formatGB(system.totalMem)} GB (${memPct}%)`}
+            history={resourceHistory}
             threshold={thresholds.memory}
+            color="var(--blue)"
+            graphMinutes={thresholds.graphMinutes ?? 60}
           />
-          <ResourceBar
+          <ResourceGraph
             title="CPU Usage"
-            pct={cpuPct}
+            dataKey="cpu"
             detail={`${cpuPct}% across ${system.cpuCount ?? '?'} core(s)`}
+            history={resourceHistory}
             threshold={thresholds.cpu}
+            color="var(--green)"
+            graphMinutes={thresholds.graphMinutes ?? 60}
           />
-        </>
+        </div>
       )}
 
       {/* Server latency */}

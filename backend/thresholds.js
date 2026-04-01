@@ -7,7 +7,7 @@ const path = require('path');
 
 const FILE = path.join(__dirname, 'thresholds.json');
 
-const DEFAULTS = { cpu: 80, memory: 85 };
+const DEFAULTS = { cpu: 80, memory: 85, graphMinutes: 60 };
 
 function load() {
   try {

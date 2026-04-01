@@ -1,4 +1,5 @@
 {
   "cpu": 100,
-  "memory": 100
+  "memory": 100,
+  "graphMinutes": 1
 }

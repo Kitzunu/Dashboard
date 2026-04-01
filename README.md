@@ -5,7 +5,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 ## Features
 
 **Server**
-- **Overview** — Server status cards with live uptime timers, online player/ticket/ban counts, system memory and CPU bars with configurable alert thresholds, browser notifications with audio cues, worldserver TCP latency stats (mean/median/P95/P99/max over a rolling 60-minute window), and a player count sparkline
+- **Overview** — Server status cards with live uptime timers, online player/ticket/ban counts, system memory and CPU bars with rolling 60-minute history graphs and configurable alert thresholds (threshold shown as dashed line on graph), browser notifications with audio cues, worldserver TCP latency stats (mean/median/P95/P99/max over a rolling 60-minute window), and a player count sparkline
 - **Console** — Real-time worldserver and authserver log streaming via Socket.IO with full ANSI colour rendering, GM command input, persistent per-session command history, and auto-scroll toggle
 - **Servers** — Start, stop, scheduled restart, auto-restart toggle, and MOTD editor for worldserver and authserver
 - **Autobroadcast** — Manage the in-game autobroadcast rotation: add, edit, delete, and weight messages
@@ -394,6 +394,7 @@ Dashboard/
 │   ├── dbc.js                     # WotLK DBC binary parser
 │   ├── latencyMonitor.js          # TCP latency sampling + rolling stats
 │   ├── playerHistory.js           # Rolling player count history buffer
+│   ├── resourceHistory.js         # Rolling CPU and memory history buffer
 │   ├── processManager.js          # Server process lifecycle + Socket.IO broadcast
 │   ├── thresholds.js              # Threshold JSON persistence
 │   ├── thresholds.json            # Persisted alert threshold values

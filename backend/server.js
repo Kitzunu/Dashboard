@@ -30,6 +30,7 @@ const spamreportRoutes   = require('./routes/spamreports');
 const auditLogRoutes     = require('./routes/auditLogRoutes');
 const { startRetentionJob } = require('./audit');
 const playerHistory      = require('./playerHistory');
+const resourceHistory    = require('./resourceHistory');
 const latencyMonitor     = require('./latencyMonitor');
 const { authenticateToken } = require('./middleware/auth');
 const ipAllowlist = require('./middleware/ipAllowlist');
@@ -109,6 +110,30 @@ async function pollPlayerCount() {
 }
 pollPlayerCount();
 setInterval(pollPlayerCount, 30000);
+
+// Poll CPU and memory every 30 s and store in rolling history
+const os = require('os');
+function pollResources() {
+  const snap1 = os.cpus().map((c) => ({ ...c.times }));
+  setTimeout(() => {
+    const snap2 = os.cpus();
+    let totalIdle = 0, totalTick = 0;
+    snap2.forEach((cpu, i) => {
+      const t1 = snap1[i], t2 = cpu.times;
+      const idle  = t2.idle - t1.idle;
+      const total = (t2.user - t1.user) + (t2.nice - t1.nice) +
+                    (t2.sys  - t1.sys)  + (t2.irq  - t1.irq)  + idle;
+      totalIdle += idle;
+      totalTick += total;
+    });
+    const cpu    = totalTick > 0 ? Math.round((1 - totalIdle / totalTick) * 100) : 0;
+    const total  = os.totalmem();
+    const memory = Math.round(((total - os.freemem()) / total) * 100);
+    resourceHistory.record(cpu, memory);
+  }, 200);
+}
+pollResources();
+setInterval(pollResources, 30000);
 
 // Poll worldserver TCP latency every 30 s
 latencyMonitor.start(30000);

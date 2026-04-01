@@ -4,6 +4,7 @@ const os = require('os');
 const { authPool, charPool, worldPool } = require('../db');
 const processManager   = require('../processManager');
 const playerHistory    = require('../playerHistory');
+const resourceHistory  = require('../resourceHistory');
 const thresholds       = require('../thresholds');
 const latencyMonitor   = require('../latencyMonitor');
 
@@ -67,8 +68,14 @@ router.get('/', requireGMLevel(1), async (req, res) => {
       thresholds:    thresholds.load(),
       motd:          motdRow[0]?.text ?? '',
       version:       versionRow[0] ?? null,
-      playerHistory: playerHistory.getHistory(),
-      serverLatency: latencyMonitor.getStats(),
+      playerHistory:   playerHistory.getHistory(),
+      resourceHistory: (() => {
+        const t = thresholds.load();
+        const windowMs = (t.graphMinutes ?? 60) * 60 * 1000;
+        const cutoff   = Date.now() - windowMs;
+        return resourceHistory.getHistory().filter((p) => p.time >= cutoff);
+      })(),
+      serverLatency:   latencyMonitor.getStats(),
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
