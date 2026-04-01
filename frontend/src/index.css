@@ -1664,10 +1664,7 @@ code {
 
 /* ── Threshold settings panel ────────────────────────────────── */
 .threshold-settings {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  position: relative;
 }
 
 .threshold-toggle {
@@ -1675,9 +1672,14 @@ code {
 }
 
 .threshold-panel {
-  background: var(--surface2);
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 50;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
   padding: 14px 16px;
   display: flex;
   flex-direction: column;

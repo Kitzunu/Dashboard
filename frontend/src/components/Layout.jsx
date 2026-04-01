@@ -274,7 +274,7 @@ export default function Layout() {
               <div className="user-name">{auth.username}</div>
               <div className="user-level">{GM_LABELS[auth.gmlevel] || `Level ${auth.gmlevel}`}</div>
             </div>
-            <button onClick={logout} className="btn btn-ghost btn-sm">Logout</button>
+            <button onClick={() => logout('manual')} className="btn btn-ghost btn-sm">Logout</button>
           </div>
         </div>
       </aside>
