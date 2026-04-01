@@ -101,7 +101,7 @@ function useIdleTimeout(timeoutMinutes, onLogout) {
 
     timers.current.logout = setTimeout(() => {
       clearAll();
-      onLogout();
+      onLogout('idle_timeout');
     }, totalMs);
   }, [timeoutMinutes, onLogout]);
 
@@ -315,7 +315,7 @@ export default function Layout() {
             </div>
             <div className="modal-footer">
               <button className="btn btn-primary" onClick={stayLoggedIn}>Stay Logged In</button>
-              <button className="btn btn-ghost" onClick={logout}>Log Out Now</button>
+              <button className="btn btn-ghost" onClick={() => logout('manual')}>Log Out Now</button>
             </div>
           </div>
         </div>

@@ -112,7 +112,8 @@ router.post('/login', loginLimiter, async (req, res) => {
 // POST /api/auth/logout — purely for audit logging (token invalidation is client-side)
 const { authenticateToken } = require('../middleware/auth');
 router.post('/logout', authenticateToken, (req, res) => {
-  logAudit(req.user.username, getIP(req), 'logout');
+  const reason = req.body?.reason === 'idle_timeout' ? 'idle_timeout' : 'manual';
+  logAudit(req.user.username, getIP(req), 'logout', reason);
   res.json({ success: true });
 });
 

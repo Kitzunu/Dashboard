@@ -31,7 +31,7 @@ async function request(method, path, body) {
 }
 
 export const api = {
-  logout: () => request('POST', '/api/auth/logout'),
+  logout: (reason = 'manual') => request('POST', '/api/auth/logout', { reason }),
   login: (username, password) =>
     request('POST', '/api/auth/login', { username, password }),
 

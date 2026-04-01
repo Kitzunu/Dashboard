@@ -35,9 +35,9 @@ export default function App() {
     localStorage.setItem('ac_auth', JSON.stringify(authData));
   };
 
-  const logout = () => {
+  const logout = (reason = 'manual') => {
     // Call logout API before clearing localStorage so the token is still available
-    api.logout().catch(() => {});
+    api.logout(reason).catch(() => {});
     setAuth(null);
     localStorage.removeItem('ac_auth');
   };
