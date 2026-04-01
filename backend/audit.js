@@ -49,6 +49,14 @@ async function getPool() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
 
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS \`settings\` (
+        \`key\`   VARCHAR(64)  NOT NULL,
+        \`value\` VARCHAR(255) NOT NULL,
+        PRIMARY KEY (\`key\`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+
     _pool = pool;
     return _pool;
   })();

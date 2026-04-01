@@ -29,6 +29,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 
 **Dashboard** *(Administrator only)*
 - **Audit Log** — Immutable record of all critical actions taken through the dashboard: logins (including failed attempts with reason), logouts, server start/stop/restart, config saves (with changed key→value diff), MOTD changes, bans/unbans, account changes, console commands, DB queries, announcements, mail sends, and more — with user, IP, timestamp, and success/failure status
+- **Settings** — Dashboard-wide configuration stored in the `acore_dashboard` database; settings changes are audit-logged
 
 **Other**
 - **IP Allowlist** — Backend access restricted to a configurable list of IPs (default: localhost only)
@@ -341,6 +342,17 @@ npm run start:frontend  # Vite frontend on port 5173
 - Editable **Assignee** and **Comment** fields in the detail modal (GM 2+)
 - **Close / Reopen** toggle in the modal footer (GM 2+)
 - **Dismiss** removes the report from the database (GM 2+)
+
+### Settings *(Administrator only)*
+- Sections with labelled toggle/input controls, each with a description
+- Changes are only sent on **Save Changes** (dirty-tracking — no unnecessary writes)
+- Settings changes are recorded in the Audit Log
+
+**Available settings:**
+
+| Setting | Default | Description |
+|---|---|---|
+| Config Editor → Create .bak backup on save | On | Creates a `.bak` copy of each config file before overwriting |
 
 ### Audit Log *(Administrator only)*
 - Paginated table (50 per page) of all dashboard actions, newest first

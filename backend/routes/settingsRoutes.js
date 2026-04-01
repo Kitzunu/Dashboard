@@ -1,0 +1,33 @@
+const express = require('express');
+const { requireGMLevel } = require('../middleware/auth');
+const settings = require('../dashboardSettings');
+const { audit } = require('../audit');
+
+const router = express.Router();
+
+// GET /api/settings — returns all settings as { key: value }
+router.get('/', requireGMLevel(3), async (req, res) => {
+  try {
+    res.json(await settings.getAll());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /api/settings — accepts { key: value, ... } bulk update
+router.put('/', requireGMLevel(3), async (req, res) => {
+  const body = req.body;
+  if (!body || typeof body !== 'object' || Array.isArray(body))
+    return res.status(400).json({ error: 'Body must be a key-value object' });
+
+  try {
+    await settings.setMany(body);
+    const saved = await settings.getAll();
+    audit(req, 'settings.save', Object.entries(body).map(([k, v]) => `${k}=${v}`).join('; '));
+    res.json(saved);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+module.exports = router;

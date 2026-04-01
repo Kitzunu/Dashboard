@@ -47,6 +47,7 @@ const ALL_ACTIONS = [
   'mailserver.template_delete',
   'mail.send',
   'dbquery.execute',
+  'settings.save',
 ];
 
 // Map action prefixes to badge styles
@@ -63,6 +64,7 @@ function actionBadgeClass(action) {
   if (action.startsWith('announcement.'))            return 'badge badge-green';
   if (action === 'motd.set')                         return 'badge badge-warn';
   if (action.startsWith('config.'))                  return 'badge badge-warn';
+  if (action.startsWith('settings.'))                return 'badge badge-warn';
   if (action.startsWith('autobroadcast.'))           return 'badge badge-gold';
   if (action.startsWith('mailserver.'))              return 'badge badge-gold';
   if (action.startsWith('mail.'))                    return 'badge badge-green';

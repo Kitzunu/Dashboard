@@ -11,6 +11,13 @@ FLUSH PRIVILEGES;
 
 USE `acore_dashboard`;
 
+CREATE TABLE IF NOT EXISTS `settings` (
+  `key`   VARCHAR(64)  NOT NULL,
+  `value` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Dashboard-wide settings';
+
 CREATE TABLE IF NOT EXISTS `audit_logs` (
   `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `username`   VARCHAR(64)  NOT NULL DEFAULT '',

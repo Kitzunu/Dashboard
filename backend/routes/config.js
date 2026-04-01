@@ -3,6 +3,7 @@ const { requireGMLevel } = require('../middleware/auth');
 const fs = require('fs').promises;
 const path = require('path');
 const { audit } = require('../audit');
+const dashboardSettings = require('../dashboardSettings');
 
 const router = express.Router();
 
@@ -92,11 +93,12 @@ router.put('/:name', requireGMLevel(3), async (req, res) => {
     return res.status(400).json({ error: 'content must be a string' });
 
   try {
-    // Back up the existing file before overwriting
+    // Back up the existing file before overwriting (if setting enabled)
     let oldContent = null;
     try {
       oldContent = await fs.readFile(filePath, 'utf8');
-      await fs.copyFile(filePath, filePath + '.bak');
+      const bakEnabled = await dashboardSettings.getBoolean('config.bak_enabled');
+      if (bakEnabled) await fs.copyFile(filePath, filePath + '.bak');
     } catch {} // ignore if original doesn't exist yet
 
     await fs.writeFile(filePath, content, 'utf8');

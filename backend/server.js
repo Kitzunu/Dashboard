@@ -28,6 +28,7 @@ const dbcRoutes          = require('./routes/dbc');
 const channelRoutes      = require('./routes/channels');
 const spamreportRoutes   = require('./routes/spamreports');
 const auditLogRoutes     = require('./routes/auditLogRoutes');
+const settingsRoutes     = require('./routes/settingsRoutes');
 const { startRetentionJob } = require('./audit');
 const playerHistory      = require('./playerHistory');
 const resourceHistory    = require('./resourceHistory');
@@ -72,6 +73,7 @@ app.use('/api/dbc',           authenticateToken, dbcRoutes);
 app.use('/api/channels',     authenticateToken, channelRoutes);
 app.use('/api/spamreports',  authenticateToken, spamreportRoutes);
 app.use('/api/audit-log',    authenticateToken, auditLogRoutes);
+app.use('/api/settings',     authenticateToken, settingsRoutes);
 
 // Authenticate socket connections with JWT
 io.use((socket, next) => {
