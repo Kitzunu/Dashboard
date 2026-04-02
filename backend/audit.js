@@ -4,7 +4,10 @@
  * audit failures never break the main operation.
  */
 const mysql2 = require('mysql2/promise');
-require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
+require('dotenv').config({
+  path: require('path').join(__dirname, '../.env'),
+  quiet: true
+ });
 
 const baseConfig = {
   host:     process.env.DB_HOST     || '127.0.0.1',
