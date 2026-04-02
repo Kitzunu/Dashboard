@@ -2,6 +2,7 @@ const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const settings = require('../dashboardSettings');
 const { audit } = require('../audit');
+const discord  = require('../discord');
 
 const router = express.Router();
 
@@ -27,6 +28,18 @@ router.put('/', requireGMLevel(3), async (req, res) => {
     res.json(saved);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/settings/discord/test — sends a test message to the configured webhook URL
+router.post('/discord/test', requireGMLevel(3), async (req, res) => {
+  const url = process.env.DISCORD_WEBHOOK_URL || '';
+  if (!url) return res.status(400).json({ error: 'DISCORD_WEBHOOK_URL is not set in .env' });
+  try {
+    await discord.sendTest(url);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 

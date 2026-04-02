@@ -402,7 +402,7 @@ function ThresholdSettings({ thresholds, onSaved }) {
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
-export default function HomePage() {
+export default function HomePage({ socket }) {
   const [overview, setOverview]     = useState(null);
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState(null);
@@ -412,12 +412,11 @@ export default function HomePage() {
     () => localStorage.getItem('ac-notif-enabled') !== 'false'
   );
 
-  // Refs so the interval callback always reads current values without stale closures
+  // Refs so the socket callback always reads current values without stale closures
   const thresholdsRef    = useRef({ cpu: 80, memory: 85, graphMinutes: 60 });
   const alertStateRef    = useRef({ cpu: false, mem: false });
   const notifEnabledRef  = useRef(notifEnabled);
   const agentConnectedRef = useRef(null); // null = unknown (first load)
-  const intervalRef      = useRef(null);
 
   // Keep thresholdsRef and notifEnabledRef in sync whenever state changes
   useEffect(() => { thresholdsRef.current = thresholds; }, [thresholds]);
@@ -446,50 +445,62 @@ export default function HomePage() {
     alertStateRef.current = { cpu: cpuAlert, mem: memAlert };
   };
 
-  const fetchOverview = async () => {
-    try {
-      const data = await api.getOverview();
-      setOverview(data);
-      if (data.thresholds) {
-        setThresholds(data.thresholds);
-        thresholdsRef.current = data.thresholds;
-      }
-
-      // Compute percentages and check alert transitions
-      const sys    = data.system ?? {};
-      const cpuPct = sys.cpuUsage ?? 0;
-      const memPct = sys.memPct ?? (sys.totalMem > 0
-        ? Math.round(((sys.totalMem - sys.freeMem) / sys.totalMem) * 100)
-        : 0);
-      checkAlerts(cpuPct, memPct);
-
-      // Alert when agent connection state changes to disconnected
-      const agentNow = data.dashboard?.agentConnected ?? false;
-      const prevAgent = agentConnectedRef.current;
-      if (prevAgent === true && !agentNow) {
-        toast('Server Agent disconnected — game servers may be unmanaged', 'error');
-      }
-      // Reset backend-down sentinel when backend recovers
-      agentConnectedRef.current = agentNow;
-
-      setError(null);
-    } catch (err) {
-      setError(err.message || 'Failed to load overview');
-      // Only alert on the first failure, not every retry
-      if (agentConnectedRef.current !== 'backend-down') {
-        toast('Dashboard backend is unreachable', 'error');
-        agentConnectedRef.current = 'backend-down';
-      }
-    } finally {
-      setLoading(false);
+  const applyOverviewData = (data) => {
+    setOverview(data);
+    if (data.thresholds) {
+      setThresholds(data.thresholds);
+      thresholdsRef.current = data.thresholds;
     }
+    const sys    = data.system ?? {};
+    const cpuPct = sys.cpuUsage ?? 0;
+    const memPct = sys.memPct ?? (sys.totalMem > 0
+      ? Math.round(((sys.totalMem - sys.freeMem) / sys.totalMem) * 100)
+      : 0);
+    checkAlerts(cpuPct, memPct);
+
+    const agentNow  = data.dashboard?.agentConnected ?? false;
+    const prevAgent = agentConnectedRef.current;
+    if (prevAgent === true && !agentNow) {
+      toast('Server Agent disconnected — game servers may be unmanaged', 'error');
+    }
+    agentConnectedRef.current = agentNow;
+    setError(null);
+    setLoading(false);
   };
 
+  // Initial HTTP load
   useEffect(() => {
-    fetchOverview();
-    intervalRef.current = setInterval(fetchOverview, 30000);
-    return () => clearInterval(intervalRef.current);
+    api.getOverview()
+      .then(applyOverviewData)
+      .catch((err) => {
+        setError(err.message || 'Failed to load overview');
+        if (agentConnectedRef.current !== 'backend-down') {
+          toast('Dashboard backend is unreachable', 'error');
+          agentConnectedRef.current = 'backend-down';
+        }
+        setLoading(false);
+      });
   }, []);
+
+  // Live updates via socket push
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.emit('subscribe-overview');
+    socket.on('overview:update', applyOverviewData);
+
+    const handleReconnect = () => {
+      socket.emit('subscribe-overview');
+      api.getOverview().then(applyOverviewData).catch(() => {});
+    };
+    socket.on('connect', handleReconnect);
+
+    return () => {
+      socket.emit('unsubscribe-overview');
+      socket.off('overview:update', applyOverviewData);
+      socket.off('connect', handleReconnect);
+    };
+  }, [socket]);
 
   if (loading) return <div className="page"><div className="loading-text">Loading overview…</div></div>;
   if (error && !overview) return <div className="page"><div className="alert alert-error">{error}</div></div>;
@@ -538,28 +549,26 @@ export default function HomePage() {
       </div>
 
       {/* Resource graphs */}
-      {system.totalMem > 0 && (
-        <div className="resource-graphs-row">
-          <ResourceGraph
-            title="System Memory"
-            dataKey="memory"
-            detail={`${formatGB(system.totalMem - system.freeMem)} GB / ${formatGB(system.totalMem)} GB (${memPct}%)`}
-            history={resourceHistory}
-            threshold={thresholds.memory}
-            color="var(--blue)"
-            graphMinutes={thresholds.graphMinutes ?? 60}
-          />
-          <ResourceGraph
-            title="CPU Usage"
-            dataKey="cpu"
-            detail={`${cpuPct}% across ${system.cpuCount ?? '?'} core(s)`}
-            history={resourceHistory}
-            threshold={thresholds.cpu}
-            color="var(--green)"
-            graphMinutes={thresholds.graphMinutes ?? 60}
-          />
-        </div>
-      )}
+      <div className="resource-graphs-row">
+        <ResourceGraph
+          title="System Memory"
+          dataKey="memory"
+          detail={system.totalMem > 0 ? `${formatGB(system.totalMem - system.freeMem)} GB / ${formatGB(system.totalMem)} GB (${memPct}%)` : '—'}
+          history={resourceHistory}
+          threshold={thresholds.memory}
+          color="var(--blue)"
+          graphMinutes={thresholds.graphMinutes ?? 60}
+        />
+        <ResourceGraph
+          title="CPU Usage"
+          dataKey="cpu"
+          detail={system.cpuCount > 0 ? `${cpuPct}% across ${system.cpuCount ?? '?'} core(s)` : '—'}
+          history={resourceHistory}
+          threshold={thresholds.cpu}
+          color="var(--green)"
+          graphMinutes={thresholds.graphMinutes ?? 60}
+        />
+      </div>
 
       {/* Server latency */}
       <LatencyPanel latency={serverLatency} />

@@ -5,7 +5,18 @@
 const { getAuditPool } = require('./audit');
 
 const DEFAULTS = {
-  'config.bak_enabled': 'true',
+  'config.bak_enabled':                 'true',
+  'discord.enabled':                    'true',
+  'discord.webhook_username':           'AzerothCore Dashboard',
+  'discord.webhook_avatar_url':         'https://raw.githubusercontent.com/Kitzunu/Dashboard/master/frontend/img/icon.png',
+  'discord.alert_server_crash':         'true',
+  'discord.message_server_crash':       '**{server}** has gone offline.',
+  'discord.alert_server_online':        'true',
+  'discord.message_server_online':      '**{server}** is online.',
+  'discord.alert_threshold':            'true',
+  'discord.message_threshold':          '**{resource}** usage is at **{pct}%** (threshold: {threshold}%).',
+  'discord.alert_agent_disconnect':     'true',
+  'discord.message_agent_disconnect':   'The server agent has disconnected. Game servers may be unmanaged.',
 };
 
 async function getAll() {

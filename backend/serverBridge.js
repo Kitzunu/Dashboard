@@ -6,7 +6,10 @@
  * Uses only Node's built-in `http` module; no extra dependencies.
  */
 
-const http = require('http');
+const http         = require('http');
+const EventEmitter = require('events');
+
+const emitter = new EventEmitter();
 
 let frontendIO   = null;
 let connected    = false;
@@ -39,6 +42,7 @@ function connect() {
     }
 
     connected = true;
+    emitter.emit('agent-connected');
     console.log('[server-bridge] Connected to server agent');
 
     let buffer = '';
@@ -57,12 +61,14 @@ function connect() {
     res.on('end', () => {
       connected = false;
       console.log('[server-bridge] Agent event stream ended');
+      emitter.emit('agent-disconnected');
       notifyServersDown();
       scheduleReconnect();
     });
 
     res.on('error', () => {
       connected = false;
+      emitter.emit('agent-disconnected');
       notifyServersDown();
       scheduleReconnect();
     });
@@ -70,6 +76,7 @@ function connect() {
 
   req.on('error', () => {
     connected = false;
+    emitter.emit('agent-disconnected');
     scheduleReconnect();
   });
 
@@ -81,9 +88,15 @@ function handleEvent(event) {
 
   switch (event.type) {
     case 'init':
-      // Sync initial server status to all frontend clients
-      if (event.worldserver) frontendIO.emit('server-status', { server: 'worldserver', running: event.worldserver.running });
-      if (event.authserver)  frontendIO.emit('server-status', { server: 'authserver',  running: event.authserver.running  });
+      // Sync initial server status to all frontend clients and internal listeners
+      if (event.worldserver) {
+        frontendIO.emit('server-status', { server: 'worldserver', running: event.worldserver.running });
+        emitter.emit('server-status', { server: 'worldserver', running: event.worldserver.running });
+      }
+      if (event.authserver) {
+        frontendIO.emit('server-status', { server: 'authserver', running: event.authserver.running });
+        emitter.emit('server-status', { server: 'authserver', running: event.authserver.running });
+      }
       break;
 
     case 'console-line':
@@ -92,6 +105,7 @@ function handleEvent(event) {
 
     case 'server-status':
       frontendIO.emit('server-status', { server: event.server, running: event.running });
+      emitter.emit('server-status', { server: event.server, running: event.running });
       break;
   }
 }
@@ -112,4 +126,4 @@ function scheduleReconnect() {
 
 function isConnected() { return connected; }
 
-module.exports = { init, isConnected };
+module.exports = { init, isConnected, on: emitter.on.bind(emitter), off: emitter.off.bind(emitter) };

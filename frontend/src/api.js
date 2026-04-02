@@ -132,8 +132,9 @@ export const api = {
   deleteLagReport:  (id) => request('DELETE', `/api/lagreports/${id}`),
   clearLagReports:  ()   => request('DELETE', '/api/lagreports'),
 
-  getSettings:  ()       => request('GET', '/api/settings'),
-  saveSettings: (data)   => request('PUT', '/api/settings', data),
+  getSettings:        ()      => request('GET', '/api/settings'),
+  saveSettings:       (data)  => request('PUT', '/api/settings', data),
+  testDiscordWebhook: ()      => request('POST', '/api/settings/discord/test'),
 
   getAuditLog: (page = 1, { user = '', actions = [], success = '', search = '' } = {}) =>
     request('GET', `/api/audit-log?page=${page}&user=${encodeURIComponent(user)}&actions=${encodeURIComponent(actions.join(','))}&success=${success}&search=${encodeURIComponent(search)}`),
@@ -160,6 +161,15 @@ export const api = {
 
   getMutes:   ()   => request('GET',    '/api/mutes'),
   unmute:     (id) => request('DELETE', `/api/mutes/${id}`),
+
+  getScheduledTasks:    ()        => request('GET',    '/api/scheduled-tasks'),
+  createScheduledTask:  (data)    => request('POST',   '/api/scheduled-tasks', data),
+  updateScheduledTask:  (id, data)=> request('PUT',    `/api/scheduled-tasks/${id}`, data),
+  deleteScheduledTask:  (id)      => request('DELETE', `/api/scheduled-tasks/${id}`),
+  runScheduledTask:     (id)      => request('POST',   `/api/scheduled-tasks/${id}/run`),
+
+  getGuilds: ()   => request('GET', '/api/guilds'),
+  getGuild:  (id) => request('GET', `/api/guilds/${id}`),
 
   getBans: () => request('GET', '/api/bans'),
   banTarget: (type, target, duration, reason) =>

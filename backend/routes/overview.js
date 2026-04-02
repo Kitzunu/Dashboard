@@ -11,6 +11,68 @@ const latencyMonitor   = require('../latencyMonitor');
 
 const router = express.Router();
 
+router.get('/', requireGMLevel(1), async (req, res) => {
+  try {
+    // Each query is wrapped individually so a single DB failure doesn't block the response
+    let playerCount = 0, ticketCount = 0, banCount = 0, motd = '', version = null;
+    let cpuUsage = 0, agentStatus = {};
+
+    await Promise.all([
+      charPool.query('SELECT COUNT(*) AS count FROM characters WHERE online = 1')
+        .then(([[r]]) => { playerCount = Number(r.count); }).catch(() => {}),
+      charPool.query('SELECT COUNT(*) AS count FROM gm_ticket WHERE type = 0')
+        .then(([[r]]) => { ticketCount = Number(r.count); }).catch(() => {}),
+      authPool.query('SELECT COUNT(*) AS count FROM account_banned WHERE active = 1')
+        .then(([[r]]) => { banCount = Number(r.count); }).catch(() => {}),
+      authPool.query('SELECT text FROM motd LIMIT 1')
+        .then(([[r]]) => { motd = r?.text ?? ''; }).catch(() => {}),
+      worldPool.query('SELECT core_version, core_revision, db_version, cache_id FROM version')
+        .then(([[r]]) => { version = r ?? null; }).catch(() => {}),
+      (async () => { try { cpuUsage = await getCpuUsage(); } catch {} })(),
+      processManager.getAllStatus()
+        .then((s) => { agentStatus = s; }).catch(() => {}),
+    ]);
+
+    const totalMem = os.totalmem();
+    const freeMem  = os.freemem();
+    const memPct   = Math.round(((totalMem - freeMem) / totalMem) * 100);
+    const t        = thresholds.load();
+    const windowMs = (t.graphMinutes ?? 60) * 60 * 1000;
+    const cutoff   = Date.now() - windowMs;
+
+    res.json({
+      servers: {
+        worldserver: agentStatus.worldserver,
+        authserver:  agentStatus.authserver,
+      },
+      dashboard: {
+        backendUptime:  process.uptime(),
+        agentConnected: serverBridge.isConnected(),
+        agentUptime:    agentStatus.uptime ?? null,
+      },
+      players:  { current: playerCount },
+      tickets:  { open:    ticketCount },
+      bans:     { active:  banCount },
+      system: {
+        totalMem,
+        freeMem,
+        memPct,
+        cpuUsage,
+        cpuCount: os.cpus().length,
+        platform: os.platform(),
+      },
+      thresholds:    t,
+      motd,
+      version,
+      playerHistory:   playerHistory.getHistory(),
+      resourceHistory: resourceHistory.getHistory().filter((p) => p.time >= cutoff),
+      serverLatency:   latencyMonitor.getStats(),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 function getCpuUsage() {
   return new Promise((resolve) => {
     const snap1 = os.cpus().map((c) => ({ ...c.times }));
@@ -30,62 +92,5 @@ function getCpuUsage() {
     }, 200);
   });
 }
-
-router.get('/', requireGMLevel(1), async (req, res) => {
-  try {
-    const [
-      [playerRow], [ticketRow], [banRow], [motdRow], [versionRow],
-      cpuUsage, agentStatus,
-    ] = await Promise.all([
-      charPool.query('SELECT COUNT(*) AS count FROM characters WHERE online = 1'),
-      charPool.query('SELECT COUNT(*) AS count FROM gm_ticket WHERE type = 0'),
-      authPool.query('SELECT COUNT(*) AS count FROM account_banned WHERE active = 1'),
-      authPool.query('SELECT text FROM motd LIMIT 1'),
-      worldPool.query('SELECT core_version, core_revision, db_version, cache_id FROM version'),
-      getCpuUsage(),
-      processManager.getAllStatus(),
-    ]);
-
-    const totalMem = os.totalmem();
-    const freeMem  = os.freemem();
-    const memPct   = Math.round(((totalMem - freeMem) / totalMem) * 100);
-
-    res.json({
-      servers: {
-        worldserver: agentStatus.worldserver,
-        authserver:  agentStatus.authserver,
-      },
-      dashboard: {
-        backendUptime:    process.uptime(),
-        agentConnected:   serverBridge.isConnected(),
-        agentUptime:      agentStatus.uptime ?? null,
-      },
-      players:       { current: Number(playerRow[0].count) },
-      tickets:       { open:    Number(ticketRow[0].count) },
-      bans:          { active:  Number(banRow[0].count) },
-      system: {
-        totalMem,
-        freeMem,
-        memPct,
-        cpuUsage,
-        cpuCount: os.cpus().length,
-        platform: os.platform(),
-      },
-      thresholds:    thresholds.load(),
-      motd:          motdRow[0]?.text ?? '',
-      version:       versionRow[0] ?? null,
-      playerHistory:   playerHistory.getHistory(),
-      resourceHistory: (() => {
-        const t = thresholds.load();
-        const windowMs = (t.graphMinutes ?? 60) * 60 * 1000;
-        const cutoff   = Date.now() - windowMs;
-        return resourceHistory.getHistory().filter((p) => p.time >= cutoff);
-      })(),
-      serverLatency: latencyMonitor.getStats(),
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 module.exports = router;

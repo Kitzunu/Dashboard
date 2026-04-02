@@ -2,15 +2,40 @@
 
 A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/) servers. Monitor server status, manage players, stream live console output, handle GM tickets, edit config files, and more — all from your browser.
 
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Configuration](#configuration)
+  - [Server Paths](#server-paths)
+  - [Config Files](#config-files)
+  - [Database](#database)
+  - [Application](#application)
+  - [LAN / Remote Access](#lanremoteaccess)
+  - [Scheduled Tasks](#scheduled-tasks)
+  - [Discord Alerts](#discord-alerts)
+  - [Session Idle Timeout](#session-idle-timeout)
+  - [Audit Log Retention](#audit-log-retention)
+  - [DBC Files](#dbc-files-optional)
+- [Access Levels](#access-levels)
+- [Audit Log Setup](#audit-log-setup)
+- [Running](#running)
+- [Pages](#pages)
+- [Project Structure](#project-structure)
+- [Notes](#notes)
+- [Credits](#credits)
+
 ## Features
 
 **Server**
-- **Overview** — Server status cards with live uptime timers, online player/ticket/ban counts, system memory and CPU bars with rolling 60-minute history graphs and configurable alert thresholds (threshold shown as dashed line on graph), browser notifications with audio cues, worldserver TCP latency stats (mean/median/P95/P99/max over a rolling 60-minute window), and a player count sparkline
+- **Overview** — Server status cards with live uptime timers, online player/ticket/ban counts, system memory and CPU bars with rolling 60-minute history graphs and configurable alert thresholds (threshold shown as dashed line on graph), browser notifications with audio cues, Discord webhook alerts, worldserver TCP latency stats (mean/median/P95/P99/max over a rolling 60-minute window), and a player count sparkline
 - **Console** — Real-time worldserver and authserver log streaming via Socket.IO with full ANSI colour rendering, GM command input, persistent per-session command history, and auto-scroll toggle
 - **Servers** — Start, stop, scheduled restart, auto-restart toggle, and MOTD editor for worldserver and authserver
 - **Autobroadcast** — Manage the in-game autobroadcast rotation: add, edit, delete, and weight messages
 - **Mail Server** — Full CRUD editor for the `mail_server_template` system with subject, body, per-faction money and items, eligibility conditions, and a recipients list
 - **DB Query** — Run SQL queries against the auth, world, or characters databases
+- **Scheduled Tasks** — Schedule recurring database backups and server restarts by time of day and day of week; run any task immediately with Run Now
 - **Config** — Edit worldserver.conf, authserver.conf, and any module `.conf` files directly in the browser with line numbers, a find bar, unsaved-change indicators, and automatic `.bak` backups
 
 **Game**
@@ -23,6 +48,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 - **Send Mail** — Send in-game mail, items (up to 12), or money (gold/silver/copper) to any character
 - **Spam Reports** — View player-submitted spam reports (mail / chat / calendar); filter by type; search by spammer name or description; delete individual reports (GM 2+); clear all (Administrator)
 - **Channels** — Browse all active chat channels; view banned players and channel config (rights, speak delay, messages); lock icon for password-protected channels; unban players (GM 2+); delete channel (Administrator)
+- **Guilds** — Browse all guilds with leader, member count, and bank balance; detail panel with member roster (class, level, rank), rank list with bank gold per day, and event log (invites, joins, promotions, demotions, kicks, leaves); tabard colour preview
 
 **Reports**
 - **Lag Reports** — Browse player-submitted lag events; filter by type and minimum latency; aggregate stats with top reporters and top maps; dismiss or clear all
@@ -30,7 +56,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 
 **Dashboard** *(Administrator only)*
 - **Audit Log** — Immutable record of all critical actions taken through the dashboard: logins (including failed attempts with reason), logouts, server start/stop/restart, config saves (with changed key→value diff), MOTD changes, bans/unbans, account changes, console commands, DB queries, announcements, mail sends, and more — with user, IP, timestamp, and success/failure status
-- **Settings** — Dashboard-wide configuration stored in the `acore_dashboard` database; settings changes are audit-logged
+- **Settings** — Dashboard-wide configuration stored in the `acore_dashboard` database; settings changes are audit-logged; Discord alert toggles per event type
 
 **Other**
 - **IP Allowlist** — Backend access restricted to a configurable list of IPs (default: localhost only)
@@ -152,6 +178,42 @@ By default the dashboard is only accessible from the machine it runs on. To acce
    ```
 3. Open the dashboard on the remote device using the server's LAN IP, e.g. `http://192.168.1.100:5173`. The frontend automatically connects the API and WebSocket back to the same host — no additional configuration needed.
 
+### Scheduled Tasks
+
+```env
+# Directory where mysqldump backup files are saved (created automatically).
+# BACKUP_PATH=C:\AzerothCore\backups
+
+# Full path to mysqldump — only needed if it is not in your system PATH.
+# MYSQLDUMP_PATH=C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqldump.exe
+```
+
+Backups are saved as `<database>_YYYY-MM-DD_HH-mm.sql` files. The scheduler checks every minute and fires tasks whose time and day-of-week match. If `mysqldump` is on your system `PATH` you do not need to set `MYSQLDUMP_PATH`.
+
+For scheduled restarts, the target server's Auto-Restart is automatically enabled before the shutdown command is sent so the server agent brings it back up after the countdown.
+
+### Discord Alerts
+
+```env
+# Discord channel webhook URL.
+# When set, the dashboard posts alerts to this webhook for the events enabled in Settings.
+# Leave blank (or omit) to disable all Discord notifications.
+# DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/your-webhook-id/your-webhook-token
+```
+
+Three alert types are supported, each with an independent toggle in **Settings → Discord Alerts**:
+
+| Alert | Trigger | Cooldown |
+|---|---|---|
+| Server offline | worldserver or authserver transitions from running → offline | 5 min per server |
+| Server online | worldserver or authserver transitions from offline → running | 5 min per server |
+| Resource threshold | CPU or memory usage exceeds the configured threshold | 5 min per resource |
+| Agent disconnect | Server agent loses its SSE connection to the dashboard | 5 min |
+
+Use the **Send Test Message** button in Settings to verify the webhook is working.
+
+> Create a Discord webhook via **Channel Settings → Integrations → Webhooks → New Webhook**, then copy the URL.
+
 ### Session Idle Timeout
 
 ```env
@@ -189,7 +251,7 @@ The dashboard uses AzerothCore's `account_access` GM levels for role-based acces
 
 | Level | Role          | Access |
 |-------|---------------|--------|
-| 1     | Moderator     | Overview, Console, Players (view), Tickets (view), Lag Reports, Bug Reports, Spam Reports (view), Channels (view) |
+| 1     | Moderator     | Overview, Console, Players (view), Tickets (view), Lag Reports, Bug Reports, Spam Reports (view), Channels (view), Guilds (view) |
 | 2     | Game Master   | + Kick/ban players, manage bans, announcements, send mail, accounts (view/lock/ban/mute), autobroadcast (add/edit), mail server (view), dismiss reports, delete spam reports, unban channel players |
 | 3     | Administrator | + Start/stop servers, scheduled restart, MOTD, DB Query, Config editor, autobroadcast (delete), accounts (GM level/email/password/create/delete), mail server (create/edit/delete), alert thresholds, clear all lag/spam reports, delete channels, Audit Log |
 
@@ -264,7 +326,7 @@ The **server agent** (`serverAgent.js`) is a separate process that owns the worl
 - Worldserver TCP latency panel — mean, median, P95, P99, and max over a rolling 60-minute window
 - Player count sparkline over the last hour (up to 120 data points sampled every 30 s)
 - AzerothCore core revision (clickable link to GitHub commit), DB version, cache ID, and current MOTD
-- Auto-refreshes every 30 seconds
+- Real-time push updates via Socket.IO (no polling)
 
 ### Console
 - Live log streaming for worldserver and authserver via Socket.IO
@@ -314,6 +376,16 @@ The **server agent** (`serverAgent.js`) is a separate process that owns the worl
 ### Send Mail
 - Send mail, items (up to 12 by entry ID and count), or money (gold/silver/copper auto-converted to copper)
 - Character name and subject are preserved after sending for quick follow-ups
+
+### Guilds
+- Guild list with name, leader, member count, and bank balance
+- Search by guild name or leader
+- Click any guild to open the detail panel showing:
+  - **Tabard** — colour preview (background, border, emblem) with style indices
+  - **MOTD** and guild info text (when set)
+  - **Members** tab — character name, class, level, and rank; personal note shown
+  - **Ranks** tab — rank name and bank gold withdrawal limit per day
+  - **Event Log** tab — last 100 entries: invites, joins, promotions, demotions, kicks, and leaves with timestamps and player names
 
 ### Channels
 - Lists all custom chat channels with name, faction (Alliance / Horde / Both), active ban count, password lock indicator, and last used timestamp
@@ -376,6 +448,17 @@ The **server agent** (`serverAgent.js`) is a separate process that owns the worl
 | Setting | Default | Description |
 |---|---|---|
 | Config Editor → Create .bak backup on save | On | Creates a `.bak` copy of each config file before overwriting |
+| Discord Alerts → Enable Discord alerts | On | Master switch — when off, no messages are sent |
+| Discord Alerts → Display name | AzerothCore Dashboard | Name shown on Discord messages (overrides webhook default) |
+| Discord Alerts → Avatar URL | *(dashboard icon)* | Direct image URL used as the bot avatar; defaults to the dashboard icon hosted on GitHub |
+| Discord Alerts → Server offline alert | On | Posts to Discord when worldserver or authserver goes offline unexpectedly |
+| Discord Alerts → Server offline message | *see below* | Editable message body; supports `{server}` |
+| Discord Alerts → Server online alert | On | Posts to Discord when worldserver or authserver comes back online |
+| Discord Alerts → Server online message | *see below* | Editable message body; supports `{server}` |
+| Discord Alerts → Resource threshold alert | On | Posts to Discord when CPU or memory exceeds the configured threshold (5-minute cooldown) |
+| Discord Alerts → Resource threshold message | *see below* | Editable message body; supports `{resource}`, `{pct}`, `{threshold}` |
+| Discord Alerts → Agent disconnect alert | On | Posts to Discord when the server agent loses its connection |
+| Discord Alerts → Agent disconnect message | *see below* | Editable message body; no variables |
 
 ### Audit Log *(Administrator only)*
 - Paginated table (50 per page) of all dashboard actions, newest first
@@ -422,10 +505,14 @@ Dashboard/
 │   │   ├── players.js             # Online players, kick, ban
 │   │   ├── servers.js             # Server start/stop/status/logs
 │   │   ├── servertools.js         # Scheduled restart, MOTD
+│   │   ├── guilds.js              # Guild list and detail (members, ranks, event log)
+│   │   ├── scheduledTasks.js      # Scheduled task CRUD and run-now trigger
+│   │   ├── settingsRoutes.js      # Dashboard settings read/write and Discord webhook test
 │   │   ├── spamreports.js         # Spam report browser
 │   │   ├── thresholds.js          # CPU/memory alert thresholds
 │   │   └── tickets.js             # GM ticket CRUD
 │   ├── audit.js                   # Audit log helper (fire-and-forget write to acore_dashboard)
+│   ├── discord.js                 # Discord webhook sender (server offline/online, thresholds, agent disconnect)
 │   ├── db.js                      # MySQL connection pools (auth, world, characters, dashboard)
 │   ├── dbc.js                     # WotLK DBC binary parser
 │   ├── latencyMonitor.js          # TCP latency sampling + rolling stats
@@ -447,6 +534,7 @@ Dashboard/
 │       │   ├── BansPage.jsx
 │       │   ├── BugReportsPage.jsx
 │       │   ├── ChannelsPage.jsx
+│       │   ├── GuildsPage.jsx
 │       │   ├── ConfigPage.jsx
 │       │   ├── ConsolePage.jsx
 │       │   ├── DBQueryPage.jsx
@@ -457,9 +545,11 @@ Dashboard/
 │       │   ├── MailPage.jsx
 │       │   ├── MailServerPage.jsx
 │       │   ├── MutesPage.jsx
+│       │   ├── ScheduledTasksPage.jsx
 │       │   ├── PlayersPage.jsx
 │       │   ├── ServersPage.jsx
 │       │   ├── SpamReportsPage.jsx
+│       │   ├── SettingsPage.jsx
 │       │   └── TicketsPage.jsx
 │       ├── ansi.js                # ANSI SGR colour parser
 │       ├── api.js                 # Fetch wrapper with JWT auth and 401 handling

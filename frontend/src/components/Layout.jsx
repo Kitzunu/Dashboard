@@ -22,6 +22,8 @@ import SpamReportsPage from './SpamReportsPage.jsx';
 import AuditLogPage from './AuditLogPage.jsx';
 import SettingsPage from './SettingsPage.jsx';
 import MutesPage from './MutesPage.jsx';
+import ScheduledTasksPage from './ScheduledTasksPage.jsx';
+import GuildsPage from './GuildsPage.jsx';
 import { GM_LABELS } from '../constants.js';
 
 const NAV_GROUPS = [
@@ -34,6 +36,7 @@ const NAV_GROUPS = [
       { id: 'autobroadcast', label: '📣 Autobroadcast', minLevel: 2 },
       { id: 'mailserver',    label: '📬 Mail Server',   minLevel: 3 },
       { id: 'dbquery',       label: '🗄 DB Query',       minLevel: 3 },
+      { id: 'scheduled',     label: '🕐 Scheduled Tasks', minLevel: 3 },
       { id: 'config',        label: '📄 Config',         minLevel: 3 },
     ],
   },
@@ -48,6 +51,7 @@ const NAV_GROUPS = [
       { id: 'accounts',  label: '👤 Accounts',  minLevel: 2 },
       { id: 'mail',      label: '✉ Send Mail',  minLevel: 2 },
       { id: 'channels',  label: '💬 Channels',  minLevel: 1 },
+      { id: 'guilds',    label: '⚔ Guilds',     minLevel: 1 },
     ],
   },
   {
@@ -278,7 +282,7 @@ export default function Layout() {
       </aside>
 
       <main className="main-content">
-        {page === 'home'          && <HomePage />}
+        {page === 'home'          && <HomePage socket={socket} />}
         {page === 'console'       && <ConsolePage socket={socket} auth={auth} />}
         {page === 'players'       && <PlayersPage auth={auth} serverStatus={serverStatus} />}
         {page === 'tickets'       && <TicketsPage />}
@@ -298,6 +302,8 @@ export default function Layout() {
         {page === 'spamreports'   && <SpamReportsPage />}
         {page === 'audit-log'     && <AuditLogPage />}
         {page === 'settings'      && <SettingsPage />}
+        {page === 'scheduled'     && <ScheduledTasksPage />}
+        {page === 'guilds'        && <GuildsPage />}
       </main>
 
       <ToastContainer toasts={toasts} />

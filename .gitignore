@@ -2,6 +2,7 @@
 
 .env
 .claude/
+backups/
 
 # compiled output
 /dist

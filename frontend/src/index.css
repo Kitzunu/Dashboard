@@ -2528,7 +2528,7 @@ code {
 }
 
 .settings-toggle-on {
-  background: var(--gold);
+  background: var(--green);
 }
 
 .settings-toggle-thumb {
@@ -2581,12 +2581,12 @@ code {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
   overflow-y: auto;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 18px;
+  padding: 22px;
 }
 
 .channels-detail-header {
@@ -2648,6 +2648,124 @@ code {
 .btn-xs {
   padding: 2px 8px;
   font-size: 11px;
+}
+
+/* ── Guilds page ─────────────────────────────────────────────── */
+.guild-tabard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.guild-tabard-swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.guild-tabard-color {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+}
+
+.guild-tabard-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.guild-info-row {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text);
+  padding: 4px 0;
+}
+
+.guild-info-label {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--text-dim);
+  min-width: 44px;
+}
+
+.guild-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+  margin-top: 4px;
+}
+
+.guild-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--text-dim);
+  cursor: pointer;
+  margin-bottom: -1px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s;
+}
+
+.guild-tab:hover { color: var(--text); }
+
+.guild-tab-active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+.guild-tab-count {
+  font-size: 11px;
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 1px 6px;
+  color: var(--text-dim);
+}
+
+.guild-ranks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.guild-rank-row {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.guild-rank-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.guild-rank-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.guild-rank-perms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
 .channels-rights-box {
