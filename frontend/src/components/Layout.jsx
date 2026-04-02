@@ -280,7 +280,7 @@ export default function Layout() {
       </aside>
 
       <main className="main-content">
-        {page === 'home'          && <HomePage />}
+        {page === 'home'          && <HomePage socket={socket} />}
         {page === 'console'       && <ConsolePage socket={socket} auth={auth} />}
         {page === 'players'       && <PlayersPage auth={auth} serverStatus={serverStatus} />}
         {page === 'tickets'       && <TicketsPage />}

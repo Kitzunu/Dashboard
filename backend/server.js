@@ -104,6 +104,13 @@ io.on('connection', (socket) => {
   socket.on('unsubscribe', (serverName) => {
     socket.leave(`console-${serverName}`);
   });
+  socket.on('subscribe-overview', () => {
+    socket.join('overview');
+    emitOverview(); // push current state immediately to everyone in the room
+  });
+  socket.on('unsubscribe-overview', () => {
+    socket.leave('overview');
+  });
 });
 
 processManager.setIO(io); // no-op; kept for compatibility
@@ -116,7 +123,44 @@ dbc.init();
 scheduler.init();
 
 // Poll player count every 30 s and store in rolling history
-const { charPool } = require('./db');
+const { charPool, authPool, worldPool } = require('./db');
+const os = require('os');
+const thresholds = require('./thresholds');
+
+async function emitOverview() {
+  // Each query is wrapped individually so a single DB failure doesn't abort the whole push
+  let playerCount = 0, ticketCount = 0, banCount = 0, motd = '', version = null, agentStatus = {};
+  try { const [[r]] = await charPool.query('SELECT COUNT(*) AS count FROM characters WHERE online = 1'); playerCount = Number(r.count); } catch {}
+  try { const [[r]] = await charPool.query('SELECT COUNT(*) AS count FROM gm_ticket WHERE type = 0');   ticketCount = Number(r.count); } catch {}
+  try { const [[r]] = await authPool.query('SELECT COUNT(*) AS count FROM account_banned WHERE active = 1'); banCount = Number(r.count); } catch {}
+  try { const [[r]] = await authPool.query('SELECT text FROM motd LIMIT 1'); motd = r?.text ?? ''; } catch {}
+  try { const [[r]] = await worldPool.query('SELECT core_version, core_revision, db_version, cache_id FROM version'); version = r ?? null; } catch {}
+  try { agentStatus = await processManager.getAllStatus(); } catch {}
+
+  const totalMem = os.totalmem();
+  const freeMem  = os.freemem();
+  const memPct   = Math.round(((totalMem - freeMem) / totalMem) * 100);
+  const t        = thresholds.load();
+  const windowMs = (t.graphMinutes ?? 60) * 60 * 1000;
+  const cutoff   = Date.now() - windowMs;
+  const latest   = resourceHistory.getHistory().slice(-1)[0];
+
+  io.to('overview').emit('overview:update', {
+    servers:   { worldserver: agentStatus.worldserver, authserver: agentStatus.authserver },
+    dashboard: { backendUptime: process.uptime(), agentConnected: serverBridge.isConnected(), agentUptime: agentStatus.uptime ?? null },
+    players:   { current: playerCount },
+    tickets:   { open:    ticketCount },
+    bans:      { active:  banCount },
+    system:    { totalMem, freeMem, memPct, cpuUsage: latest?.cpu ?? 0, cpuCount: os.cpus().length, platform: os.platform() },
+    thresholds: t,
+    motd,
+    version,
+    playerHistory:   playerHistory.getHistory(),
+    resourceHistory: resourceHistory.getHistory().filter((p) => p.time >= cutoff),
+    serverLatency:   latencyMonitor.getStats(),
+  });
+}
+
 async function pollPlayerCount() {
   try {
     const [rows] = await charPool.query('SELECT COUNT(*) AS count FROM characters WHERE online = 1');
@@ -127,7 +171,6 @@ pollPlayerCount();
 setInterval(pollPlayerCount, 30000);
 
 // Poll CPU and memory every 30 s and store in rolling history
-const os = require('os');
 function pollResources() {
   const snap1 = os.cpus().map((c) => ({ ...c.times }));
   setTimeout(() => {
@@ -145,6 +188,7 @@ function pollResources() {
     const total  = os.totalmem();
     const memory = Math.round(((total - os.freemem()) / total) * 100);
     resourceHistory.record(cpu, memory);
+    emitOverview();
   }, 200);
 }
 pollResources();
