@@ -1,5 +1,5 @@
 const express  = require('express');
-const { charPool } = require('../db');
+const { charPool, worldPool } = require('../db');
 const { requireGMLevel } = require('../middleware/auth');
 
 const router = express.Router();
@@ -74,6 +74,62 @@ router.get('/:id', requireGMLevel(1), async (req, res) => {
     `, [guildId]);
 
     res.json({ ...guild, members, ranks, eventLog });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/guilds/:id/bank — guild bank tabs and items
+router.get('/:id/bank', requireGMLevel(1), async (req, res) => {
+  const guildId = parseInt(req.params.id, 10);
+  if (!guildId) return res.status(400).json({ error: 'Invalid guild ID' });
+
+  try {
+    const [tabs] = await charPool.query(`
+      SELECT TabId, TabName, TabIcon, TabText
+      FROM guild_bank_tab
+      WHERE guildid = ?
+      ORDER BY TabId ASC
+    `, [guildId]);
+
+    const [items] = await charPool.query(`
+      SELECT gbi.TabId, gbi.SlotId, ii.itemEntry, ii.count,
+             ii.enchantments, ii.randomPropertyId
+      FROM guild_bank_item gbi
+      JOIN item_instance ii ON gbi.item_guid = ii.guid
+      WHERE gbi.guildid = ?
+      ORDER BY gbi.TabId ASC, gbi.SlotId ASC
+    `, [guildId]);
+
+    // Fetch item names and quality from world DB for all unique item entries
+    const entryIds = [...new Set(items.map((i) => i.itemEntry))];
+    let itemTemplates = [];
+    if (entryIds.length > 0) {
+      [itemTemplates] = await worldPool.query(
+        `SELECT entry, name, Quality, stackable, displayid FROM item_template WHERE entry IN (?)`,
+        [entryIds]
+      );
+    }
+
+    const templateMap = Object.fromEntries(itemTemplates.map((t) => [t.entry, t]));
+
+    // Merge template info into items and group by tab
+    const tabMap = Object.fromEntries(tabs.map((t) => [t.TabId, { ...t, items: [] }]));
+    for (const item of items) {
+      const tpl = templateMap[item.itemEntry] ?? {};
+      if (tabMap[item.TabId]) {
+        tabMap[item.TabId].items.push({
+          slotId:    item.SlotId,
+          itemEntry: item.itemEntry,
+          count:     item.count,
+          name:      tpl.name    ?? `Item #${item.itemEntry}`,
+          quality:   tpl.Quality ?? 1,
+          stackable: tpl.stackable ?? 1,
+        });
+      }
+    }
+
+    res.json(Object.values(tabMap));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

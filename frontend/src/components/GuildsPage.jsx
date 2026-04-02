@@ -80,7 +80,7 @@ function MembersTab({ members }) {
   if (members.length === 0) return <div className="empty-state">No members.</div>;
   return (
     <div className="table-wrap">
-      <table className="table">
+      <table className="data-table">
         <thead>
           <tr>
             <th>Name</th>
@@ -158,7 +158,7 @@ function EventLogTab({ eventLog, ranks }) {
   if (eventLog.length === 0) return <div className="empty-state">No events recorded.</div>;
   return (
     <div className="table-wrap">
-      <table className="table">
+      <table className="data-table">
         <thead>
           <tr>
             <th>Time</th>
@@ -178,9 +178,88 @@ function EventLogTab({ eventLog, ranks }) {
   );
 }
 
+// WoW item quality colours
+const QUALITY_COLORS = {
+  0: '#9d9d9d', 1: '#ffffff', 2: '#1eff00',
+  3: '#0070dd', 4: '#a335ee', 5: '#ff8000',
+  6: '#e6cc80', 7: '#e6cc80',
+};
+
+function BankTab({ guildId }) {
+  const [tabs, setTabs]       = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState(0);
+
+  useEffect(() => {
+    setLoading(true);
+    api.getGuildBank(guildId)
+      .then((data) => { setTabs(data); setActiveTab(data[0]?.TabId ?? 0); })
+      .catch((err) => toast(err.message, 'error'))
+      .finally(() => setLoading(false));
+  }, [guildId]);
+
+  if (loading) return <div className="empty-state">Loading bank…</div>;
+  if (!tabs || tabs.length === 0) return <div className="empty-state">No bank tabs.</div>;
+
+  const currentTab = tabs.find((t) => t.TabId === activeTab);
+
+  return (
+    <div className="guild-bank">
+      <div className="guild-bank-tabs">
+        {tabs.map((t) => (
+          <button
+            key={t.TabId}
+            className={`guild-bank-tab${activeTab === t.TabId ? ' guild-bank-tab-active' : ''}`}
+            onClick={() => setActiveTab(t.TabId)}
+          >
+            {t.TabName || `Tab ${t.TabId + 1}`}
+            <span className="guild-tab-count">{t.items.length}</span>
+          </button>
+        ))}
+      </div>
+
+      {currentTab && (
+        <>
+          {currentTab.TabText && (
+            <p className="td-muted" style={{ fontSize: 12, margin: '4px 0' }}>{currentTab.TabText}</p>
+          )}
+          {currentTab.items.length === 0 ? (
+            <div className="empty-state">This tab is empty.</div>
+          ) : (
+            <div className="table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th style={{ textAlign: 'center' }}>Qty</th>
+                    <th style={{ textAlign: 'center' }}>Slot</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentTab.items.map((item) => (
+                    <tr key={item.slotId}>
+                      <td>
+                        <span style={{ color: QUALITY_COLORS[item.quality] ?? '#fff', fontWeight: 500 }}>
+                          {item.name}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'center' }}>{item.count}</td>
+                      <td style={{ textAlign: 'center' }} className="td-muted">{item.slotId}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-const TABS = ['Members', 'Ranks', 'Event Log'];
+const TABS = ['Members', 'Ranks', 'Bank', 'Event Log'];
 
 export default function GuildsPage() {
   const [guilds, setGuilds]           = useState([]);
@@ -235,7 +314,7 @@ export default function GuildsPage() {
 
       <div className="channels-layout">
         {/* Guild list */}
-        <div className="channels-list-panel">
+        <div className="guilds-list-panel">
           <div className="channels-search-bar">
             <input
               className="input"
@@ -251,7 +330,7 @@ export default function GuildsPage() {
             <div className="empty-state">No guilds found.</div>
           ) : (
             <div className="table-wrap">
-              <table className="table">
+              <table className="data-table">
                 <thead>
                   <tr>
                     <th>Name</th>
@@ -338,6 +417,7 @@ export default function GuildsPage() {
 
               {activeTab === 'Members'   && <MembersTab  members={selected.members} />}
               {activeTab === 'Ranks'     && <RanksTab    ranks={selected.ranks} />}
+              {activeTab === 'Bank'      && <BankTab     guildId={selected.guildid} />}
               {activeTab === 'Event Log' && <EventLogTab eventLog={selected.eventLog} ranks={selected.ranks} />}
             </>
           )}

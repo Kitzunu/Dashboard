@@ -2651,6 +2651,19 @@ code {
 }
 
 /* ── Guilds page ─────────────────────────────────────────────── */
+.guilds-list-panel {
+  flex: 0 0 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.guilds-list-panel .table-wrap {
+  flex: 1;
+  overflow-y: auto;
+}
+
 .guild-tabard {
   display: flex;
   align-items: center;
@@ -2766,6 +2779,41 @@ code {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
+}
+
+.guild-bank {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.guild-bank-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.guild-bank-tab {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 5px 12px;
+  font-size: 13px;
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.guild-bank-tab:hover { color: var(--text); }
+
+.guild-bank-tab-active {
+  color: var(--text);
+  border-color: var(--accent);
+  background: rgba(91, 155, 213, 0.08);
+  font-weight: 600;
 }
 
 .channels-rights-box {

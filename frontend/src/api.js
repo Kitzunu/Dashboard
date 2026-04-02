@@ -167,8 +167,9 @@ export const api = {
   deleteScheduledTask:  (id)      => request('DELETE', `/api/scheduled-tasks/${id}`),
   runScheduledTask:     (id)      => request('POST',   `/api/scheduled-tasks/${id}/run`),
 
-  getGuilds: ()   => request('GET', '/api/guilds'),
-  getGuild:  (id) => request('GET', `/api/guilds/${id}`),
+  getGuilds:     ()   => request('GET', '/api/guilds'),
+  getGuild:      (id) => request('GET', `/api/guilds/${id}`),
+  getGuildBank:  (id) => request('GET', `/api/guilds/${id}/bank`),
 
   getBans: () => request('GET', '/api/bans'),
   banTarget: (type, target, duration, reason) =>
