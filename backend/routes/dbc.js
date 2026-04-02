@@ -24,15 +24,39 @@ router.get('/areas', requireGMLevel(1), (req, res) => {
   }
 });
 
+// GET /api/dbc/races  — { [id]: name } lookup for all races
+router.get('/races', requireGMLevel(1), (req, res) => {
+  try {
+    const races = dbc.getAllRaces();
+    res.json({ available: Object.keys(races).length > 0, races });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/dbc/classes  — { [id]: name } lookup for all classes
+router.get('/classes', requireGMLevel(1), (req, res) => {
+  try {
+    const classes = dbc.getAllClasses();
+    res.json({ available: Object.keys(classes).length > 0, classes });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/dbc/status  — whether DBC data is loaded
 router.get('/status', requireGMLevel(1), (req, res) => {
-  const maps  = dbc.getAllMaps();
-  const areas = dbc.getAllAreas();
+  const maps    = dbc.getAllMaps();
+  const areas   = dbc.getAllAreas();
+  const races   = dbc.getAllRaces();
+  const classes = dbc.getAllClasses();
   res.json({
-    configured: !!process.env.DBC_PATH,
-    dbcPath:    process.env.DBC_PATH || null,
-    mapCount:   Object.keys(maps).length,
-    areaCount:  Object.keys(areas).length,
+    configured:  !!process.env.DBC_PATH,
+    dbcPath:     process.env.DBC_PATH || null,
+    mapCount:    Object.keys(maps).length,
+    areaCount:   Object.keys(areas).length,
+    raceCount:   Object.keys(races).length,
+    classCount:  Object.keys(classes).length,
   });
 });
 

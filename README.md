@@ -161,12 +161,12 @@ When set, the backend runs a purge on startup and then once every 24 hours, dele
 
 ```env
 # Path to the WotLK 3.3.5a client DBFilesClient folder.
-# Required for human-readable map and zone names in Players, Lag Reports, and Bug Reports.
-# Without this, raw map/area IDs are shown as fallback.
+# Required for human-readable map, zone, race, and class names in Players and Accounts.
+# Without this, raw IDs are shown as fallback.
 # DBC_PATH=C:\World of Warcraft\Data\enUS\DBFilesClient
 ```
 
-Files used: `Map.dbc` (map names) and `AreaTable.dbc` (zone/area names).
+Files used: `Map.dbc` (map names), `AreaTable.dbc` (zone/area names), `ChrRaces.dbc` (race names), and `ChrClasses.dbc` (class names).
 
 ## Access Levels
 
@@ -255,7 +255,7 @@ npm run start:frontend  # Vite frontend on port 5173
 - Auto-scroll toggle, saved to `localStorage`
 
 ### Players
-- Online players with character name, race, class, level, zone (resolved from `AreaTable.dbc` if configured), and account
+- Online players with character name, race (resolved from `ChrRaces.dbc` if configured), class (resolved from `ChrClasses.dbc` if configured), level, zone (resolved from `AreaTable.dbc` if configured), and account
 - Filter by character name or account username
 - **Kick** — with optional reason
 - **Ban** — character, account, or IP; target pre-filled from selected player

@@ -11,8 +11,10 @@
  * WotLK uses 16 locale slots per localized field; slot 0 = enUS.
  *
  * Field indices used:
- *   Map.dbc       — ID: 0,  MapName_lang[enUS]: 5
- *   AreaTable.dbc — ID: 0,  MapID: 1,  AreaName_lang[enUS]: 11
+ *   Map.dbc        — ID: 0,  MapName_lang[enUS]: 5
+ *   AreaTable.dbc  — ID: 0,  MapID: 1,  AreaName_lang[enUS]: 11
+ *   ChrRaces.dbc   — ID: 0,  Name_lang[enUS]: 14
+ *   ChrClasses.dbc — ID: 0,  Name_lang[enUS]: 4
  */
 
 const fs   = require('fs');
@@ -64,8 +66,10 @@ function parseDBC(filePath) {
 }
 
 // ── Lookup tables (populated once on init) ───────────────────────────────────
-let mapNames  = null;   // { [mapId]: string }
-let areaNames = null;   // { [areaId]: string }
+let mapNames   = null;   // { [mapId]: string }
+let areaNames  = null;   // { [areaId]: string }
+let raceNames  = null;   // { [raceId]: string }
+let classNames = null;   // { [classId]: string }
 
 function dbcDir() {
   return process.env.DBC_PATH || null;
@@ -109,6 +113,44 @@ function loadAreaNames() {
   console.log(`[dbc] Loaded ${Object.keys(areaNames).length} area names from AreaTable.dbc`);
 }
 
+function loadRaceNames() {
+  if (raceNames !== null) return;
+
+  const dir = dbcDir();
+  raceNames = {};
+  if (!dir) return;
+
+  const records = parseDBC(path.join(dir, 'ChrRaces.dbc'));
+  if (!records) return;
+
+  for (const r of records) {
+    const id   = r.uint32(0);
+    const name = r.locString(14);  // Name_lang[enUS] = field 14
+    if (name) raceNames[id] = name;
+  }
+
+  console.log(`[dbc] Loaded ${Object.keys(raceNames).length} race names from ChrRaces.dbc`);
+}
+
+function loadClassNames() {
+  if (classNames !== null) return;
+
+  const dir = dbcDir();
+  classNames = {};
+  if (!dir) return;
+
+  const records = parseDBC(path.join(dir, 'ChrClasses.dbc'));
+  if (!records) return;
+
+  for (const r of records) {
+    const id   = r.uint32(0);
+    const name = r.locString(4);   // Name_lang[enUS] = field 4
+    if (name) classNames[id] = name;
+  }
+
+  console.log(`[dbc] Loaded ${Object.keys(classNames).length} class names from ChrClasses.dbc`);
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 function getMapName(id) {
   if (mapNames === null) loadMapNames();
@@ -130,14 +172,36 @@ function getAllAreas() {
   return areaNames;
 }
 
-/** Call once at server startup to eager-load both tables. */
-function init() {
-  if (!dbcDir()) {
-    console.log('[dbc] DBC_PATH not configured — map/area name resolution disabled');
-    return;
-  }
-  try { loadMapNames();  } catch (e) { console.warn('[dbc] Map.dbc load error:', e.message); }
-  try { loadAreaNames(); } catch (e) { console.warn('[dbc] AreaTable.dbc load error:', e.message); }
+function getRaceName(id) {
+  if (raceNames === null) loadRaceNames();
+  return raceNames[id] || null;
 }
 
-module.exports = { init, getMapName, getAreaName, getAllMaps, getAllAreas };
+function getClassName(id) {
+  if (classNames === null) loadClassNames();
+  return classNames[id] || null;
+}
+
+function getAllRaces() {
+  if (raceNames === null) loadRaceNames();
+  return raceNames;
+}
+
+function getAllClasses() {
+  if (classNames === null) loadClassNames();
+  return classNames;
+}
+
+/** Call once at server startup to eager-load all tables. */
+function init() {
+  if (!dbcDir()) {
+    console.log('[dbc] DBC_PATH not configured — DBC name resolution disabled');
+    return;
+  }
+  try { loadMapNames();   } catch (e) { console.warn('[dbc] Map.dbc load error:', e.message); }
+  try { loadAreaNames();  } catch (e) { console.warn('[dbc] AreaTable.dbc load error:', e.message); }
+  try { loadRaceNames();  } catch (e) { console.warn('[dbc] ChrRaces.dbc load error:', e.message); }
+  try { loadClassNames(); } catch (e) { console.warn('[dbc] ChrClasses.dbc load error:', e.message); }
+}
+
+module.exports = { init, getMapName, getAreaName, getAllMaps, getAllAreas, getRaceName, getClassName, getAllRaces, getAllClasses };

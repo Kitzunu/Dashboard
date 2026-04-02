@@ -102,9 +102,11 @@ export const api = {
   saveConfig:      (name, content) => request('PUT', `/api/config/${name}`, { content }),
 
   // DBC data
-  getDBCStatus: ()  => request('GET', '/api/dbc/status'),
-  getDBCMaps:   ()  => request('GET', '/api/dbc/maps'),
-  getDBCAreas:  ()  => request('GET', '/api/dbc/areas'),
+  getDBCStatus:   () => request('GET', '/api/dbc/status'),
+  getDBCMaps:     () => request('GET', '/api/dbc/maps'),
+  getDBCAreas:    () => request('GET', '/api/dbc/areas'),
+  getDBCRaces:    () => request('GET', '/api/dbc/races'),
+  getDBCClasses:  () => request('GET', '/api/dbc/classes'),
 
   // Mail Server Templates
   getMailServerTemplates:  ()          => request('GET',    '/api/mailserver'),

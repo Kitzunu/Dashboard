@@ -2,11 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 
-const RACES = {
+const FALLBACK_RACES = {
   1: 'Human', 2: 'Orc', 3: 'Dwarf', 4: 'Night Elf', 5: 'Undead',
   6: 'Tauren', 7: 'Gnome', 8: 'Troll', 10: 'Blood Elf', 11: 'Draenei',
 };
-const CLASSES = {
+const FALLBACK_CLASSES = {
   1: 'Warrior', 2: 'Paladin', 3: 'Hunter', 4: 'Rogue', 5: 'Priest',
   6: 'Death Knight', 7: 'Shaman', 8: 'Mage', 9: 'Warlock', 11: 'Druid',
 };
@@ -123,9 +123,20 @@ export default function PlayersPage({ auth, serverStatus }) {
   const [kickTarget, setKickTarget] = useState(null);
   const [banTarget, setBanTarget] = useState(null);
   const [filter, setFilter] = useState('');
+  const [races, setRaces]   = useState(FALLBACK_RACES);
+  const [classes, setClasses] = useState(FALLBACK_CLASSES);
 
   const canModerate = auth.gmlevel >= 2;
   const worldOnline = serverStatus?.worldserver?.running ?? true;
+
+  useEffect(() => {
+    api.getDBCRaces().then(({ races: r }) => {
+      if (r && Object.keys(r).length > 0) setRaces(r);
+    }).catch(() => {});
+    api.getDBCClasses().then(({ classes: c }) => {
+      if (c && Object.keys(c).length > 0) setClasses(c);
+    }).catch(() => {});
+  }, []);
 
   const loadPlayers = useCallback(async () => {
     try {
@@ -239,8 +250,8 @@ export default function PlayersPage({ auth, serverStatus }) {
                     visible.map((p) => (
                       <tr key={p.guid}>
                         <td className="td-name">{p.name}</td>
-                        <td>{RACES[p.race] ?? p.race}</td>
-                        <td>{CLASSES[p.class] ?? p.class}</td>
+                        <td>{races[p.race] ?? p.race}</td>
+                        <td>{classes[p.class] ?? p.class}</td>
                         <td>{p.level}</td>
                         <td className="td-muted">{p.zoneName ?? p.zone}</td>
                         <td className="td-muted">{p.username ?? p.account}</td>

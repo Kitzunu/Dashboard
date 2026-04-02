@@ -3,11 +3,11 @@ import { api } from '../api.js';
 import { toast } from '../toast.js';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const RACES = {
+const FALLBACK_RACES = {
   1: 'Human', 2: 'Orc', 3: 'Dwarf', 4: 'Night Elf', 5: 'Undead',
   6: 'Tauren', 7: 'Gnome', 8: 'Troll', 10: 'Blood Elf', 11: 'Draenei',
 };
-const CLASSES = {
+const FALLBACK_CLASSES = {
   1: 'Warrior', 2: 'Paladin', 3: 'Hunter', 4: 'Rogue', 5: 'Priest',
   6: 'Death Knight', 7: 'Shaman', 8: 'Mage', 9: 'Warlock', 11: 'Druid',
 };
@@ -367,6 +367,17 @@ function AccountDetailModal({ account, auth, onClose, onRefresh, onDeleted }) {
   const [gmBusy, setGmBusy]               = useState(false);
   const [expansionBusy, setExpansionBusy] = useState(false);
   const [lockBusy, setLockBusy]           = useState(false);
+  const [races, setRaces]     = useState(FALLBACK_RACES);
+  const [classes, setClasses] = useState(FALLBACK_CLASSES);
+
+  useEffect(() => {
+    api.getDBCRaces().then(({ races: r }) => {
+      if (r && Object.keys(r).length > 0) setRaces(r);
+    }).catch(() => {});
+    api.getDBCClasses().then(({ classes: c }) => {
+      if (c && Object.keys(c).length > 0) setClasses(c);
+    }).catch(() => {});
+  }, []);
 
   const canLock  = auth.gmlevel >= 2;
   const canAdmin = auth.gmlevel >= 3;
@@ -605,8 +616,8 @@ function AccountDetailModal({ account, auth, onClose, onRefresh, onDeleted }) {
                   characters.map((c) => (
                     <tr key={c.guid}>
                       <td className="td-name">{c.name}</td>
-                      <td>{RACES[c.race] ?? c.race}</td>
-                      <td>{CLASSES[c.class] ?? c.class}</td>
+                      <td>{races[c.race] ?? c.race}</td>
+                      <td>{classes[c.class] ?? c.class}</td>
                       <td>{c.level}</td>
                       <td className="td-muted">{fmtPlaytime(c.totaltime)}</td>
                       <td>
