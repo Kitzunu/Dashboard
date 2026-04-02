@@ -22,6 +22,7 @@ import SpamReportsPage from './SpamReportsPage.jsx';
 import AuditLogPage from './AuditLogPage.jsx';
 import SettingsPage from './SettingsPage.jsx';
 import MutesPage from './MutesPage.jsx';
+import ScheduledTasksPage from './ScheduledTasksPage.jsx';
 import { GM_LABELS } from '../constants.js';
 
 const NAV_GROUPS = [
@@ -34,6 +35,7 @@ const NAV_GROUPS = [
       { id: 'autobroadcast', label: '📣 Autobroadcast', minLevel: 2 },
       { id: 'mailserver',    label: '📬 Mail Server',   minLevel: 3 },
       { id: 'dbquery',       label: '🗄 DB Query',       minLevel: 3 },
+      { id: 'scheduled',     label: '🕐 Scheduled Tasks', minLevel: 3 },
       { id: 'config',        label: '📄 Config',         minLevel: 3 },
     ],
   },
@@ -298,6 +300,7 @@ export default function Layout() {
         {page === 'spamreports'   && <SpamReportsPage />}
         {page === 'audit-log'     && <AuditLogPage />}
         {page === 'settings'      && <SettingsPage />}
+        {page === 'scheduled'     && <ScheduledTasksPage />}
       </main>
 
       <ToastContainer toasts={toasts} />

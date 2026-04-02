@@ -160,6 +160,12 @@ export const api = {
   getMutes:   ()   => request('GET',    '/api/mutes'),
   unmute:     (id) => request('DELETE', `/api/mutes/${id}`),
 
+  getScheduledTasks:    ()        => request('GET',    '/api/scheduled-tasks'),
+  createScheduledTask:  (data)    => request('POST',   '/api/scheduled-tasks', data),
+  updateScheduledTask:  (id, data)=> request('PUT',    `/api/scheduled-tasks/${id}`, data),
+  deleteScheduledTask:  (id)      => request('DELETE', `/api/scheduled-tasks/${id}`),
+  runScheduledTask:     (id)      => request('POST',   `/api/scheduled-tasks/${id}/run`),
+
   getBans: () => request('GET', '/api/bans'),
   banTarget: (type, target, duration, reason) =>
     request('POST', '/api/bans', { type, target, duration, reason }),

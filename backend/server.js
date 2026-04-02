@@ -30,9 +30,11 @@ const mailserverRoutes   = require('./routes/mailserver');
 const dbcRoutes          = require('./routes/dbc');
 const channelRoutes      = require('./routes/channels');
 const spamreportRoutes   = require('./routes/spamreports');
-const auditLogRoutes     = require('./routes/auditLogRoutes');
-const settingsRoutes     = require('./routes/settingsRoutes');
-const mutesRoutes        = require('./routes/mutes');
+const auditLogRoutes         = require('./routes/auditLogRoutes');
+const settingsRoutes         = require('./routes/settingsRoutes');
+const mutesRoutes            = require('./routes/mutes');
+const scheduledTasksRoutes   = require('./routes/scheduledTasks');
+const scheduler              = require('./scheduler');
 const { startRetentionJob } = require('./audit');
 const playerHistory      = require('./playerHistory');
 const resourceHistory    = require('./resourceHistory');
@@ -79,7 +81,8 @@ app.use('/api/channels',     authenticateToken, channelRoutes);
 app.use('/api/spamreports',  authenticateToken, spamreportRoutes);
 app.use('/api/audit-log',    authenticateToken, auditLogRoutes);
 app.use('/api/settings',     authenticateToken, settingsRoutes);
-app.use('/api/mutes',        authenticateToken, mutesRoutes);
+app.use('/api/mutes',            authenticateToken, mutesRoutes);
+app.use('/api/scheduled-tasks', authenticateToken, scheduledTasksRoutes);
 
 // Authenticate socket connections with JWT
 io.use((socket, next) => {
@@ -108,6 +111,9 @@ serverBridge.init(io);   // connect to agent SSE stream and bridge events
 
 // Pre-load DBC lookup tables (gracefully no-ops if DBC_PATH is not set)
 dbc.init();
+
+// Start the scheduled task runner
+scheduler.init();
 
 // Poll player count every 30 s and store in rolling history
 const { charPool } = require('./db');

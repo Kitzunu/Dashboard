@@ -11,6 +11,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 - **Autobroadcast** — Manage the in-game autobroadcast rotation: add, edit, delete, and weight messages
 - **Mail Server** — Full CRUD editor for the `mail_server_template` system with subject, body, per-faction money and items, eligibility conditions, and a recipients list
 - **DB Query** — Run SQL queries against the auth, world, or characters databases
+- **Scheduled Tasks** — Schedule recurring database backups and server restarts by time of day and day of week; run any task immediately with Run Now
 - **Config** — Edit worldserver.conf, authserver.conf, and any module `.conf` files directly in the browser with line numbers, a find bar, unsaved-change indicators, and automatic `.bak` backups
 
 **Game**
@@ -137,6 +138,20 @@ FRONTEND_URL=http://localhost:5173
 > ```bash
 > node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 > ```
+
+### Scheduled Tasks
+
+```env
+# Directory where mysqldump backup files are saved (created automatically).
+# BACKUP_PATH=C:\AzerothCore\backups
+
+# Full path to mysqldump — only needed if it is not in your system PATH.
+# MYSQLDUMP_PATH=C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqldump.exe
+```
+
+Backups are saved as `<database>_YYYY-MM-DD_HH-mm.sql` files. The scheduler checks every minute and fires tasks whose time and day-of-week match. If `mysqldump` is on your system `PATH` you do not need to set `MYSQLDUMP_PATH`.
+
+For scheduled restarts, the target server's Auto-Restart is automatically enabled before the shutdown command is sent so the server agent brings it back up after the countdown.
 
 ### Session Idle Timeout
 
@@ -443,6 +458,7 @@ Dashboard/
 │       │   ├── MailPage.jsx
 │       │   ├── MailServerPage.jsx
 │       │   ├── MutesPage.jsx
+│       │   ├── ScheduledTasksPage.jsx
 │       │   ├── PlayersPage.jsx
 │       │   ├── ServersPage.jsx
 │       │   ├── SpamReportsPage.jsx

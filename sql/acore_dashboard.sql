@@ -33,3 +33,19 @@ CREATE TABLE IF NOT EXISTS `audit_logs` (
   KEY `idx_success`   (`success`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   COMMENT='Dashboard audit log';
+
+CREATE TABLE IF NOT EXISTS `scheduled_tasks` (
+  `id`          INT UNSIGNED  NOT NULL AUTO_INCREMENT,
+  `name`        VARCHAR(100)  NOT NULL,
+  `type`        ENUM('restart','backup') NOT NULL,
+  `hour`        TINYINT UNSIGNED NOT NULL DEFAULT 3,
+  `minute`      TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  `days`        VARCHAR(20)   NOT NULL DEFAULT '0,1,2,3,4,5,6',
+  `enabled`     TINYINT(1)    NOT NULL DEFAULT 1,
+  `config`      JSON          NULL,
+  `last_run`    DATETIME      NULL,
+  `last_status` VARCHAR(255)  NULL,
+  `created_at`  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Dashboard scheduled tasks';
