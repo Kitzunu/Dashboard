@@ -131,8 +131,9 @@ export const api = {
   deleteLagReport:  (id) => request('DELETE', `/api/lagreports/${id}`),
   clearLagReports:  ()   => request('DELETE', '/api/lagreports'),
 
-  getSettings:  ()       => request('GET', '/api/settings'),
-  saveSettings: (data)   => request('PUT', '/api/settings', data),
+  getSettings:        ()      => request('GET', '/api/settings'),
+  saveSettings:       (data)  => request('PUT', '/api/settings', data),
+  testDiscordWebhook: ()      => request('POST', '/api/settings/discord/test'),
 
   getAuditLog: (page = 1, { user = '', actions = [], success = '', search = '' } = {}) =>
     request('GET', `/api/audit-log?page=${page}&user=${encodeURIComponent(user)}&actions=${encodeURIComponent(actions.join(','))}&success=${success}&search=${encodeURIComponent(search)}`),

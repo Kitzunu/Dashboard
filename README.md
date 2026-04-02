@@ -5,7 +5,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 ## Features
 
 **Server**
-- **Overview** — Server status cards with live uptime timers, online player/ticket/ban counts, system memory and CPU bars with rolling 60-minute history graphs and configurable alert thresholds (threshold shown as dashed line on graph), browser notifications with audio cues, worldserver TCP latency stats (mean/median/P95/P99/max over a rolling 60-minute window), and a player count sparkline
+- **Overview** — Server status cards with live uptime timers, online player/ticket/ban counts, system memory and CPU bars with rolling 60-minute history graphs and configurable alert thresholds (threshold shown as dashed line on graph), browser notifications with audio cues, Discord webhook alerts, worldserver TCP latency stats (mean/median/P95/P99/max over a rolling 60-minute window), and a player count sparkline
 - **Console** — Real-time worldserver and authserver log streaming via Socket.IO with full ANSI colour rendering, GM command input, persistent per-session command history, and auto-scroll toggle
 - **Servers** — Start, stop, scheduled restart, auto-restart toggle, and MOTD editor for worldserver and authserver
 - **Autobroadcast** — Manage the in-game autobroadcast rotation: add, edit, delete, and weight messages
@@ -31,7 +31,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 
 **Dashboard** *(Administrator only)*
 - **Audit Log** — Immutable record of all critical actions taken through the dashboard: logins (including failed attempts with reason), logouts, server start/stop/restart, config saves (with changed key→value diff), MOTD changes, bans/unbans, account changes, console commands, DB queries, announcements, mail sends, and more — with user, IP, timestamp, and success/failure status
-- **Settings** — Dashboard-wide configuration stored in the `acore_dashboard` database; settings changes are audit-logged
+- **Settings** — Dashboard-wide configuration stored in the `acore_dashboard` database; settings changes are audit-logged; Discord alert toggles per event type
 
 **Other**
 - **IP Allowlist** — Backend access restricted to a configurable list of IPs (default: localhost only)
@@ -153,6 +153,27 @@ Backups are saved as `<database>_YYYY-MM-DD_HH-mm.sql` files. The scheduler chec
 
 For scheduled restarts, the target server's Auto-Restart is automatically enabled before the shutdown command is sent so the server agent brings it back up after the countdown.
 
+### Discord Alerts
+
+```env
+# Discord channel webhook URL.
+# When set, the dashboard posts alerts to this webhook for the events enabled in Settings.
+# Leave blank (or omit) to disable all Discord notifications.
+# DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/your-webhook-id/your-webhook-token
+```
+
+Three alert types are supported, each with an independent toggle in **Settings → Discord Alerts**:
+
+| Alert | Trigger | Cooldown |
+|---|---|---|
+| Server offline | worldserver or authserver transitions from running → offline | 5 min per server |
+| Resource threshold | CPU or memory usage exceeds the configured threshold | 5 min per resource |
+| Agent disconnect | Server agent loses its SSE connection to the dashboard | 5 min |
+
+Use the **Send Test Message** button in Settings to verify the webhook is working.
+
+> Create a Discord webhook via **Channel Settings → Integrations → Webhooks → New Webhook**, then copy the URL.
+
 ### Session Idle Timeout
 
 ```env
@@ -265,7 +286,7 @@ The **server agent** (`serverAgent.js`) is a separate process that owns the worl
 - Worldserver TCP latency panel — mean, median, P95, P99, and max over a rolling 60-minute window
 - Player count sparkline over the last hour (up to 120 data points sampled every 30 s)
 - AzerothCore core revision (clickable link to GitHub commit), DB version, cache ID, and current MOTD
-- Auto-refreshes every 30 seconds
+- Real-time push updates via Socket.IO (no polling)
 
 ### Console
 - Live log streaming for worldserver and authserver via Socket.IO
@@ -377,6 +398,15 @@ The **server agent** (`serverAgent.js`) is a separate process that owns the worl
 | Setting | Default | Description |
 |---|---|---|
 | Config Editor → Create .bak backup on save | On | Creates a `.bak` copy of each config file before overwriting |
+| Discord Alerts → Enable Discord alerts | On | Master switch — when off, no messages are sent |
+| Discord Alerts → Display name | AzerothCore Dashboard | Name shown on Discord messages (overrides webhook default) |
+| Discord Alerts → Avatar URL | *(blank)* | Direct image URL used as the bot avatar; blank uses the dashboard icon |
+| Discord Alerts → Server offline alert | On | Posts to Discord when worldserver or authserver goes offline unexpectedly |
+| Discord Alerts → Server offline message | *see below* | Editable message body; supports `{server}` |
+| Discord Alerts → Resource threshold alert | On | Posts to Discord when CPU or memory exceeds the configured threshold (5-minute cooldown) |
+| Discord Alerts → Resource threshold message | *see below* | Editable message body; supports `{resource}`, `{pct}`, `{threshold}` |
+| Discord Alerts → Agent disconnect alert | On | Posts to Discord when the server agent loses its connection |
+| Discord Alerts → Agent disconnect message | *see below* | Editable message body; no variables |
 
 ### Audit Log *(Administrator only)*
 - Paginated table (50 per page) of all dashboard actions, newest first
@@ -427,6 +457,7 @@ Dashboard/
 │   │   ├── thresholds.js          # CPU/memory alert thresholds
 │   │   └── tickets.js             # GM ticket CRUD
 │   ├── audit.js                   # Audit log helper (fire-and-forget write to acore_dashboard)
+│   ├── discord.js                 # Discord webhook sender (alerts for crashes, thresholds, agent disconnects)
 │   ├── db.js                      # MySQL connection pools (auth, world, characters, dashboard)
 │   ├── dbc.js                     # WotLK DBC binary parser
 │   ├── latencyMonitor.js          # TCP latency sampling + rolling stats
@@ -462,6 +493,7 @@ Dashboard/
 │       │   ├── PlayersPage.jsx
 │       │   ├── ServersPage.jsx
 │       │   ├── SpamReportsPage.jsx
+│       │   ├── SettingsPage.jsx
 │       │   └── TicketsPage.jsx
 │       ├── ansi.js                # ANSI SGR colour parser
 │       ├── api.js                 # Fetch wrapper with JWT auth and 401 handling

@@ -58,6 +58,9 @@ app.use(cors({ origin: frontendUrl }));
 app.use(express.json({ limit: '10mb' }));
 app.use(ipAllowlist);
 
+// Serve backend/public so assets like the icon can be referenced from Discord webhooks
+app.use('/img', require('express').static(require('path').join(__dirname, 'public')));
+
 app.use('/api/auth', authRoutes);
 app.use('/api/servers', authenticateToken, serverRoutes);
 app.use('/api/players', authenticateToken, playerRoutes);
@@ -115,6 +118,25 @@ io.on('connection', (socket) => {
 
 processManager.setIO(io); // no-op; kept for compatibility
 serverBridge.init(io);   // connect to agent SSE stream and bridge events
+
+// ── Discord alerts ────────────────────────────────────────────────────────────
+const discord = require('./discord');
+
+// Track last-known running state per server to detect crash transitions
+const serverRunning = { worldserver: null, authserver: null };
+
+serverBridge.on('server-status', ({ server, running }) => {
+  const wasRunning = serverRunning[server];
+  serverRunning[server] = running;
+  // Only alert when transitioning from running → offline (crash / unexpected stop)
+  if (wasRunning === true && !running) {
+    discord.sendServerCrash(server).catch(() => {});
+  }
+});
+
+serverBridge.on('agent-disconnected', () => {
+  discord.sendAgentDisconnect().catch(() => {});
+});
 
 // Pre-load DBC lookup tables (gracefully no-ops if DBC_PATH is not set)
 dbc.init();
@@ -188,6 +210,10 @@ function pollResources() {
     const total  = os.totalmem();
     const memory = Math.round(((total - os.freemem()) / total) * 100);
     resourceHistory.record(cpu, memory);
+    // Threshold breach Discord alerts
+    const t = thresholds.load();
+    if (t.cpu    && cpu    >= t.cpu)    discord.sendThresholdBreach('cpu',    cpu,    t.cpu).catch(() => {});
+    if (t.memory && memory >= t.memory) discord.sendThresholdBreach('memory', memory, t.memory).catch(() => {});
     emitOverview();
   }, 200);
 }
