@@ -168,6 +168,58 @@ function ActionMultiSelect({ selected, onChange }) {
   );
 }
 
+// ── Detail modal ──────────────────────────────────────────────────────────────
+function AuditDetailModal({ row, onClose }) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal modal-wide" onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <h3 style={{ margin: 0 }}>Audit Entry #{row.id}</h3>
+          <button className="btn btn-ghost btn-xs" onClick={onClose}>✕ Close</button>
+        </div>
+
+        <div className="account-detail-grid">
+          <div className="form-group" style={{ margin: 0 }}>
+            <label>Time</label>
+            <span className="td-muted">{formatDate(row.created_at)}</span>
+          </div>
+          <div className="form-group" style={{ margin: 0 }}>
+            <label>User</label>
+            <span className="td-name">{row.username || '—'}</span>
+          </div>
+          <div className="form-group" style={{ margin: 0 }}>
+            <label>IP</label>
+            <span className="td-muted" style={{ fontFamily: 'var(--font-mono)', fontSize: 13 }}>{row.ip || '—'}</span>
+          </div>
+          <div className="form-group" style={{ margin: 0 }}>
+            <label>Action</label>
+            <span className={actionBadgeClass(row.action)}>{row.action}</span>
+          </div>
+          <div className="form-group" style={{ margin: 0 }}>
+            <label>Status</label>
+            {row.success
+              ? <span className="badge badge-success">OK</span>
+              : <span className="badge badge-danger">Failed</span>}
+          </div>
+        </div>
+
+        <div className="form-group" style={{ marginTop: 16 }}>
+          <label>Details</label>
+          <pre style={{
+            background: 'var(--surface2)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius)', padding: '10px 14px',
+            fontFamily: 'var(--font-mono)', fontSize: 13,
+            whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+            color: 'var(--text)', margin: 0, maxHeight: 300, overflowY: 'auto',
+          }}>
+            {row.details || '—'}
+          </pre>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AuditPage() {
   const [rows, setRows]               = useState([]);
   const [total, setTotal]             = useState(0);
@@ -180,6 +232,7 @@ export default function AuditPage() {
   const [loading, setLoading]         = useState(true);
   const [sortCol, setSortCol]         = useState('id');
   const [sortDir, setSortDir]         = useState('desc');
+  const [selectedRow, setSelectedRow] = useState(null);
 
   const fetchLogs = useCallback(async (p, s, acts, q) => {
     setLoading(true);
@@ -282,7 +335,9 @@ export default function AuditPage() {
               </td></tr>
             ) : (
               displayed.map((r) => (
-                <tr key={r.id} className={`data-row ${r.success ? '' : 'audit-row-failed'}`}>
+                <tr key={r.id} className={`data-row ${r.success ? '' : 'audit-row-failed'}`}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => setSelectedRow(r)}>
                   <td className="td-muted mono">{r.id}</td>
                   <td className="td-muted">{formatDate(r.created_at)}</td>
                   <td className="td-name">{r.username}</td>
@@ -300,6 +355,10 @@ export default function AuditPage() {
           </tbody>
         </table>
       </div>
+
+      {selectedRow && (
+        <AuditDetailModal row={selectedRow} onClose={() => setSelectedRow(null)} />
+      )}
 
       {pages > 1 && (
         <div className="pagination-row">
