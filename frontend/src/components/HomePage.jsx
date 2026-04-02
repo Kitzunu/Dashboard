@@ -136,6 +136,30 @@ function ServerOverviewCard({ name, displayName, info }) {
   );
 }
 
+// ── Dashboard backend card ────────────────────────────────────────────────────
+function DashboardCard({ dashboard }) {
+  const agentConnected = dashboard?.agentConnected ?? false;
+
+  return (
+    <div className="server-overview-card">
+      <div className="server-overview-card-header">
+        <span className="status-dot dot-green" />
+        <span className="server-overview-name">Dashboard</span>
+      </div>
+      <div className="server-overview-detail">
+        <span className="detail-label">Backend</span>
+        <span className="detail-value text-green">Online</span>
+      </div>
+      <div className="server-overview-detail">
+        <span className="detail-label">Server Agent</span>
+        <span className={`detail-value ${agentConnected ? 'text-green' : 'text-red'}`}>
+          {agentConnected ? 'Connected' : 'Disconnected'}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // ── Stat card ─────────────────────────────────────────────────────────────────
 function StatCard({ label, value }) {
   return (
@@ -381,9 +405,10 @@ export default function HomePage() {
   const [thresholds, setThresholds] = useState({ cpu: 80, memory: 85, graphMinutes: 60 });
 
   // Refs so the interval callback always reads current values without stale closures
-  const thresholdsRef  = useRef({ cpu: 80, memory: 85, graphMinutes: 60 });
-  const alertStateRef  = useRef({ cpu: false, mem: false });
-  const intervalRef    = useRef(null);
+  const thresholdsRef    = useRef({ cpu: 80, memory: 85, graphMinutes: 60 });
+  const alertStateRef    = useRef({ cpu: false, mem: false });
+  const agentConnectedRef = useRef(null); // null = unknown (first load)
+  const intervalRef      = useRef(null);
 
   // Keep thresholdsRef in sync whenever state changes (e.g. after a save)
   useEffect(() => { thresholdsRef.current = thresholds; }, [thresholds]);
@@ -418,10 +443,23 @@ export default function HomePage() {
         : 0);
       checkAlerts(cpuPct, memPct);
 
+      // Alert when agent connection state changes to disconnected
+      const agentNow = data.dashboard?.agentConnected ?? false;
+      const prevAgent = agentConnectedRef.current;
+      if (prevAgent === true && !agentNow) {
+        toast('Server Agent disconnected — game servers may be unmanaged', 'error');
+      }
+      // Reset backend-down sentinel when backend recovers
+      agentConnectedRef.current = agentNow;
+
       setError(null);
     } catch (err) {
       setError(err.message || 'Failed to load overview');
-      toast(err.message || 'Failed to load overview', 'error');
+      // Only alert on the first failure, not every retry
+      if (agentConnectedRef.current !== 'backend-down') {
+        toast('Dashboard backend is unreachable', 'error');
+        agentConnectedRef.current = 'backend-down';
+      }
     } finally {
       setLoading(false);
     }
@@ -437,6 +475,7 @@ export default function HomePage() {
   if (error && !overview) return <div className="page"><div className="alert alert-error">{error}</div></div>;
 
   const servers       = overview?.servers       ?? {};
+  const dashboard     = overview?.dashboard     ?? {};
   const players       = overview?.players       ?? {};
   const tickets       = overview?.tickets       ?? {};
   const bans          = overview?.bans          ?? {};
@@ -468,6 +507,7 @@ export default function HomePage() {
       <div className="home-grid">
         <ServerOverviewCard name="worldserver" displayName="World Server" info={servers.worldserver} />
         <ServerOverviewCard name="authserver"  displayName="Auth Server"  info={servers.authserver} />
+        <DashboardCard dashboard={dashboard} />
       </div>
 
       {/* Stat cards */}

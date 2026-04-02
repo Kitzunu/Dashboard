@@ -1,155 +1,91 @@
-const { spawn } = require('child_process');
-const path = require('path');
+/**
+ * Process manager — async HTTP client that proxies all server management
+ * calls to the standalone server agent (serverAgent.js).
+ *
+ * Exports the same API as before so existing routes need only minor
+ * async/await updates.
+ */
 
-// Strip non-color escape sequences (cursor movement, mode setting, OSC, etc.)
-// but preserve SGR color codes (\x1B[...m) for frontend rendering.
-function processOutput(str) {
-  return str.toString()
-    .replace(/\x1B\[[0-9;]*[ABCDEFGJKST]/g, '')
-    .replace(/\x1B\[[0-9;]*[hl]/g, '')
-    .replace(/\x1B\][^\x07]*\x07/g, '')
-    .replace(/\x1B[^[\]m]/g, '');
+const http = require('http');
+
+function agentPort()   { return parseInt(process.env.AGENT_PORT, 10) || 3002; }
+function agentSecret() { return process.env.AGENT_SECRET || 'changeme'; }
+
+function request(method, path, body) {
+  return new Promise((resolve, reject) => {
+    const payload = body ? JSON.stringify(body) : null;
+
+    const req = http.request({
+      hostname: '127.0.0.1',
+      port:     agentPort(),
+      path,
+      method,
+      headers: {
+        'Content-Type':  'application/json',
+        'X-Agent-Token': agentSecret(),
+        ...(payload ? { 'Content-Length': Buffer.byteLength(payload) } : {}),
+      },
+    }, (res) => {
+      let data = '';
+      res.on('data', (c) => { data += c; });
+      res.on('end', () => {
+        try { resolve(JSON.parse(data)); }
+        catch { reject(new Error('Invalid JSON from agent')); }
+      });
+    });
+
+    req.on('error', reject);
+    if (payload) req.write(payload);
+    req.end();
+  });
 }
 
-const processes   = { worldserver: null, authserver: null };
-const processLogs = { worldserver: [], authserver: [] };
-const autoRestart = { worldserver: false, authserver: false };
-const stopping    = { worldserver: false, authserver: false };
-const startTimes  = { worldserver: null, authserver: null };
-const MAX_LOG_LINES = 2000;
+// ── Public API (mirrors original synchronous API, now async) ──────────────────
 
-let io = null;
+/** No-op: event bridging is handled by serverBridge.js. */
+function setIO() {}
 
-function setIO(socketIO) {
-  io = socketIO;
+async function startServer(serverName) {
+  try { return await request('POST', `/${serverName}/start`); }
+  catch (err) { return { success: false, error: err.message }; }
 }
 
-function emitLog(serverName, raw) {
-  const line = processOutput(raw.toString());
-  processLogs[serverName].push(line);
-  if (processLogs[serverName].length > MAX_LOG_LINES) {
-    processLogs[serverName].shift();
-  }
-  if (io) {
-    io.to(`console-${serverName}`).emit('console-line', { server: serverName, line });
-  }
+async function stopServer(serverName, mode = 'exit', delay = 0) {
+  try { return await request('POST', `/${serverName}/stop`, { mode, delay }); }
+  catch (err) { return { success: false, error: err.message }; }
 }
 
-function startServer(serverName) {
-  if (processes[serverName]) {
-    return { success: false, error: 'Server is already running' };
-  }
+async function setAutoRestart(serverName, enabled) {
+  try { return await request('POST', `/${serverName}/autorestart`, { enabled }); }
+  catch (err) { return { success: false, error: err.message }; }
+}
 
-  const exePath = serverName === 'worldserver'
-    ? process.env.WORLDSERVER_PATH
-    : process.env.AUTHSERVER_PATH;
+async function sendCommand(command) {
+  try { return await request('POST', '/command', { command }); }
+  catch (err) { return { success: false, error: err.message }; }
+}
 
-  const workDir = serverName === 'worldserver'
-    ? (process.env.WORLDSERVER_DIR || null)
-    : (process.env.AUTHSERVER_DIR || null);
-
-  if (!exePath) {
-    return { success: false, error: `${serverName} path not configured in .env` };
-  }
-
+/** Returns status for a single server. */
+async function getStatus(serverName) {
   try {
-    stopping[serverName] = false;
-    const cwd = workDir || path.dirname(exePath);
-    const proc = spawn(exePath, [], {
-      cwd,
-      stdio: ['pipe', 'pipe', 'pipe'],
-      windowsHide: false,
-    });
-
-    processes[serverName] = proc;
-    startTimes[serverName] = Date.now();
-    processLogs[serverName] = [`[Dashboard] Starting ${serverName} from ${exePath}\n`];
-
-    proc.stdout.on('data', (data) => emitLog(serverName, data));
-    proc.stderr.on('data', (data) => emitLog(serverName, data));
-
-    proc.on('close', (code) => {
-      emitLog(serverName, `\n[Dashboard] Process exited with code ${code}\n`);
-      processes[serverName] = null;
-      startTimes[serverName] = null;
-      if (io) io.emit('server-status', { server: serverName, running: false });
-
-      if (autoRestart[serverName] && !stopping[serverName]) {
-        emitLog(serverName, `[Dashboard] Auto-restart enabled — restarting ${serverName} in 5 seconds…\n`);
-        setTimeout(() => startServer(serverName), 5000);
-      }
-      stopping[serverName] = false;
-    });
-
-    proc.on('error', (err) => {
-      emitLog(serverName, `\n[Dashboard] Failed to start: ${err.message}\n`);
-      processes[serverName] = null;
-      startTimes[serverName] = null;
-      if (io) io.emit('server-status', { server: serverName, running: false });
-      stopping[serverName] = false;
-    });
-
-    if (io) io.emit('server-status', { server: serverName, running: true });
-
-    return { success: true };
-  } catch (err) {
-    return { success: false, error: err.message };
+    const data = await request('GET', '/status');
+    return data[serverName] ?? { running: false, autoRestart: false, pid: null, startTime: null };
+  } catch {
+    return { running: false, autoRestart: false, pid: null, startTime: null };
   }
 }
 
-// mode: 'exit' | 'shutdown'
-// delay: seconds (only used with 'shutdown')
-function stopServer(serverName, mode = 'exit', delay = 0) {
-  const proc = processes[serverName];
-  if (!proc) return { success: false, error: 'Server is not running' };
-
-  stopping[serverName] = true;
-
-  if (serverName === 'worldserver') {
-    try {
-      if (mode === 'shutdown') {
-        proc.stdin.write(`server shutdown ${delay}\n`);
-      } else {
-        proc.stdin.write('server exit\n');
-      }
-    } catch {
-      proc.kill();
-    }
-  } else {
-    proc.kill();
-  }
-
-  return { success: true };
+/** Returns { worldserver, authserver, uptime } in one agent round-trip. */
+async function getAllStatus() {
+  try { return await request('GET', '/status'); }
+  catch { return { worldserver: { running: false }, authserver: { running: false }, uptime: null }; }
 }
 
-function setAutoRestart(serverName, enabled) {
-  if (!(serverName in autoRestart)) return { success: false, error: 'Invalid server name' };
-  autoRestart[serverName] = !!enabled;
-  return { success: true };
-}
-
-function sendCommand(command) {
-  const proc = processes['worldserver'];
-  if (!proc) return { success: false, error: 'World server is not running' };
+async function getLogs(serverName) {
   try {
-    proc.stdin.write(command + '\n');
-    return { success: true };
-  } catch (err) {
-    return { success: false, error: err.message };
-  }
+    const data = await request('GET', `/${serverName}/logs`);
+    return data.logs ?? [];
+  } catch { return []; }
 }
 
-function getStatus(serverName) {
-  return {
-    running: processes[serverName] !== null,
-    autoRestart: autoRestart[serverName],
-    pid: processes[serverName]?.pid || null,
-    startTime: startTimes[serverName],
-  };
-}
-
-function getLogs(serverName) {
-  return processLogs[serverName] || [];
-}
-
-module.exports = { setIO, startServer, stopServer, setAutoRestart, sendCommand, getStatus, getLogs };
+module.exports = { setIO, startServer, stopServer, setAutoRestart, sendCommand, getStatus, getAllStatus, getLogs };

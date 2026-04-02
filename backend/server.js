@@ -36,6 +36,7 @@ const latencyMonitor     = require('./latencyMonitor');
 const { authenticateToken } = require('./middleware/auth');
 const ipAllowlist = require('./middleware/ipAllowlist');
 const processManager = require('./processManager');
+const serverBridge   = require('./serverBridge');
 const dbc = require('./dbc');
 
 const app = express();
@@ -97,7 +98,8 @@ io.on('connection', (socket) => {
   });
 });
 
-processManager.setIO(io);
+processManager.setIO(io); // no-op; kept for compatibility
+serverBridge.init(io);   // connect to agent SSE stream and bridge events
 
 // Pre-load DBC lookup tables (gracefully no-ops if DBC_PATH is not set)
 dbc.init();

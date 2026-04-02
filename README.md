@@ -227,18 +227,21 @@ Every action that makes a change is recorded with the acting user, their IP addr
 ## Running
 
 ```bash
-# Start backend and frontend together
+# Start agent, backend, and frontend together
 npm start
 
 # Or separately
-npm run start:backend   # Express backend on port 3001
-npm run start:frontend  # Vite frontend on port 5173
+npm run start:server-agent  # Server agent on port 3002 (manages game servers)
+npm run start:backend       # Express backend on port 3001
+npm run start:frontend      # Vite frontend on port 5173
 ```
+
+The **server agent** (`serverAgent.js`) is a separate process that owns the worldserver and authserver child processes. Because it runs independently, restarting the dashboard backend does not kill the game servers. The dashboard backend reconnects to the agent automatically when it comes back up.
 
 ## Pages
 
 ### Overview
-- Live server status cards (PID, uptime timer) for worldserver and authserver
+- Live server status cards (PID, uptime timer) for worldserver and authserver; Dashboard card showing backend and server agent connectivity
 - Player Online, Open Tickets, and Active Bans stat cards
 - System Memory and CPU usage bars; turn amber then red when alert thresholds are exceeded
 - Configurable alert thresholds (⚙ button, Administrator only); saved to `backend/thresholds.json`
@@ -411,7 +414,9 @@ Dashboard/
 │   ├── latencyMonitor.js          # TCP latency sampling + rolling stats
 │   ├── playerHistory.js           # Rolling player count history buffer
 │   ├── resourceHistory.js         # Rolling CPU and memory history buffer
-│   ├── processManager.js          # Server process lifecycle + Socket.IO broadcast
+│   ├── serverAgent.js             # Standalone server agent — owns game server processes
+│   ├── serverBridge.js            # SSE bridge: forwards server agent events to frontend Socket.IO
+│   ├── processManager.js          # Agent HTTP client (async proxy to serverAgent)
 │   ├── thresholds.js              # Threshold JSON persistence
 │   ├── thresholds.json            # Persisted alert threshold values
 │   └── server.js                  # Express + Socket.IO entry point
@@ -451,7 +456,7 @@ Dashboard/
 
 ## Notes
 
-- The dashboard spawns `worldserver.exe` and `authserver.exe` as child processes. If the backend exits, the game servers will stop too.
+- Game servers are managed by the standalone **server agent** (`serverAgent.js`), not the dashboard backend. Restarting the backend does not stop the game servers — they keep running and the backend reconnects automatically.
 - **Auto-restart** tracks intentional stops via a flag — it only restarts on unexpected crashes, not manual stops from the dashboard.
 - **Authentication** uses AzerothCore's SRP6 verifier (salt + verifier columns) — no plain-text passwords are ever compared or stored.
 - Login is rate-limited to 10 attempts per 15 minutes per IP.

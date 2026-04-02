@@ -3,6 +3,7 @@ const { requireGMLevel } = require('../middleware/auth');
 const os = require('os');
 const { authPool, charPool, worldPool } = require('../db');
 const processManager   = require('../processManager');
+const serverBridge     = require('../serverBridge');
 const playerHistory    = require('../playerHistory');
 const resourceHistory  = require('../resourceHistory');
 const thresholds       = require('../thresholds');
@@ -10,7 +11,6 @@ const latencyMonitor   = require('../latencyMonitor');
 
 const router = express.Router();
 
-// Sample CPU usage across all cores over a short interval
 function getCpuUsage() {
   return new Promise((resolve) => {
     const snap1 = os.cpus().map((c) => ({ ...c.times }));
@@ -35,7 +35,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
   try {
     const [
       [playerRow], [ticketRow], [banRow], [motdRow], [versionRow],
-      cpuUsage,
+      cpuUsage, agentStatus,
     ] = await Promise.all([
       charPool.query('SELECT COUNT(*) AS count FROM characters WHERE online = 1'),
       charPool.query('SELECT COUNT(*) AS count FROM gm_ticket WHERE type = 0'),
@@ -43,6 +43,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
       authPool.query('SELECT text FROM motd LIMIT 1'),
       worldPool.query('SELECT core_version, core_revision, db_version, cache_id FROM version'),
       getCpuUsage(),
+      processManager.getAllStatus(),
     ]);
 
     const totalMem = os.totalmem();
@@ -51,8 +52,13 @@ router.get('/', requireGMLevel(1), async (req, res) => {
 
     res.json({
       servers: {
-        worldserver: processManager.getStatus('worldserver'),
-        authserver:  processManager.getStatus('authserver'),
+        worldserver: agentStatus.worldserver,
+        authserver:  agentStatus.authserver,
+      },
+      dashboard: {
+        backendUptime:    process.uptime(),
+        agentConnected:   serverBridge.isConnected(),
+        agentUptime:      agentStatus.uptime ?? null,
       },
       players:       { current: Number(playerRow[0].count) },
       tickets:       { open:    Number(ticketRow[0].count) },
@@ -75,7 +81,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
         const cutoff   = Date.now() - windowMs;
         return resourceHistory.getHistory().filter((p) => p.time >= cutoff);
       })(),
-      serverLatency:   latencyMonitor.getStats(),
+      serverLatency: latencyMonitor.getStats(),
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
