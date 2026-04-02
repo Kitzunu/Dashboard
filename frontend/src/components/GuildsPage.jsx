@@ -185,86 +185,232 @@ const QUALITY_COLORS = {
   6: '#e6cc80', 7: '#e6cc80',
 };
 
-function BankTab({ guildId }) {
-  const [tabs, setTabs]       = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState(0);
+// Bank event type labels
+const BANK_EVENT_LABELS = {
+  1: (e) => `Deposited ${e.itemName ? `${e.ItemStackCount}x ${e.itemName}` : 'item'} in tab ${e.TabId + 1}`,
+  2: (e) => `Withdrew ${e.itemName ? `${e.ItemStackCount}x ${e.itemName}` : 'item'} from tab ${e.TabId + 1}`,
+  3: (e) => `Moved ${e.itemName ? `${e.ItemStackCount}x ${e.itemName}` : 'item'} from tab ${e.TabId + 1} to tab ${(e.DestTabId ?? 0) + 1}`,
+  4: (_e, money) => `Deposited ${money}`,
+  5: (_e, money) => `Withdrew ${money}`,
+  6: (_e, money) => `Used ${money} for repairs`,
+  7: (e) => `Moved ${e.itemName ? `${e.ItemStackCount}x ${e.itemName}` : 'item'}`,
+  9: (_e, money) => `Purchased bank tab for ${money}`,
+};
+
+function describeBankEvent(e) {
+  const fn = BANK_EVENT_LABELS[e.EventType];
+  if (!fn) return `Unknown event (type ${e.EventType})`;
+  return fn(e, formatMoney(e.ItemOrMoney));
+}
+
+function BankEventDescription({ event: e }) {
+  const item = { itemEntry: e.ItemOrMoney, name: e.itemName, quality: e.itemQuality };
+  const qty  = e.ItemStackCount > 1 ? `${e.ItemStackCount}x ` : '';
+  if (e.EventType === 1) return <>{qty}<BankItemLink item={item} /> deposited in tab {e.TabId + 1}</>;
+  if (e.EventType === 2) return <>{qty}<BankItemLink item={item} /> withdrawn from tab {e.TabId + 1}</>;
+  if (e.EventType === 3 || e.EventType === 7)
+    return <>{qty}<BankItemLink item={item} /> moved from tab {e.TabId + 1} to tab {(e.DestTabId ?? 0) + 1}</>;
+  return <>{describeBankEvent(e)}</>;
+}
+
+function BankItemLink({ item }) {
+  return (
+    <a
+      data-wowhead={`item=${item.itemEntry}&domain=wotlk`}
+      href={`https://www.wowhead.com/wotlk/item=${item.itemEntry}`}
+      target="_blank"
+      rel="noreferrer"
+      style={{ color: QUALITY_COLORS[item.quality] ?? '#fff', fontWeight: 500, textDecoration: 'none' }}
+    >
+      {item.name}
+    </a>
+  );
+}
+
+const BANK_SECTIONS = ['Info', 'Items', 'Item Log', 'Money Log'];
+
+function BankTab({ guildId, bankMoney }) {
+  const [bank, setBank]           = useState(null);
+  const [loading, setLoading]     = useState(true);
+  const [activeItemTab, setActiveItemTab] = useState(0);
+  const [section, setSection]     = useState('Info');
 
   useEffect(() => {
     setLoading(true);
     api.getGuildBank(guildId)
-      .then((data) => { setTabs(data); setActiveTab(data[0]?.TabId ?? 0); })
+      .then((data) => { setBank(data); setActiveItemTab(data.tabs[0]?.TabId ?? 0); })
       .catch((err) => toast(err.message, 'error'))
       .finally(() => setLoading(false));
   }, [guildId]);
 
   // Re-initialize WoWHead tooltips after items render
   useEffect(() => {
-    if (!loading && tabs) {
-      window.$WowheadPower?.refreshLinks();
-    }
-  }, [loading, tabs, activeTab]);
+    if (!loading && bank) window.$WowheadPower?.refreshLinks();
+  }, [loading, bank, activeItemTab, section]);
 
   if (loading) return <div className="empty-state">Loading bank…</div>;
-  if (!tabs || tabs.length === 0) return <div className="empty-state">No bank tabs.</div>;
+  if (!bank || bank.tabs.length === 0) return <div className="empty-state">No bank tabs.</div>;
 
-  const currentTab = tabs.find((t) => t.TabId === activeTab);
+  const currentTab = bank.tabs.find((t) => t.TabId === activeItemTab);
 
   return (
     <div className="guild-bank">
+      {/* Section switcher */}
       <div className="guild-bank-tabs">
-        {tabs.map((t) => (
+        {BANK_SECTIONS.map((s) => (
           <button
-            key={t.TabId}
-            className={`guild-bank-tab${activeTab === t.TabId ? ' guild-bank-tab-active' : ''}`}
-            onClick={() => setActiveTab(t.TabId)}
+            key={s}
+            className={`guild-bank-tab${section === s ? ' guild-bank-tab-active' : ''}`}
+            onClick={() => setSection(s)}
           >
-            {t.TabName || `Tab ${t.TabId + 1}`}
-            <span className="guild-tab-count">{t.items.length}</span>
+            {s}
+            {s === 'Item Log'  && <span className="guild-tab-count">{bank.eventLog.length}</span>}
+            {s === 'Money Log' && <span className="guild-tab-count">{bank.moneyLog.length}</span>}
           </button>
         ))}
       </div>
 
-      {currentTab && (
-        <>
-          {currentTab.TabText && (
-            <p className="td-muted" style={{ fontSize: 12, margin: '4px 0' }}>{currentTab.TabText}</p>
-          )}
-          {currentTab.items.length === 0 ? (
-            <div className="empty-state">This tab is empty.</div>
-          ) : (
-            <div className="table-wrap">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th style={{ textAlign: 'center' }}>Qty</th>
-                    <th style={{ textAlign: 'center' }}>Slot</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentTab.items.map((item) => (
-                    <tr key={item.slotId}>
-                      <td>
-                        <a
-                          data-wowhead={`item=${item.itemEntry}&domain=wotlk`}
-                          href={`https://www.wowhead.com/wotlk/item=${item.itemEntry}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{ color: QUALITY_COLORS[item.quality] ?? '#fff', fontWeight: 500, textDecoration: 'none' }}
-                        >
-                          {item.name}
-                        </a>
-                      </td>
-                      <td style={{ textAlign: 'center' }}>{item.count}</td>
-                      <td style={{ textAlign: 'center' }} className="td-muted">{item.slotId}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      {/* Info section */}
+      {section === 'Info' && (
+        <div className="guild-bank-info">
+          <div className="guild-rank-row" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span className="guild-info-label">Total Gold</span>
+            <span style={{ color: '#e6cc80', fontWeight: 600 }}>{formatMoney(bankMoney)}</span>
+          </div>
+          {bank.tabs.map((t) => (
+            <div key={t.TabId} className="guild-rank-row">
+              <div className="guild-rank-header">
+                <span className="guild-rank-name">{t.TabName || `Tab ${t.TabId + 1}`}</span>
+                <span className="td-muted" style={{ fontSize: 12 }}>{t.items.length} item{t.items.length !== 1 ? 's' : ''}</span>
+              </div>
+              {t.TabIcon && (
+                <div className="td-muted" style={{ fontSize: 12 }}>Icon: {t.TabIcon}</div>
+              )}
+              {t.TabText && (
+                <div style={{ fontSize: 13, color: 'var(--text)' }}>{t.TabText}</div>
+              )}
+              {!t.TabText && (
+                <div className="td-muted" style={{ fontSize: 12 }}>No description set</div>
+              )}
             </div>
+          ))}
+        </div>
+      )}
+
+      {/* Items section */}
+      {section === 'Items' && (
+        <>
+          <div className="guild-bank-tabs" style={{ marginTop: 4 }}>
+            {bank.tabs.map((t) => (
+              <button
+                key={t.TabId}
+                className={`guild-bank-tab${activeItemTab === t.TabId ? ' guild-bank-tab-active' : ''}`}
+                onClick={() => setActiveItemTab(t.TabId)}
+              >
+                {t.TabName || `Tab ${t.TabId + 1}`}
+                <span className="guild-tab-count">{t.items.length}</span>
+              </button>
+            ))}
+          </div>
+
+          {currentTab && (
+            <>
+              {currentTab.TabText && (
+                <p className="td-muted" style={{ fontSize: 12, margin: '4px 0' }}>{currentTab.TabText}</p>
+              )}
+              {currentTab.items.length === 0 ? (
+                <div className="empty-state">This tab is empty.</div>
+              ) : (
+                <div className="table-wrap">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Item</th>
+                        <th style={{ textAlign: 'center' }}>Qty</th>
+                        <th style={{ textAlign: 'center' }}>Slot</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currentTab.items.map((item) => (
+                        <tr key={item.slotId}>
+                          <td><BankItemLink item={item} /></td>
+                          <td style={{ textAlign: 'center' }}>{item.count}</td>
+                          <td style={{ textAlign: 'center' }} className="td-muted">{item.slotId}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
           )}
         </>
+      )}
+
+      {/* Item log section */}
+      {section === 'Item Log' && (
+        bank.eventLog.length === 0 ? (
+          <div className="empty-state">No item log entries.</div>
+        ) : (
+          <div className="table-wrap">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Player</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bank.eventLog.map((e, i) => (
+                  <tr key={i}>
+                    <td className="td-muted" style={{ whiteSpace: 'nowrap' }}>{fmt(e.TimeStamp)}</td>
+                    <td className="td-name">{e.playerName ?? '—'}</td>
+                    <td>
+                      {e.itemName ? (
+                        <BankEventDescription event={e} />
+                      ) : describeBankEvent(e)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      )}
+
+      {/* Money log section */}
+      {section === 'Money Log' && (
+        bank.moneyLog.length === 0 ? (
+          <div className="empty-state">No money log entries.</div>
+        ) : (
+          <div className="table-wrap">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Player</th>
+                  <th>Action</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bank.moneyLog.map((e, i) => (
+                  <tr key={i}>
+                    <td className="td-muted" style={{ whiteSpace: 'nowrap' }}>{fmt(e.TimeStamp)}</td>
+                    <td className="td-name">{e.playerName ?? '—'}</td>
+                    <td className="td-muted">
+                      {e.EventType === 4 ? 'Deposit' : e.EventType === 5 ? 'Withdraw' : e.EventType === 6 ? 'Repair' : e.EventType === 9 ? 'Buy Tab' : `Type ${e.EventType}`}
+                    </td>
+                    <td style={{ color: e.EventType === 4 ? 'var(--green)' : 'var(--red)' }}>
+                      {formatMoney(e.ItemOrMoney)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
       )}
     </div>
   );
@@ -430,7 +576,7 @@ export default function GuildsPage() {
 
               {activeTab === 'Members'   && <MembersTab  members={selected.members} />}
               {activeTab === 'Ranks'     && <RanksTab    ranks={selected.ranks} />}
-              {activeTab === 'Bank'      && <BankTab     guildId={selected.guildid} />}
+              {activeTab === 'Bank'      && <BankTab     guildId={selected.guildid} bankMoney={selected.BankMoney} />}
               {activeTab === 'Event Log' && <EventLogTab eventLog={selected.eventLog} ranks={selected.ranks} />}
             </>
           )}

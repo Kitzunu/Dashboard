@@ -92,6 +92,29 @@ router.get('/:id/bank', requireGMLevel(1), async (req, res) => {
       ORDER BY TabId ASC
     `, [guildId]);
 
+    // Bank event log (item deposits/withdrawals/moves per tab)
+    const [eventLog] = await charPool.query(`
+      SELECT gbel.TabId, gbel.EventType, gbel.PlayerGuid, gbel.ItemOrMoney,
+             gbel.ItemStackCount, gbel.DestTabId, gbel.TimeStamp,
+             c.name AS playerName
+      FROM guild_bank_eventlog gbel
+      LEFT JOIN characters c ON gbel.PlayerGuid = c.guid
+      WHERE gbel.guildid = ? AND gbel.TabId < 100
+      ORDER BY gbel.TimeStamp DESC
+      LIMIT 200
+    `, [guildId]);
+
+    // Money log (TabId = 255 in AzerothCore)
+    const [moneyLog] = await charPool.query(`
+      SELECT gbel.EventType, gbel.PlayerGuid, gbel.ItemOrMoney, gbel.TimeStamp,
+             c.name AS playerName
+      FROM guild_bank_eventlog gbel
+      LEFT JOIN characters c ON gbel.PlayerGuid = c.guid
+      WHERE gbel.guildid = ? AND gbel.TabId >= 100
+      ORDER BY gbel.TimeStamp DESC
+      LIMIT 200
+    `, [guildId]);
+
     const [items] = await charPool.query(`
       SELECT gbi.TabId, gbi.SlotId, ii.itemEntry, ii.count,
              ii.enchantments, ii.randomPropertyId
@@ -102,12 +125,16 @@ router.get('/:id/bank', requireGMLevel(1), async (req, res) => {
     `, [guildId]);
 
     // Fetch item names and quality from world DB for all unique item entries
-    const entryIds = [...new Set(items.map((i) => i.itemEntry))];
+    // Resolve item names for bank contents and event log
+    const allEntryIds = [...new Set([
+      ...items.map((i) => i.itemEntry),
+      ...eventLog.filter((e) => e.ItemOrMoney && [1,2,3,7].includes(e.EventType)).map((e) => e.ItemOrMoney),
+    ])];
     let itemTemplates = [];
-    if (entryIds.length > 0) {
+    if (allEntryIds.length > 0) {
       [itemTemplates] = await worldPool.query(
-        `SELECT entry, name, Quality, stackable, displayid FROM item_template WHERE entry IN (?)`,
-        [entryIds]
+        `SELECT entry, name, Quality, stackable FROM item_template WHERE entry IN (?)`,
+        [allEntryIds]
       );
     }
 
@@ -129,7 +156,17 @@ router.get('/:id/bank', requireGMLevel(1), async (req, res) => {
       }
     }
 
-    res.json(Object.values(tabMap));
+    // Enrich event log with item names
+    const enrichedEventLog = eventLog.map((e) => {
+      const tpl = templateMap[e.ItemOrMoney];
+      return {
+        ...e,
+        itemName:    tpl?.name    ?? null,
+        itemQuality: tpl?.Quality ?? 1,
+      };
+    });
+
+    res.json({ tabs: Object.values(tabMap), eventLog: enrichedEventLog, moneyLog });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
