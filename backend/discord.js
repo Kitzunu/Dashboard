@@ -83,24 +83,12 @@ async function isGloballyEnabled() {
   return settings.getBoolean('discord.enabled');
 }
 
-function detectBackendUrl() {
-  const port = process.env.PORT || 3001;
-  const interfaces = require('os').networkInterfaces();
-  for (const iface of Object.values(interfaces)) {
-    for (const alias of iface) {
-      if (alias.family === 'IPv4' && !alias.internal) {
-        return `http://${alias.address}:${port}`;
-      }
-    }
-  }
-  return `http://localhost:${port}`;
-}
 
 async function getPayloadMeta() {
   const all       = await settings.getAll();
   const username  = all['discord.webhook_username']   || 'AzerothCore Dashboard';
   const saved     = all['discord.webhook_avatar_url'] || '';
-  const avatarUrl = saved || `${detectBackendUrl()}/img/icon.png`;
+  const avatarUrl = saved || 'https://raw.githubusercontent.com/Kitzunu/Dashboard/master/frontend/img/icon.png';
   return { username, avatar_url: avatarUrl };
 }
 

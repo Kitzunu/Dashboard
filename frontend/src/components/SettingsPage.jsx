@@ -38,7 +38,7 @@ const SETTING_DEFS = [
         label: 'Avatar URL',
         description: 'Direct link to an image (.png / .jpg) used as the bot avatar. Leave blank to use the dashboard icon.',
         type: 'text',
-        default: '',
+        default: 'https://raw.githubusercontent.com/Kitzunu/Dashboard/master/frontend/img/icon.png',
         placeholder: 'https://example.com/avatar.png',
       },
       {
