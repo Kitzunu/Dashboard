@@ -316,7 +316,11 @@ npm run start:frontend  # Vite frontend on port 5173
 
 ### DB Query
 - Select auth, world, or characters database
-- Run arbitrary SQL and view results in a scrollable table
+- Preset queries for common lookups (online players, accounts, bans, inventory)
+- Free-form SQL editor — click a preset to load it into the editor, then modify and run; or type any query directly
+- Ctrl+Enter to run from the editor
+- Supports SELECT (tabular results) and write queries INSERT/UPDATE/DELETE (affected rows count)
+- All queries are audit-logged with the executing user, IP, database, and query text
 
 ### Config
 - Tab per config file — worldserver and authserver always first, then module configs alphabetically

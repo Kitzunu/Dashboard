@@ -29,19 +29,28 @@ const PRESETS = [
   },
 ];
 
+const DB_OPTIONS   = ['characters', 'auth', 'world'];
+const PAGE_SIZES   = [15, 25, 50, 100, 200, 'All'];
+
 export default function DBQueryPage() {
   const [activePreset, setActivePreset] = useState(null);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [query, setQuery]       = useState('');
+  const [database, setDatabase] = useState('characters');
+  const [result, setResult]     = useState(null);
+  const [error, setError]       = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [page, setPage]         = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+  const [pageInput, setPageInput] = useState('');
 
-  const runPreset = async (p) => {
-    setActivePreset(p.label);
+  const runQuery = async (q, db) => {
     setLoading(true);
     setError('');
     setResult(null);
+    setPage(1);
+    setPageInput('');
     try {
-      const data = await api.dbQuery(p.query, p.db);
+      const data = await api.dbQuery(q, db);
       setResult(data);
     } catch (err) {
       setError(err.message);
@@ -50,11 +59,30 @@ export default function DBQueryPage() {
     }
   };
 
+  const handlePreset = (p) => {
+    setActivePreset(p.label);
+    setQuery(p.query);
+    setDatabase(p.db);
+    runQuery(p.query, p.db);
+  };
+
+  const handleRun = () => {
+    if (!query.trim()) return;
+    setActivePreset(null);
+    runQuery(query.trim(), database);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      handleRun();
+    }
+  };
+
   return (
     <div className="page db-page">
       <h2 className="page-title">Database Query</h2>
       <p className="page-sub">
-        Requires Administrator (GM level ≥ 3).
+        Requires Administrator (GM level ≥ 3). All queries are audit logged.
       </p>
 
       <div className="db-layout">
@@ -64,7 +92,7 @@ export default function DBQueryPage() {
             <button
               key={i}
               className={`preset-btn${activePreset === p.label ? ' active' : ''}`}
-              onClick={() => runPreset(p)}
+              onClick={() => handlePreset(p)}
               disabled={loading}
             >
               {p.label}
@@ -73,7 +101,36 @@ export default function DBQueryPage() {
         </aside>
 
         <div className="db-main">
-          {loading && <div className="alert alert-info">Running query…</div>}
+          <div className="db-controls">
+            <select
+              value={database}
+              onChange={(e) => { setDatabase(e.target.value); setActivePreset(null); }}
+              className="input input-sm db-select"
+              disabled={loading}
+            >
+              {DB_OPTIONS.map((db) => (
+                <option key={db} value={db}>{db}</option>
+              ))}
+            </select>
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={handleRun}
+              disabled={loading || !query.trim()}
+            >
+              {loading ? 'Running…' : 'Run'}
+            </button>
+          </div>
+          <textarea
+            className="query-textarea"
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setActivePreset(null); }}
+            onKeyDown={handleKeyDown}
+            placeholder="Enter SQL query… (Ctrl+Enter to run)"
+            rows={5}
+            spellCheck={false}
+            disabled={loading}
+          />
+
           {error && <div className="alert alert-error">{error}</div>}
 
           {result && (
@@ -83,28 +140,75 @@ export default function DBQueryPage() {
                   ? `Query OK — ${result.affectedRows} row(s) affected`
                   : `${result.rows.length} row${result.rows.length !== 1 ? 's' : ''}`}
               </div>
-              {result.columns.length > 0 && (
-                <div className="table-wrap">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        {result.columns.map((c) => (
-                          <th key={c}>{c}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {result.rows.map((row, i) => (
-                        <tr key={i}>
-                          {result.columns.map((c) => (
-                            <td key={c}>{row[c] ?? <span className="null-val">NULL</span>}</td>
+              {result.columns?.length > 0 && (() => {
+                const isAll      = pageSize === 'All';
+                const totalPages = isAll ? 1 : Math.ceil(result.rows.length / pageSize);
+                const pageRows   = isAll ? result.rows : result.rows.slice((page - 1) * pageSize, page * pageSize);
+
+                const commitPageInput = () => {
+                  const n = parseInt(pageInput, 10);
+                  if (!isNaN(n) && n >= 1 && n <= totalPages) setPage(n);
+                  setPageInput('');
+                };
+
+                return (
+                  <>
+                    <div className="table-wrap">
+                      <table className="data-table db-result-table">
+                        <thead>
+                          <tr>
+                            {result.columns.map((c) => (
+                              <th key={c}>{c}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {pageRows.map((row, i) => (
+                            <tr key={i}>
+                              {result.columns.map((c) => (
+                                <td key={c}>{row[c] ?? <span className="null-val">NULL</span>}</td>
+                              ))}
+                            </tr>
                           ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="pagination-row">
+                      {!isAll && (
+                        <>
+                          <button className="btn btn-ghost btn-sm" onClick={() => setPage((p) => p - 1)} disabled={page === 1}>← Prev</button>
+                          <span className="pagination-info">
+                            Page{' '}
+                            <input
+                              className="page-jump-input"
+                              value={pageInput !== '' ? pageInput : page}
+                              onChange={(e) => setPageInput(e.target.value)}
+                              onBlur={commitPageInput}
+                              onKeyDown={(e) => { if (e.key === 'Enter') commitPageInput(); }}
+                            />
+                            {' '}of {totalPages}
+                          </span>
+                          <button className="btn btn-ghost btn-sm" onClick={() => setPage((p) => p + 1)} disabled={page === totalPages}>Next →</button>
+                        </>
+                      )}
+                      <select
+                        className="input input-sm"
+                        value={pageSize}
+                        onChange={(e) => {
+                          const v = e.target.value === 'All' ? 'All' : parseInt(e.target.value, 10);
+                          setPageSize(v);
+                          setPage(1);
+                          setPageInput('');
+                        }}
+                      >
+                        {PAGE_SIZES.map((s) => (
+                          <option key={s} value={s}>{s} rows</option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           )}
         </div>
