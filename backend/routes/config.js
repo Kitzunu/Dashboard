@@ -123,16 +123,25 @@ router.put(/^\/(.+)$/, requireGMLevel(3), async (req, res) => {
     // Build a compact diff summary: list key=value lines that changed
     const changedKeys = [];
     if (oldContent !== null) {
-      const kvRe = /^([A-Za-z][A-Za-z0-9_.]*)\s*=\s*(.*)$/;
+      const keyRe = /^[A-Za-z][A-Za-z0-9_.]*$/;
+      const parseKV = (line) => {
+        const trimmed = line.trim();
+        const eq = trimmed.indexOf('=');
+        if (eq === -1) return null;
+        const key = trimmed.slice(0, eq).trimEnd();
+        if (!keyRe.test(key)) return null;
+        return [key, trimmed.slice(eq + 1).trim()];
+      };
+
       const oldMap = {};
       for (const line of oldContent.split('\n')) {
-        const m = line.trim().match(kvRe);
-        if (m) oldMap[m[1]] = m[2].trim();
+        const kv = parseKV(line);
+        if (kv) oldMap[kv[0]] = kv[1];
       }
       for (const line of content.split('\n')) {
-        const m = line.trim().match(kvRe);
-        if (m && oldMap[m[1]] !== undefined && oldMap[m[1]] !== m[2].trim()) {
-          changedKeys.push(`${m[1]}: "${oldMap[m[1]]}" → "${m[2].trim()}"`);
+        const kv = parseKV(line);
+        if (kv && oldMap[kv[0]] !== undefined && oldMap[kv[0]] !== kv[1]) {
+          changedKeys.push(`${kv[0]}: "${oldMap[kv[0]]}" → "${kv[1]}"`);
         }
       }
     }
