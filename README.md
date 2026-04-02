@@ -12,6 +12,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
   - [Config Files](#config-files)
   - [Database](#database)
   - [Application](#application)
+  - [LAN / Remote Access](#lanremoteaccess)
   - [Scheduled Tasks](#scheduled-tasks)
   - [Discord Alerts](#discord-alerts)
   - [Session Idle Timeout](#session-idle-timeout)
@@ -162,6 +163,20 @@ FRONTEND_URL=http://localhost:5173
 > ```bash
 > node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 > ```
+
+### LAN / Remote Access
+
+By default the dashboard is only accessible from the machine it runs on. To access it from another device on the same network:
+
+1. Set `ALLOWED_IPS` to include the IP(s) that will connect to the backend:
+   ```env
+   ALLOWED_IPS=127.0.0.1,::1,192.168.1.50
+   ```
+2. Set `FRONTEND_URL` to the address the frontend will be served from (used for CORS):
+   ```env
+   FRONTEND_URL=http://192.168.1.100:5173
+   ```
+3. Open the dashboard on the remote device using the server's LAN IP, e.g. `http://192.168.1.100:5173`. The frontend automatically connects the API and WebSocket back to the same host — no additional configuration needed.
 
 ### Scheduled Tasks
 
