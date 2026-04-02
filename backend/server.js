@@ -128,9 +128,11 @@ const serverRunning = { worldserver: null, authserver: null };
 serverBridge.on('server-status', ({ server, running }) => {
   const wasRunning = serverRunning[server];
   serverRunning[server] = running;
-  // Only alert when transitioning from running → offline (crash / unexpected stop)
   if (wasRunning === true && !running) {
     discord.sendServerCrash(server).catch(() => {});
+  }
+  if (wasRunning === false && running) {
+    discord.sendServerOnline(server).catch(() => {});
   }
 });
 

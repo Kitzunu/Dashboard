@@ -167,6 +167,7 @@ Three alert types are supported, each with an independent toggle in **Settings �
 | Alert | Trigger | Cooldown |
 |---|---|---|
 | Server offline | worldserver or authserver transitions from running → offline | 5 min per server |
+| Server online | worldserver or authserver transitions from offline → running | 5 min per server |
 | Resource threshold | CPU or memory usage exceeds the configured threshold | 5 min per resource |
 | Agent disconnect | Server agent loses its SSE connection to the dashboard | 5 min |
 
@@ -403,6 +404,8 @@ The **server agent** (`serverAgent.js`) is a separate process that owns the worl
 | Discord Alerts → Avatar URL | *(blank)* | Direct image URL used as the bot avatar; blank uses the dashboard icon |
 | Discord Alerts → Server offline alert | On | Posts to Discord when worldserver or authserver goes offline unexpectedly |
 | Discord Alerts → Server offline message | *see below* | Editable message body; supports `{server}` |
+| Discord Alerts → Server online alert | On | Posts to Discord when worldserver or authserver comes back online |
+| Discord Alerts → Server online message | *see below* | Editable message body; supports `{server}` |
 | Discord Alerts → Resource threshold alert | On | Posts to Discord when CPU or memory exceeds the configured threshold (5-minute cooldown) |
 | Discord Alerts → Resource threshold message | *see below* | Editable message body; supports `{resource}`, `{pct}`, `{threshold}` |
 | Discord Alerts → Agent disconnect alert | On | Posts to Discord when the server agent loses its connection |

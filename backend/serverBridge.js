@@ -88,9 +88,15 @@ function handleEvent(event) {
 
   switch (event.type) {
     case 'init':
-      // Sync initial server status to all frontend clients
-      if (event.worldserver) frontendIO.emit('server-status', { server: 'worldserver', running: event.worldserver.running });
-      if (event.authserver)  frontendIO.emit('server-status', { server: 'authserver',  running: event.authserver.running  });
+      // Sync initial server status to all frontend clients and internal listeners
+      if (event.worldserver) {
+        frontendIO.emit('server-status', { server: 'worldserver', running: event.worldserver.running });
+        emitter.emit('server-status', { server: 'worldserver', running: event.worldserver.running });
+      }
+      if (event.authserver) {
+        frontendIO.emit('server-status', { server: 'authserver', running: event.authserver.running });
+        emitter.emit('server-status', { server: 'authserver', running: event.authserver.running });
+      }
       break;
 
     case 'console-line':

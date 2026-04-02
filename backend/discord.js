@@ -97,8 +97,9 @@ function detectBackendUrl() {
 }
 
 async function getPayloadMeta() {
-  const username  = (await settings.get('discord.webhook_username'))   || 'AzerothCore Dashboard';
-  const saved     = (await settings.get('discord.webhook_avatar_url')) || '';
+  const all       = await settings.getAll();
+  const username  = all['discord.webhook_username']   || 'AzerothCore Dashboard';
+  const saved     = all['discord.webhook_avatar_url'] || '';
   const avatarUrl = saved || `${detectBackendUrl()}/img/icon.png`;
   return { username, avatar_url: avatarUrl };
 }
@@ -122,6 +123,22 @@ async function sendServerCrash(server) {
   const description = interpolate(template, { server: displayName });
 
   await postWebhook(url, await buildPayload(buildEmbed(`🔴 ${displayName} Offline`, description, COLORS.red)));
+  markSent(cooldownKey);
+}
+
+async function sendServerOnline(server) {
+  const cooldownKey = `online.${server}`;
+  if (onCooldown(cooldownKey)) return;
+  const url = getWebhookUrl();
+  if (!url) return;
+  if (!(await isGloballyEnabled())) return;
+  if (!(await settings.getBoolean('discord.alert_server_online'))) return;
+
+  const displayName = server === 'worldserver' ? 'World Server' : 'Auth Server';
+  const template    = (await settings.get('discord.message_server_online')) || '**{server}** is online.';
+  const description = interpolate(template, { server: displayName });
+
+  await postWebhook(url, await buildPayload(buildEmbed(`🟢 ${displayName} Online`, description, COLORS.green)));
   markSent(cooldownKey);
 }
 
@@ -161,4 +178,4 @@ async function sendTest(webhookUrl) {
   ));
 }
 
-module.exports = { sendServerCrash, sendThresholdBreach, sendAgentDisconnect, sendTest };
+module.exports = { sendServerCrash, sendServerOnline, sendThresholdBreach, sendAgentDisconnect, sendTest };

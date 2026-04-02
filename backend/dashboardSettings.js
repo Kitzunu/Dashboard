@@ -11,6 +11,8 @@ const DEFAULTS = {
   'discord.webhook_avatar_url':         '',
   'discord.alert_server_crash':         'true',
   'discord.message_server_crash':       '**{server}** has gone offline.',
+  'discord.alert_server_online':        'true',
+  'discord.message_server_online':      '**{server}** is online.',
   'discord.alert_threshold':            'true',
   'discord.message_threshold':          '**{resource}** usage is at **{pct}%** (threshold: {threshold}%).',
   'discord.alert_agent_disconnect':     'true',

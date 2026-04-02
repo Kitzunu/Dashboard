@@ -56,6 +56,20 @@ const SETTING_DEFS = [
         default: '**{server}** has gone offline.',
       },
       {
+        key: 'discord.alert_server_online',
+        label: 'Server online alert',
+        description: 'Send an alert when worldserver or authserver comes back online.',
+        type: 'boolean',
+        default: 'true',
+      },
+      {
+        key: 'discord.message_server_online',
+        label: 'Server online message',
+        description: 'Available variables: {server}',
+        type: 'textarea',
+        default: '**{server}** is online.',
+      },
+      {
         key: 'discord.alert_threshold',
         label: 'Resource threshold alert',
         description: 'Send an alert when CPU or memory usage exceeds the configured threshold. Repeats at most once every 5 minutes.',
