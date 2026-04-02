@@ -6,7 +6,6 @@ import { FALLBACK_RACES, FALLBACK_CLASSES, GM_LABELS } from '../constants.js';
 // ── Constants ─────────────────────────────────────────────────────────────────
 const EXPANSION_LABELS = {
   0: 'Classic', 1: 'The Burning Crusade', 2: 'Wrath of the Lich King',
-  3: 'Cataclysm', 4: 'Mists of Pandaria', 5: 'Warlords of Draenor', 6: 'Legion',
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
