@@ -44,7 +44,7 @@ function fireNotification(type, pct, threshold) {
 }
 
 // ── Notification permission bell ──────────────────────────────────────────────
-function NotificationBell() {
+function NotificationBell({ enabled, onToggle }) {
   const supported = typeof Notification !== 'undefined';
   const [permission, setPermission] = useState(supported ? Notification.permission : 'unsupported');
 
@@ -58,10 +58,14 @@ function NotificationBell() {
   };
 
   if (permission === 'granted') {
-    return (
-      <span className="notif-status notif-granted" title="Browser alert notifications enabled">
-        🔔
-      </span>
+    return enabled ? (
+      <button className="btn btn-ghost btn-xs" onClick={onToggle} title="Mute browser alert notifications">
+        🔔 Alerts On
+      </button>
+    ) : (
+      <button className="btn btn-ghost btn-xs" onClick={onToggle} title="Unmute browser alert notifications">
+        🔕 Alerts Muted
+      </button>
     );
   }
   if (permission === 'denied') {
@@ -404,14 +408,28 @@ export default function HomePage() {
   const [error, setError]           = useState(null);
   const [thresholds, setThresholds] = useState({ cpu: 80, memory: 85, graphMinutes: 60 });
 
+  const [notifEnabled, setNotifEnabled] = useState(
+    () => localStorage.getItem('ac-notif-enabled') !== 'false'
+  );
+
   // Refs so the interval callback always reads current values without stale closures
   const thresholdsRef    = useRef({ cpu: 80, memory: 85, graphMinutes: 60 });
   const alertStateRef    = useRef({ cpu: false, mem: false });
+  const notifEnabledRef  = useRef(notifEnabled);
   const agentConnectedRef = useRef(null); // null = unknown (first load)
   const intervalRef      = useRef(null);
 
-  // Keep thresholdsRef in sync whenever state changes (e.g. after a save)
+  // Keep thresholdsRef and notifEnabledRef in sync whenever state changes
   useEffect(() => { thresholdsRef.current = thresholds; }, [thresholds]);
+  useEffect(() => { notifEnabledRef.current = notifEnabled; }, [notifEnabled]);
+
+  const handleToggleNotif = () => {
+    const next = !notifEnabledRef.current;
+    notifEnabledRef.current = next;
+    localStorage.setItem('ac-notif-enabled', next);
+    setNotifEnabled(next);
+    toast(next ? 'Alert notifications enabled' : 'Alert notifications muted');
+  };
 
   // Check alert transitions and fire notifications as needed
   const checkAlerts = (cpuPct, memPct) => {
@@ -420,8 +438,10 @@ export default function HomePage() {
     const memAlert = memPct  >= t.memory;
     const prev     = alertStateRef.current;
 
-    if (cpuAlert && !prev.cpu) fireNotification('cpu',    cpuPct,  t.cpu);
-    if (memAlert && !prev.mem) fireNotification('memory', memPct,  t.memory);
+    if (notifEnabledRef.current) {
+      if (cpuAlert && !prev.cpu) fireNotification('cpu',    cpuPct,  t.cpu);
+      if (memAlert && !prev.mem) fireNotification('memory', memPct,  t.memory);
+    }
 
     alertStateRef.current = { cpu: cpuAlert, mem: memAlert };
   };
@@ -496,7 +516,7 @@ export default function HomePage() {
       <div className="page-header">
         <h2 className="page-title">Dashboard Overview</h2>
         <div className="overview-header-controls">
-          <NotificationBell />
+          <NotificationBell enabled={notifEnabled} onToggle={handleToggleNotif} />
           <ThresholdSettings thresholds={thresholds} onSaved={setThresholds} />
         </div>
       </div>
