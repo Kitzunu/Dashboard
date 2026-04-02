@@ -34,6 +34,7 @@ const auditLogRoutes         = require('./routes/auditLogRoutes');
 const settingsRoutes         = require('./routes/settingsRoutes');
 const mutesRoutes            = require('./routes/mutes');
 const scheduledTasksRoutes   = require('./routes/scheduledTasks');
+const guildsRoutes           = require('./routes/guilds');
 const scheduler              = require('./scheduler');
 const { startRetentionJob } = require('./audit');
 const playerHistory      = require('./playerHistory');
@@ -86,6 +87,7 @@ app.use('/api/audit-log',    authenticateToken, auditLogRoutes);
 app.use('/api/settings',     authenticateToken, settingsRoutes);
 app.use('/api/mutes',            authenticateToken, mutesRoutes);
 app.use('/api/scheduled-tasks', authenticateToken, scheduledTasksRoutes);
+app.use('/api/guilds',          authenticateToken, guildsRoutes);
 
 // Authenticate socket connections with JWT
 io.use((socket, next) => {

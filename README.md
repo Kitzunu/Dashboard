@@ -47,6 +47,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 - **Send Mail** — Send in-game mail, items (up to 12), or money (gold/silver/copper) to any character
 - **Spam Reports** — View player-submitted spam reports (mail / chat / calendar); filter by type; search by spammer name or description; delete individual reports (GM 2+); clear all (Administrator)
 - **Channels** — Browse all active chat channels; view banned players and channel config (rights, speak delay, messages); lock icon for password-protected channels; unban players (GM 2+); delete channel (Administrator)
+- **Guilds** — Browse all guilds with leader, member count, and bank balance; detail panel with member roster (class, level, rank), rank list with bank gold per day, and event log (invites, joins, promotions, demotions, kicks, leaves); tabard colour preview
 
 **Reports**
 - **Lag Reports** — Browse player-submitted lag events; filter by type and minimum latency; aggregate stats with top reporters and top maps; dismiss or clear all
@@ -235,7 +236,7 @@ The dashboard uses AzerothCore's `account_access` GM levels for role-based acces
 
 | Level | Role          | Access |
 |-------|---------------|--------|
-| 1     | Moderator     | Overview, Console, Players (view), Tickets (view), Lag Reports, Bug Reports, Spam Reports (view), Channels (view) |
+| 1     | Moderator     | Overview, Console, Players (view), Tickets (view), Lag Reports, Bug Reports, Spam Reports (view), Channels (view), Guilds (view) |
 | 2     | Game Master   | + Kick/ban players, manage bans, announcements, send mail, accounts (view/lock/ban/mute), autobroadcast (add/edit), mail server (view), dismiss reports, delete spam reports, unban channel players |
 | 3     | Administrator | + Start/stop servers, scheduled restart, MOTD, DB Query, Config editor, autobroadcast (delete), accounts (GM level/email/password/create/delete), mail server (create/edit/delete), alert thresholds, clear all lag/spam reports, delete channels, Audit Log |
 
@@ -361,6 +362,16 @@ The **server agent** (`serverAgent.js`) is a separate process that owns the worl
 - Send mail, items (up to 12 by entry ID and count), or money (gold/silver/copper auto-converted to copper)
 - Character name and subject are preserved after sending for quick follow-ups
 
+### Guilds
+- Guild list with name, leader, member count, and bank balance
+- Search by guild name or leader
+- Click any guild to open the detail panel showing:
+  - **Tabard** — colour preview (background, border, emblem) with style indices
+  - **MOTD** and guild info text (when set)
+  - **Members** tab — character name, class, level, and rank; personal note shown
+  - **Ranks** tab — rank name and bank gold withdrawal limit per day
+  - **Event Log** tab — last 100 entries: invites, joins, promotions, demotions, kicks, and leaves with timestamps and player names
+
 ### Channels
 - Lists all custom chat channels with name, faction (Alliance / Horde / Both), active ban count, password lock indicator, and last used timestamp
 - Lock icon shown for password-protected channels — credentials are never exposed
@@ -479,6 +490,7 @@ Dashboard/
 │   │   ├── players.js             # Online players, kick, ban
 │   │   ├── servers.js             # Server start/stop/status/logs
 │   │   ├── servertools.js         # Scheduled restart, MOTD
+│   │   ├── guilds.js              # Guild list and detail (members, ranks, event log)
 │   │   ├── scheduledTasks.js      # Scheduled task CRUD and run-now trigger
 │   │   ├── settingsRoutes.js      # Dashboard settings read/write and Discord webhook test
 │   │   ├── spamreports.js         # Spam report browser
@@ -507,6 +519,7 @@ Dashboard/
 │       │   ├── BansPage.jsx
 │       │   ├── BugReportsPage.jsx
 │       │   ├── ChannelsPage.jsx
+│       │   ├── GuildsPage.jsx
 │       │   ├── ConfigPage.jsx
 │       │   ├── ConsolePage.jsx
 │       │   ├── DBQueryPage.jsx
