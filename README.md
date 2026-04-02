@@ -401,7 +401,7 @@ The **server agent** (`serverAgent.js`) is a separate process that owns the worl
 | Config Editor → Create .bak backup on save | On | Creates a `.bak` copy of each config file before overwriting |
 | Discord Alerts → Enable Discord alerts | On | Master switch — when off, no messages are sent |
 | Discord Alerts → Display name | AzerothCore Dashboard | Name shown on Discord messages (overrides webhook default) |
-| Discord Alerts → Avatar URL | *(blank)* | Direct image URL used as the bot avatar; blank uses the dashboard icon |
+| Discord Alerts → Avatar URL | *(dashboard icon)* | Direct image URL used as the bot avatar; defaults to the dashboard icon hosted on GitHub |
 | Discord Alerts → Server offline alert | On | Posts to Discord when worldserver or authserver goes offline unexpectedly |
 | Discord Alerts → Server offline message | *see below* | Editable message body; supports `{server}` |
 | Discord Alerts → Server online alert | On | Posts to Discord when worldserver or authserver comes back online |
@@ -456,11 +456,13 @@ Dashboard/
 │   │   ├── players.js             # Online players, kick, ban
 │   │   ├── servers.js             # Server start/stop/status/logs
 │   │   ├── servertools.js         # Scheduled restart, MOTD
+│   │   ├── scheduledTasks.js      # Scheduled task CRUD and run-now trigger
+│   │   ├── settingsRoutes.js      # Dashboard settings read/write and Discord webhook test
 │   │   ├── spamreports.js         # Spam report browser
 │   │   ├── thresholds.js          # CPU/memory alert thresholds
 │   │   └── tickets.js             # GM ticket CRUD
 │   ├── audit.js                   # Audit log helper (fire-and-forget write to acore_dashboard)
-│   ├── discord.js                 # Discord webhook sender (alerts for crashes, thresholds, agent disconnects)
+│   ├── discord.js                 # Discord webhook sender (server offline/online, thresholds, agent disconnect)
 │   ├── db.js                      # MySQL connection pools (auth, world, characters, dashboard)
 │   ├── dbc.js                     # WotLK DBC binary parser
 │   ├── latencyMonitor.js          # TCP latency sampling + rolling stats
