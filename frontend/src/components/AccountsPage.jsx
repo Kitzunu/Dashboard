@@ -513,7 +513,7 @@ function AccountDetailModal({ account, auth, onClose, onRefresh, onDeleted }) {
 
             <div className="form-group" style={{ margin: 0 }}>
               <label>GM Level</label>
-              {canAdmin ? (
+              {canAdmin && (detail.gmlevel ?? 0) < 4 ? (
                 <select value={detail.gmlevel ?? 0} onChange={handleGMChange}
                   disabled={gmBusy} style={selectStyle}>
                   {[0, 1, 2, 3].map((lvl) => (
