@@ -2,6 +2,29 @@
 
 A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/) servers. Monitor server status, manage players, stream live console output, handle GM tickets, edit config files, and more — all from your browser.
 
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Configuration](#configuration)
+  - [Server Paths](#server-paths)
+  - [Config Files](#config-files)
+  - [Database](#database)
+  - [Application](#application)
+  - [Scheduled Tasks](#scheduled-tasks)
+  - [Discord Alerts](#discord-alerts)
+  - [Session Idle Timeout](#session-idle-timeout)
+  - [Audit Log Retention](#audit-log-retention)
+  - [DBC Files](#dbc-files-optional)
+- [Access Levels](#access-levels)
+- [Audit Log Setup](#audit-log-setup)
+- [Running](#running)
+- [Pages](#pages)
+- [Project Structure](#project-structure)
+- [Notes](#notes)
+- [Credits](#credits)
+
 ## Features
 
 **Server**
