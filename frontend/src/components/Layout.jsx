@@ -21,6 +21,7 @@ import ChannelsPage from './ChannelsPage.jsx';
 import SpamReportsPage from './SpamReportsPage.jsx';
 import AuditLogPage from './AuditLogPage.jsx';
 import SettingsPage from './SettingsPage.jsx';
+import MutesPage from './MutesPage.jsx';
 import { GM_LABELS } from '../constants.js';
 
 const NAV_GROUPS = [
@@ -42,6 +43,7 @@ const NAV_GROUPS = [
       { id: 'players',  label: '👥 Players',  minLevel: 1 },
       { id: 'tickets',  label: '🎫 Tickets',  minLevel: 1 },
       { id: 'bans',     label: '🔨 Bans',     minLevel: 2 },
+      { id: 'mutes',    label: '🔇 Mutes',    minLevel: 2 },
       { id: 'announce', label: '📢 Announce', minLevel: 2 },
       { id: 'accounts',  label: '👤 Accounts',  minLevel: 2 },
       { id: 'mail',      label: '✉ Send Mail',  minLevel: 2 },
@@ -281,6 +283,7 @@ export default function Layout() {
         {page === 'players'       && <PlayersPage auth={auth} serverStatus={serverStatus} />}
         {page === 'tickets'       && <TicketsPage />}
         {page === 'bans'          && <BansPage />}
+        {page === 'mutes'         && <MutesPage />}
         {page === 'announce'      && <AnnouncePage />}
         {page === 'accounts'      && <AccountsPage auth={auth} />}
         {page === 'autobroadcast' && <AutobroadcastPage />}

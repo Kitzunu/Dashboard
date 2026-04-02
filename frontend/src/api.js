@@ -157,6 +157,9 @@ export const api = {
   getBugReport:      (id)   => request('GET',   `/api/bugreports/${id}`),
   updateBugReport:   (id, updates) => request('PATCH', `/api/bugreports/${id}`, updates),
 
+  getMutes:   ()   => request('GET',    '/api/mutes'),
+  unmute:     (id) => request('DELETE', `/api/mutes/${id}`),
+
   getBans: () => request('GET', '/api/bans'),
   banTarget: (type, target, duration, reason) =>
     request('POST', '/api/bans', { type, target, duration, reason }),

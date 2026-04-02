@@ -17,6 +17,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 - **Players** — Live online player list with race, class, level, zone, and account; filter by name or account; kick with optional reason; ban by character, account, or IP
 - **Tickets** — View, respond to, comment on, assign, escalate, and close GM tickets; sidebar badge shows open ticket count
 - **Bans** — Three-tab view of active account, character, and IP bans; issue new bans and unban with confirmation
+- **Mutes** — List of all active account mutes with expiry and time remaining; issue new mutes and unmute with confirmation
 - **Announce** — Broadcast server-wide messages (chat announce or on-screen notify) with quick-fill templates and session history
 - **Accounts** — Search by username, email, or IP; view full account detail and characters; set GM level, expansion, email, lock/unlock, reset password, mute/unmute characters, create accounts, and delete accounts
 - **Send Mail** — Send in-game mail, items (up to 12), or money (gold/silver/copper) to any character
@@ -393,6 +394,7 @@ Dashboard/
 │   │   ├── auth.js                # SRP6 login + rate limiting + logout
 │   │   ├── autobroadcast.js       # Autobroadcast CRUD
 │   │   ├── bans.js                # Ban management
+│   │   ├── mutes.js               # Mute management
 │   │   ├── bugreports.js          # Bug report browser
 │   │   ├── channels.js            # Chat channel browser and management
 │   │   ├── config.js              # Config file read/write with diff logging
@@ -440,6 +442,7 @@ Dashboard/
 │       │   ├── Login.jsx
 │       │   ├── MailPage.jsx
 │       │   ├── MailServerPage.jsx
+│       │   ├── MutesPage.jsx
 │       │   ├── PlayersPage.jsx
 │       │   ├── ServersPage.jsx
 │       │   ├── SpamReportsPage.jsx
