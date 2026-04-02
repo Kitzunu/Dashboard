@@ -198,6 +198,13 @@ function BankTab({ guildId }) {
       .finally(() => setLoading(false));
   }, [guildId]);
 
+  // Re-initialize WoWHead tooltips after items render
+  useEffect(() => {
+    if (!loading && tabs) {
+      window.$WowheadPower?.refreshLinks();
+    }
+  }, [loading, tabs, activeTab]);
+
   if (loading) return <div className="empty-state">Loading bank…</div>;
   if (!tabs || tabs.length === 0) return <div className="empty-state">No bank tabs.</div>;
 
@@ -239,9 +246,15 @@ function BankTab({ guildId }) {
                   {currentTab.items.map((item) => (
                     <tr key={item.slotId}>
                       <td>
-                        <span style={{ color: QUALITY_COLORS[item.quality] ?? '#fff', fontWeight: 500 }}>
+                        <a
+                          data-wowhead={`item=${item.itemEntry}&domain=wotlk`}
+                          href={`https://www.wowhead.com/wotlk/item=${item.itemEntry}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ color: QUALITY_COLORS[item.quality] ?? '#fff', fontWeight: 500, textDecoration: 'none' }}
+                        >
                           {item.name}
-                        </span>
+                        </a>
                       </td>
                       <td style={{ textAlign: 'center' }}>{item.count}</td>
                       <td style={{ textAlign: 'center' }} className="td-muted">{item.slotId}</td>
