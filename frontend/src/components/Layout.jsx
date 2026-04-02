@@ -21,13 +21,7 @@ import ChannelsPage from './ChannelsPage.jsx';
 import SpamReportsPage from './SpamReportsPage.jsx';
 import AuditLogPage from './AuditLogPage.jsx';
 import SettingsPage from './SettingsPage.jsx';
-
-const GM_LABELS = {
-  1: 'Moderator',
-  2: 'Game Master',
-  3: 'Administrator',
-  4: 'Console',
-};
+import { GM_LABELS } from '../constants.js';
 
 const NAV_GROUPS = [
   {
