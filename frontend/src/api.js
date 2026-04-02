@@ -1,4 +1,5 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const DEFAULT_HOST = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+const BASE_URL = import.meta.env.VITE_API_URL || `http://${DEFAULT_HOST}:3001`;
 
 function getToken() {
   try {
