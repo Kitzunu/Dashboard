@@ -83,6 +83,7 @@ export const api = {
   setAccountLock:    (id, locked)     => request('PATCH',   `/api/accounts/${id}/lock`,      { locked }),
   setExpansion:      (id, expansion)  => request('PATCH',   `/api/accounts/${id}/expansion`, { expansion }),
   setEmail:          (id, email)      => request('PATCH',   `/api/accounts/${id}/email`,     { email }),
+  setAccountFlags:   (id, flags)      => request('PATCH',   `/api/accounts/${id}/flags`,     { flags }),
   resetPassword:     (id, password)   => request('POST',    `/api/accounts/${id}/password`,  { password }),
   deleteAccount:     (id)             => request('DELETE',  `/api/accounts/${id}`),
   muteCharacter:     (name, minutes, reason) => request('POST', '/api/accounts/mute',   { name, minutes, reason }),

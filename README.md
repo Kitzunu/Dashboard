@@ -289,6 +289,7 @@ The **server agent** (`serverAgent.js`) is a separate process that owns the worl
 - **Ban** with duration presets (1h / 1d / 7d / 30d / permanent) and custom duration
 - **Lock / Unlock** (GM 2+), **Reset Password** (Administrator), **Delete Account** (Administrator)
 - **Mute / Unmute** per character with duration and reason (Administrator)
+- **Account Flags** — view active flags for any account; toggle individual flags (Administrator)
 - **Create Account** (Administrator)
 
 ### Autobroadcast

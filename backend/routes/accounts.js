@@ -44,7 +44,7 @@ router.get('/:id', requireGMLevel(2), async (req, res) => {
   try {
     const [[account]] = await authPool.query(
       `SELECT a.id, a.username, a.email, a.joindate, a.last_ip,
-              a.last_login, a.online, a.locked, a.expansion,
+              a.last_login, a.online, a.locked, a.expansion, a.Flags,
               COALESCE(MAX(aa.gmlevel), 0) AS gmlevel
        FROM account a
        LEFT JOIN account_access aa ON a.id = aa.id
@@ -74,6 +74,21 @@ router.post('/', requireGMLevel(3), (req, res) => {
   const result = processManager.sendCommand(`account create ${username} ${password}`);
   audit(req, 'account.create', `username=${username}`);
   return res.json(result);
+});
+
+// PATCH /api/accounts/:id/flags  { flags: number }
+router.patch('/:id/flags', requireGMLevel(3), async (req, res) => {
+  const id    = parseInt(req.params.id, 10);
+  const flags = parseInt(req.body.flags, 10);
+  if (isNaN(flags) || flags < 0)
+    return res.status(400).json({ error: 'flags must be a non-negative integer' });
+  try {
+    await authPool.query('UPDATE account SET Flags = ? WHERE id = ?', [flags, id]);
+    audit(req, 'account.set_flags', `account_id=${id} flags=${flags}`);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // PATCH /api/accounts/:id/gmlevel  { gmlevel: 0-6 }

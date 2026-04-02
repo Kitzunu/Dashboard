@@ -8,6 +8,24 @@ const EXPANSION_LABELS = {
   0: 'Classic', 1: 'The Burning Crusade', 2: 'Wrath of the Lich King',
 };
 
+const ACCOUNT_FLAGS = [
+  { bit: 1,          name: 'GM',                    desc: 'Account is GM' },
+  { bit: 2,          name: 'No Kick',               desc: 'Cannot be kicked' },
+  { bit: 4,          name: "Collector's Edition",   desc: "Collector's Edition owner" },
+  { bit: 8,          name: 'Trial',                 desc: 'Trial account' },
+  { bit: 32,         name: 'IGR',                   desc: 'Internet Game Room (internet café)' },
+  { bit: 2048,       name: 'Recruit-A-Friend',      desc: 'Recruit-A-Friend (referer or referee)' },
+  { bit: 65536,      name: 'TBC Collector',         desc: "TBC Collector's Edition" },
+  { bit: 131072,     name: 'Disable Voice',         desc: 'Cannot join voice chat' },
+  { bit: 262144,     name: 'Disable Voice Speak',   desc: 'Cannot speak in voice chat' },
+  { bit: 524288,     name: 'Scroll of Resurrection', desc: 'Scroll of Resurrection recipient' },
+  { bit: 2097152,    name: 'Dell Promo',            desc: 'Dell XPS WoW Edition Promo' },
+  { bit: 8388608,    name: 'Pro Pass',              desc: 'Pro Pass (Arena Tournament)' },
+  { bit: 67108864,   name: 'WotLK Collector',       desc: "WotLK Collector's Edition" },
+  { bit: 134217728,  name: 'Battle.net Linked',     desc: 'Linked with Battle.net account' },
+  { bit: 536870912,  name: 'Death Knight OK',       desc: 'Allowed to create Death Knight' },
+];
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function fmtUnix(unix) {
   if (!unix) return '—';
@@ -353,9 +371,12 @@ function AccountDetailModal({ account, auth, onClose, onRefresh, onDeleted }) {
   const [showEditEmail, setShowEditEmail]         = useState(false);
   const [showBan, setShowBan]                     = useState(false);
   const [muteTarget, setMuteTarget]               = useState(null); // character name
+  const [showFlags, setShowFlags]                 = useState(false);
   const [gmBusy, setGmBusy]               = useState(false);
   const [expansionBusy, setExpansionBusy] = useState(false);
   const [lockBusy, setLockBusy]           = useState(false);
+  const [pendingFlags, setPendingFlags]   = useState(null); // null = no unsaved changes
+  const [flagsBusy, setFlagsBusy]         = useState(false);
   const [races, setRaces]     = useState(FALLBACK_RACES);
   const [classes, setClasses] = useState(FALLBACK_CLASSES);
 
@@ -444,6 +465,31 @@ function AccountDetailModal({ account, auth, onClose, onRefresh, onDeleted }) {
       onClose();
     } catch (err) {
       toast(err.message, 'error');
+    }
+  };
+
+  // Flags
+  const currentFlags = pendingFlags ?? (detail.Flags || 0);
+
+  const handleFlagToggle = (bit) => {
+    setPendingFlags((prev) => {
+      const cur = prev ?? (detail.Flags || 0);
+      return (cur & bit) ? (cur & ~bit) : (cur | bit);
+    });
+  };
+
+  const handleFlagsSave = async () => {
+    if (pendingFlags === null) return;
+    setFlagsBusy(true);
+    try {
+      await api.setAccountFlags(detail.id, pendingFlags);
+      setDetail((prev) => ({ ...prev, Flags: pendingFlags }));
+      setPendingFlags(null);
+      toast(`Account flags updated for ${detail.username}`);
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setFlagsBusy(false);
     }
   };
 
@@ -554,6 +600,41 @@ function AccountDetailModal({ account, auth, onClose, onRefresh, onDeleted }) {
               </span>
             </div>
           </div>
+
+          {/* Account Flags */}
+          <button className="account-section-title account-section-toggle"
+            style={{ marginTop: 20 }} onClick={() => setShowFlags((v) => !v)}>
+            Account Flags
+            <span className="account-section-chevron">{showFlags ? '▲' : '▼'}</span>
+          </button>
+          {showFlags && (
+            <>
+              <div className="account-flags-grid">
+                {ACCOUNT_FLAGS.map(({ bit, name, desc }) => {
+                  const checked = !!(currentFlags & bit);
+                  return (
+                    <label key={bit} className={`account-flag-item${checked ? ' account-flag-active' : ''}`}
+                      title={desc}>
+                      <input type="checkbox" checked={checked}
+                        onChange={canAdmin ? () => handleFlagToggle(bit) : undefined}
+                        disabled={!canAdmin} />
+                      <span className="account-flag-name">{name}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {canAdmin && pendingFlags !== null && (
+                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                  <button className="btn btn-primary btn-xs" onClick={handleFlagsSave} disabled={flagsBusy}>
+                    {flagsBusy ? 'Saving…' : 'Save Flags'}
+                  </button>
+                  <button className="btn btn-ghost btn-xs" onClick={() => setPendingFlags(null)}>
+                    Discard
+                  </button>
+                </div>
+              )}
+            </>
+          )}
 
           {/* Actions */}
           <p className="account-section-title" style={{ marginTop: 20 }}>Actions</p>
