@@ -86,6 +86,10 @@ export default function ConfigPage() {
     api.getConfigs()
       .then((list) => {
         setConfigs(list);
+        if (list.length === 0) {
+          setError('No config files found. Set CONFIG_PATH in your .env to point to your AzerothCore configs directory, then restart the backend.');
+          return;
+        }
         const first = list.find((c) => c.exists);
         if (first) setActive(first.name);
       })

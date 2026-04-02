@@ -324,7 +324,7 @@ npm run start:frontend  # Vite frontend on port 5173
 
 ### Config
 - Tab per config file — worldserver and authserver always first, then module configs alphabetically
-- Set `CONFIG_PATH` to auto-load all `.conf` files from a directory (useful for AzerothCore module configs)
+- Set `CONFIG_PATH` to auto-load all `.conf` files from a directory and its subdirectories (useful for AzerothCore module configs)
 - Without `CONFIG_PATH`, worldserver.conf and authserver.conf are loaded from the exe directory
 - Monospace editor with line numbers, find bar, unsaved-change indicators
 - **Save** creates a `.bak` backup of the previous file automatically

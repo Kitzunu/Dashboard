@@ -7,24 +7,39 @@ const dashboardSettings = require('../dashboardSettings');
 
 const router = express.Router();
 
-// If CONFIG_PATH is set, all .conf files in that directory are loaded (including
-// worldserver.conf and authserver.conf if present). Otherwise falls back to
-// deriving worldserver/authserver paths from their exe locations.
+// Recursively walk a directory and collect all .conf files into map.
+// Keys are forward-slash relative paths without the .conf extension
+// (e.g. "worldserver", "modules/mod_example").
+async function walkDir(dir, baseDir, map) {
+  let entries;
+  try {
+    entries = await fs.readdir(dir);
+  } catch (err) {
+    console.warn(`[config] Could not read directory (${dir}): ${err.message}`);
+    return;
+  }
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry);
+    let stat;
+    try { stat = await fs.stat(fullPath); } catch { continue; }
+    if (stat.isDirectory()) {
+      await walkDir(fullPath, baseDir, map);
+    } else if (stat.isFile() && entry.endsWith('.conf')) {
+      const rel  = path.relative(baseDir, fullPath).replace(/\\/g, '/');
+      const name = rel.slice(0, -5); // strip .conf
+      map[name]  = fullPath;
+    }
+  }
+}
+
+// If CONFIG_PATH is set, all .conf files in that directory (and subdirectories)
+// are loaded. Otherwise falls back to deriving paths from exe locations.
 async function getConfigMap() {
   const map = {};
 
   const configDir = process.env.CONFIG_PATH;
   if (configDir) {
-    try {
-      const entries = await fs.readdir(configDir);
-      for (const entry of entries) {
-        if (!entry.endsWith('.conf')) continue;
-        const name = entry.slice(0, -5); // strip .conf
-        map[name] = path.join(configDir, entry);
-      }
-    } catch (err) {
-      console.warn(`[config] Could not read CONFIG_PATH (${configDir}): ${err.message}`);
-    }
+    await walkDir(configDir, configDir, map);
     return map;
   }
 
@@ -70,22 +85,24 @@ router.get('/', requireGMLevel(3), async (req, res) => {
   res.json(result);
 });
 
-// GET /api/config/:name — read a config file
-router.get('/:name', requireGMLevel(3), async (req, res) => {
-  const filePath = await resolvePath(req.params.name);
+// GET /api/config/<name> — read a config file (name may contain slashes for subdirs)
+router.get(/^\/(.+)$/, requireGMLevel(3), async (req, res) => {
+  const name     = req.params[0];
+  const filePath = await resolvePath(name);
   if (!filePath) return res.status(404).json({ error: 'Unknown config file' });
 
   try {
     const content = await fs.readFile(filePath, 'utf8');
-    res.json({ name: req.params.name, filePath, content });
+    res.json({ name, filePath, content });
   } catch (err) {
     res.status(500).json({ error: `Could not read file: ${err.message}` });
   }
 });
 
-// PUT /api/config/:name — save a config file (creates a .bak backup first)
-router.put('/:name', requireGMLevel(3), async (req, res) => {
-  const filePath = await resolvePath(req.params.name);
+// PUT /api/config/<name> — save a config file (creates a .bak backup first)
+router.put(/^\/(.+)$/, requireGMLevel(3), async (req, res) => {
+  const name     = req.params[0];
+  const filePath = await resolvePath(name);
   if (!filePath) return res.status(404).json({ error: 'Unknown config file' });
 
   const { content } = req.body;
@@ -120,8 +137,8 @@ router.put('/:name', requireGMLevel(3), async (req, res) => {
       }
     }
     const details = changedKeys.length
-      ? `file=${req.params.name} changes: ${changedKeys.join('; ')}`
-      : `file=${req.params.name}`;
+      ? `file=${name} changes: ${changedKeys.join('; ')}`
+      : `file=${name}`;
     audit(req, 'config.save', details);
     res.json({ success: true });
   } catch (err) {
