@@ -50,7 +50,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
 
     const [rows] = await charPool.query(
       `SELECT s.ID, s.SpamType, s.SpammerGuid, s.MailIdOrMessageType,
-              s.ChannelId, s.secondsSinceMessage, s.Description, s.Time,
+              s.ChannelId, s.SecondsSinceMessage, s.Description, s.Time,
               c.name AS spammerName
        FROM spam_reports s
        LEFT JOIN characters c ON c.guid = s.SpammerGuid
@@ -68,7 +68,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
       spammerName:         r.spammerName || `GUID ${r.SpammerGuid}`,
       mailIdOrMessageType: r.MailIdOrMessageType,
       channelId:           r.ChannelId,
-      secondsSinceMessage: r.secondsSinceMessage,
+      secondsSinceMessage: r.SecondsSinceMessage,
       description:         r.Description,
       time:                r.Time,
     }));
