@@ -1,6 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 
+function RemoveModal({ name, type, onConfirm, onClose }) {
+  const label = type === 'profanity' ? 'profanity' : 'reserved';
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>Remove <span className="player-name-em">{name}</span>?</h3>
+        <p className="modal-detail">This will remove <code>{name}</code> from the {label} name list.</p>
+        <div className="modal-actions">
+          <button className="btn btn-danger" onClick={onConfirm}>Remove</button>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function NameFiltersPage() {
   const [profanity, setProfanity]   = useState([]);
   const [reserved,  setReserved]    = useState([]);
@@ -8,10 +24,11 @@ export default function NameFiltersPage() {
   const [error,     setError]       = useState('');
   const [tab,       setTab]         = useState('profanity'); // 'profanity' | 'reserved'
 
-  const [filterText, setFilterText] = useState('');
-  const [newName,    setNewName]    = useState('');
-  const [adding,     setAdding]     = useState(false);
-  const [addError,   setAddError]   = useState('');
+  const [filterText,    setFilterText]    = useState('');
+  const [newName,       setNewName]       = useState('');
+  const [adding,        setAdding]        = useState(false);
+  const [addError,      setAddError]      = useState('');
+  const [removeTarget,  setRemoveTarget]  = useState(null); // name string to confirm removal
 
   const load = useCallback(async () => {
     try {
@@ -56,12 +73,14 @@ export default function NameFiltersPage() {
     }
   };
 
-  const handleRemove = async (name) => {
+  const handleRemove = async () => {
     try {
-      await api.removeNameFilter(tab, name);
+      await api.removeNameFilter(tab, removeTarget);
+      setRemoveTarget(null);
       await load();
     } catch (err) {
       setError(err.message);
+      setRemoveTarget(null);
     }
   };
 
@@ -144,7 +163,7 @@ export default function NameFiltersPage() {
                     <td className="td-actions">
                       <button
                         className="btn btn-danger btn-xs"
-                        onClick={() => handleRemove(name)}
+                        onClick={() => setRemoveTarget(name)}
                       >
                         Remove
                       </button>
@@ -160,6 +179,15 @@ export default function NameFiltersPage() {
             </div>
           )}
         </div>
+      )}
+
+      {removeTarget && (
+        <RemoveModal
+          name={removeTarget}
+          type={tab}
+          onConfirm={handleRemove}
+          onClose={() => setRemoveTarget(null)}
+        />
       )}
     </div>
   );
