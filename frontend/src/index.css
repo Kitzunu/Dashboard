@@ -2889,7 +2889,8 @@ code {
   color: var(--text-dim);
 }
 
-.guild-ranks-list {
+.guild-ranks-list,
+.guild-bank-info {
   display: flex;
   flex-direction: column;
   gap: 12px;

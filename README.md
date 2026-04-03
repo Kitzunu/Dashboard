@@ -50,6 +50,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 - **Channels** — Browse all active chat channels; view banned players and channel config (rights, speak delay, messages); lock icon for password-protected channels; unban players (GM 2+); delete channel (Administrator)
 - **Guilds** — Browse all guilds with leader, member count, and bank balance; detail panel with member roster (class, level, rank), rank list with bank gold per day, and event log (invites, joins, promotions, demotions, kicks, leaves); tabard colour preview
 - **Characters** — Search all characters by name; detail panel with five tabs: Overview (money, honor/arena points, played time, currency), Equipment (all 19 slots with WoWHead tooltips), Bags (backpack + 4 bag slots), Bank (main bank + 7 bank bag slots), and Reputation (all factions with standing label, progress bar, and at-war indicator)
+- **Name Filters** — View, add, and remove entries in the `profanity_name` and `reserved_name` tables; tabbed interface with live filter and per-entry remove (GM 2+)
 
 **Reports**
 - **Lag Reports** — Browse player-submitted lag events; filter by type and minimum latency; aggregate stats with top reporters and top maps; dismiss or clear all
@@ -253,7 +254,7 @@ The dashboard uses AzerothCore's `account_access` GM levels for role-based acces
 | Level | Role          | Access |
 |-------|---------------|--------|
 | 1     | Moderator     | Overview, Console, Players (view), Tickets (view), Lag Reports, Bug Reports, Spam Reports (view), Channels (view), Guilds (view), Characters (view) |
-| 2     | Game Master   | + Kick/ban players, manage bans, announcements, send mail, accounts (view/lock/ban/mute), autobroadcast (add/edit), mail server (view), dismiss reports, delete spam reports, unban channel players |
+| 2     | Game Master   | + Kick/ban players, manage bans, announcements, send mail, accounts (view/lock/ban/mute), autobroadcast (add/edit), mail server (view), dismiss reports, delete spam reports, unban channel players, name filters (view/add/remove) |
 | 3     | Administrator | + Start/stop servers, scheduled restart, MOTD, DB Query, Config editor, autobroadcast (delete), accounts (GM level/email/password/create/delete), mail server (create/edit/delete), alert thresholds, clear all lag/spam reports, delete channels, Audit Log |
 
 To grant GM level 3 (Administrator):
@@ -301,6 +302,7 @@ Every action that makes a change is recorded with the acting user, their IP addr
 | Channels | Unban player, delete channel |
 | Bug Reports | State change, assignee, comment updates |
 | Spam Reports | Delete individual report, clear all |
+| Name Filters | Add profanity name, remove profanity name, add reserved name, remove reserved name |
 
 ## Running
 
@@ -471,6 +473,13 @@ The **server agent** (`serverAgent.js`) is a separate process that owns the worl
 - Config saves show a per-key diff: `WorldServerPort: "8085" → "8086"` so you can see exactly what changed
 - Stored in the separate `acore_dashboard` database — unaffected by AzerothCore upgrades
 
+### Name Filters
+- Two tabs — **Profanity** and **Reserved** — each showing the entry count
+- Add a new name (max 12 characters) with inline duplicate and length validation
+- Filter the current list by typing; shows match count when filtering
+- **Remove** any entry with a confirmation-free button (GM 2+)
+- Actions are audit-logged
+
 ### Mail Server
 - Template list with ID, active status, subject, per-faction money, item count, condition count, and recipient count
 - Create/Edit modal with four tabs: **General** (subject, body, Alliance/Horde money, active toggle), **Items** (per-faction item attachments), **Conditions** (eligibility rules: Level, PlayTime, Quest, Achievement, Reputation, Faction, Race, Class, AccountFlags), **Recipients** (characters who have already received the template — edit only)
@@ -508,6 +517,7 @@ Dashboard/
 │   │   ├── servertools.js         # Scheduled restart, MOTD
 │   │   ├── characters.js          # Character search and detail (inventory, bank, reputation, currency)
 │   │   ├── guilds.js              # Guild list and detail (members, ranks, event log)
+│   │   ├── namefilters.js         # profanity_name and reserved_name CRUD
 │   │   ├── scheduledTasks.js      # Scheduled task CRUD and run-now trigger
 │   │   ├── settingsRoutes.js      # Dashboard settings read/write and Discord webhook test
 │   │   ├── spamreports.js         # Spam report browser
@@ -548,6 +558,7 @@ Dashboard/
 │       │   ├── MailPage.jsx
 │       │   ├── MailServerPage.jsx
 │       │   ├── MutesPage.jsx
+│       │   ├── NameFiltersPage.jsx
 │       │   ├── ScheduledTasksPage.jsx
 │       │   ├── PlayersPage.jsx
 │       │   ├── ServersPage.jsx
