@@ -160,16 +160,27 @@ function StatsTab({ stats, charClass }) {
 }
 
 function OverviewTab({ char }) {
+  const [races, setRaces]     = useState(FALLBACK_RACES);
+  const [classes, setClasses] = useState(FALLBACK_CLASSES);
+  useEffect(() => {
+    api.getDBCRaces().then(({ races: r }) => {
+      if (r && Object.keys(r).length > 0) setRaces(r);
+    }).catch(() => {});
+    api.getDBCClasses().then(({ classes: c }) => {
+      if (c && Object.keys(c).length > 0) setClasses(c);
+    }).catch(() => {});
+  }, []);
+
   return (
     <div className="char-overview">
       <div className="char-stat-grid">
         <div className="char-stat">
           <span className="char-stat-label">Race</span>
-          <span>{FALLBACK_RACES[char.race]  ?? `Race ${char.race}`}</span>
+          <span>{races[char.race] ?? char.race}</span>
         </div>
         <div className="char-stat">
           <span className="char-stat-label">Class</span>
-          <span>{FALLBACK_CLASSES[char.class] ?? `Class ${char.class}`}</span>
+          <span>{classes[char.class] ?? char.class}</span>
         </div>
         <div className="char-stat">
           <span className="char-stat-label">Level</span>
