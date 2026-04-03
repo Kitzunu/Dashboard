@@ -39,18 +39,19 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 - **Config** — Edit worldserver.conf, authserver.conf, and any module `.conf` files directly in the browser with line numbers, a find bar, unsaved-change indicators, and automatic `.bak` backups
 
 **Game**
-- **Players** — Live online player list with race, class, level, zone, and account; filter by name or account; kick with optional reason; ban by character, account, or IP
 - **Tickets** — View, respond to, comment on, assign, escalate, and close GM tickets; sidebar badge shows open ticket count
 - **Bans** — Three-tab view of active account, character, and IP bans; issue new bans and unban with confirmation
 - **Mutes** — List of all active account mutes with expiry and time remaining; issue new mutes and unmute with confirmation
 - **Announce** — Broadcast server-wide messages (chat announce or on-screen notify) with quick-fill templates and session history
-- **Accounts** — Search by username, email, or IP; view full account detail and characters; set GM level, expansion, email, lock/unlock, reset password, mute/unmute characters, create accounts, and delete accounts
 - **Send Mail** — Send in-game mail, items (up to 12), or money (gold/silver/copper) to any character
-- **Spam Reports** — View player-submitted spam reports (mail / chat / calendar); filter by type; search by spammer name or description; delete individual reports (GM 2+); clear all (Administrator)
 - **Channels** — Browse all active chat channels; view banned players and channel config (rights, speak delay, messages); lock icon for password-protected channels; unban players (GM 2+); delete channel (Administrator)
-- **Guilds** — Browse all guilds with leader, member count, and bank balance; detail panel with member roster (class, level, rank), rank list with bank gold per day, and event log (invites, joins, promotions, demotions, kicks, leaves); tabard colour preview
-- **Characters** — Search all characters by name; detail panel with five tabs: Overview (money, honor/arena points, played time, currency), Equipment (all 19 slots with WoWHead tooltips), Bags (backpack + 4 bag slots), Bank (main bank + 7 bank bag slots), and Reputation (all factions with standing label, progress bar, and at-war indicator)
 - **Name Filters** — View, add, and remove entries in the `profanity_name` and `reserved_name` tables; tabbed interface with live filter and per-entry remove (GM 2+)
+
+**Players**
+- **Players** — Live online player list with race, class, level, zone, and account; filter by name or account; kick with optional reason; ban by character, account, or IP
+- **Accounts** — Search by username, email, or IP; view full account detail and characters; set GM level, expansion, email, lock/unlock, reset password, mute/unmute characters, create accounts, and delete accounts
+- **Characters** — Search all characters by name; detail panel with five tabs: Overview (money, honor/arena points, played time, currency), Equipment (all 19 slots with WoWHead tooltips), Bags (backpack + 4 bag slots), Bank (main bank + 7 bank bag slots), and Reputation (all factions with standing label, progress bar, and at-war indicator)
+- **Guilds** — Browse all guilds with leader, member count, and bank balance; detail panel with member roster (class, level, rank), rank list with bank gold per day, and event log (invites, joins, promotions, demotions, kicks, leaves); tabard colour preview
 
 **Reports**
 - **Lag Reports** — Browse player-submitted lag events; filter by type and minimum latency; aggregate stats with top reporters and top maps; dismiss or clear all
