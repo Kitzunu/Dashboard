@@ -26,51 +26,60 @@ import ScheduledTasksPage from './ScheduledTasksPage.jsx';
 import GuildsPage from './GuildsPage.jsx';
 import CharacterPage from './CharacterPage.jsx';
 import NameFiltersPage from './NameFiltersPage.jsx';
+import DashboardManagePage from './DashboardManagePage.jsx';
+import AlertsPage from './AlertsPage.jsx';
 import { GM_LABELS } from '../constants.js';
 
 const NAV_GROUPS = [
   {
     group: 'Server',
     items: [
-      { id: 'home',          label: '📊 Overview',     minLevel: 1 },
-      { id: 'console',       label: '🖥 Console',       minLevel: 1 },
-      { id: 'servers',       label: '⚙ Servers',        minLevel: 3 },
-      { id: 'autobroadcast', label: '📣 Autobroadcast', minLevel: 2 },
-      { id: 'mailserver',    label: '📬 Mail Server',   minLevel: 3 },
-      { id: 'dbquery',       label: '🗄 DB Query',       minLevel: 3 },
-      { id: 'scheduled',     label: '🕐 Scheduled Tasks', minLevel: 3 },
-      { id: 'config',        label: '📄 Config',         minLevel: 3 },
+      { id: 'home',          label: 'Overview',        minLevel: 1 },
+      { id: 'console',       label: 'Console',         minLevel: 1 },
+      { id: 'servers',       label: 'Servers',         minLevel: 3 },
+      { id: 'autobroadcast', label: 'Autobroadcast',   minLevel: 2 },
+      { id: 'mailserver',    label: 'Mail Server',     minLevel: 3 },
+      { id: 'dbquery',       label: 'DB Query',        minLevel: 3 },
+      { id: 'scheduled',     label: 'Scheduled Tasks', minLevel: 3 },
+      { id: 'config',        label: 'Config',          minLevel: 3 },
     ],
   },
   {
     group: 'Game',
     items: [
-      { id: 'players',  label: '👥 Players',  minLevel: 1 },
-      { id: 'tickets',  label: '🎫 Tickets',  minLevel: 1 },
-      { id: 'bans',     label: '🔨 Bans',     minLevel: 2 },
-      { id: 'mutes',    label: '🔇 Mutes',    minLevel: 2 },
-      { id: 'announce', label: '📢 Announce', minLevel: 2 },
-      { id: 'accounts',  label: '👤 Accounts',  minLevel: 2 },
-      { id: 'mail',      label: '✉ Send Mail',  minLevel: 2 },
-      { id: 'channels',     label: '💬 Channels',      minLevel: 1 },
-      { id: 'guilds',       label: '⚔ Guilds',         minLevel: 1 },
-      { id: 'characters',   label: '🧙 Characters',     minLevel: 1 },
-      { id: 'namefilters',  label: '🚫 Name Filters',   minLevel: 2 },
+      { id: 'tickets',      label: 'Tickets',      minLevel: 1 },
+      { id: 'bans',         label: 'Bans',         minLevel: 2 },
+      { id: 'mutes',        label: 'Mutes',        minLevel: 2 },
+      { id: 'announce',     label: 'Announce',     minLevel: 2 },
+      { id: 'mail',         label: 'Send Mail',    minLevel: 2 },
+      { id: 'channels',     label: 'Channels',     minLevel: 1 },
+      { id: 'namefilters',  label: 'Name Filters', minLevel: 2 },
+    ],
+  },
+  {
+    group: 'Players',
+    items: [
+      { id: 'players',    label: 'Players',    minLevel: 1 },
+      { id: 'accounts',   label: 'Accounts',   minLevel: 2 },
+      { id: 'characters', label: 'Characters', minLevel: 1 },
+      { id: 'guilds',     label: 'Guilds',     minLevel: 1 },
     ],
   },
   {
     group: 'Reports',
     items: [
-      { id: 'lagreports',  label: '📶 Lag Reports',  minLevel: 1 },
-      { id: 'bugreports',  label: '🐛 Bug Reports',  minLevel: 1 },
-      { id: 'spamreports', label: '🚫 Spam Reports', minLevel: 1 },
+      { id: 'lagreports',  label: 'Lag Reports',  minLevel: 1 },
+      { id: 'bugreports',  label: 'Bug Reports',  minLevel: 1 },
+      { id: 'spamreports', label: 'Spam Reports', minLevel: 1 },
     ],
   },
   {
     group: 'Dashboard',
     items: [
-      { id: 'audit-log', label: '📋 Audit Log',  minLevel: 3 },
-      { id: 'settings',  label: '⚙ Settings',    minLevel: 3 },
+      { id: 'alerts',           label: 'Alerts',           minLevel: 1 },
+      { id: 'audit-log',        label: 'Audit Log',        minLevel: 3 },
+      { id: 'settings',         label: 'Settings',         minLevel: 3 },
+      { id: 'dashboard-manage', label: 'Dashboard Manage', minLevel: 3 },
     ],
   },
 ];
@@ -143,10 +152,30 @@ function useIdleTimeout(timeoutMinutes, onLogout) {
   return { showWarning, countdown, stayLoggedIn };
 }
 
+const NAV_GROUP_ORDER_KEY = 'ac-nav-group-order';
+
+function getInitialGroupOrder() {
+  try {
+    const stored = localStorage.getItem(NAV_GROUP_ORDER_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      const all = NAV_GROUPS.map((g) => g.group);
+      const valid = parsed.filter((g) => all.includes(g));
+      const missing = all.filter((g) => !valid.includes(g));
+      return [...valid, ...missing];
+    }
+  } catch {}
+  return NAV_GROUPS.map((g) => g.group);
+}
+
 export default function Layout() {
   const { auth, logout } = useAuth();
   const [page, setPage] = useState('home');
+  const [charNavGuid, setCharNavGuid] = useState(null);
   const [collapsedGroups, setCollapsedGroups] = useState({});
+  const [groupOrder, setGroupOrder] = useState(getInitialGroupOrder);
+  const [dragOverGroup, setDragOverGroup] = useState(null);
+  const draggedGroup = useRef(null);
   const [socket, setSocket] = useState(null);
   const [serverStatus, setServerStatus] = useState({
     worldserver: { running: false },
@@ -221,6 +250,43 @@ export default function Layout() {
     return () => window.removeEventListener('toast', handler);
   }, []);
 
+  const orderedGroups = groupOrder
+    .map((name) => NAV_GROUPS.find((g) => g.group === name))
+    .filter(Boolean);
+
+  const handleDragStart = (e, group) => {
+    draggedGroup.current = group;
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e, group) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (group !== draggedGroup.current) setDragOverGroup(group);
+  };
+
+  const handleDrop = (e, targetGroup) => {
+    e.preventDefault();
+    const from = draggedGroup.current;
+    if (!from || from === targetGroup) { setDragOverGroup(null); return; }
+    setGroupOrder((prev) => {
+      const next = [...prev];
+      const fromIdx = next.indexOf(from);
+      const toIdx   = next.indexOf(targetGroup);
+      next.splice(fromIdx, 1);
+      next.splice(toIdx, 0, from);
+      localStorage.setItem(NAV_GROUP_ORDER_KEY, JSON.stringify(next));
+      return next;
+    });
+    setDragOverGroup(null);
+    draggedGroup.current = null;
+  };
+
+  const handleDragEnd = () => {
+    setDragOverGroup(null);
+    draggedGroup.current = null;
+  };
+
   return (
     <div className="layout">
       <aside className="sidebar">
@@ -235,14 +301,25 @@ export default function Layout() {
         </div>
 
         <nav className="sidebar-nav">
-          {NAV_GROUPS.map(({ group, items }) => {
+          {orderedGroups.map(({ group, items }) => {
             const visible = items.filter((item) => auth.gmlevel >= item.minLevel);
             if (visible.length === 0) return null;
             const collapsed = !!collapsedGroups[group];
             const toggle = () => setCollapsedGroups((prev) => ({ ...prev, [group]: !prev[group] }));
+            const isDragOver = dragOverGroup === group;
+            const isDragging = draggedGroup.current === group;
             return (
-              <div key={group} className="nav-group">
+              <div
+                key={group}
+                className={`nav-group${isDragging ? ' nav-group-dragging' : ''}${isDragOver ? ' nav-group-drag-over' : ''}`}
+                draggable
+                onDragStart={(e) => handleDragStart(e, group)}
+                onDragOver={(e) => handleDragOver(e, group)}
+                onDrop={(e) => handleDrop(e, group)}
+                onDragEnd={handleDragEnd}
+              >
                 <button className="nav-group-label" onClick={toggle}>
+                  <span className="nav-group-drag-handle">⠿</span>
                   <span>{group}</span>
                   <span className={`nav-group-chevron ${collapsed ? 'collapsed' : ''}`}>›</span>
                 </button>
@@ -250,7 +327,7 @@ export default function Layout() {
                   <button
                     key={item.id}
                     className={`nav-item ${page === item.id ? 'active' : ''}`}
-                    onClick={() => setPage(item.id)}
+                    onClick={() => { setPage(item.id); setCharNavGuid(null); }}
                   >
                     <span className="nav-label">{item.label}</span>
                     {item.id === 'players' && playerCount != null && (
@@ -288,7 +365,7 @@ export default function Layout() {
       <main className="main-content">
         {page === 'home'          && <HomePage socket={socket} />}
         {page === 'console'       && <ConsolePage socket={socket} auth={auth} />}
-        {page === 'players'       && <PlayersPage auth={auth} serverStatus={serverStatus} />}
+        {page === 'players'       && <PlayersPage auth={auth} serverStatus={serverStatus} onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
         {page === 'tickets'       && <TicketsPage />}
         {page === 'bans'          && <BansPage />}
         {page === 'mutes'         && <MutesPage />}
@@ -304,12 +381,14 @@ export default function Layout() {
         {page === 'config'        && <ConfigPage />}
         {page === 'channels'      && <ChannelsPage />}
         {page === 'spamreports'   && <SpamReportsPage />}
+        {page === 'alerts'        && <AlertsPage />}
         {page === 'audit-log'     && <AuditLogPage />}
         {page === 'settings'      && <SettingsPage />}
         {page === 'scheduled'     && <ScheduledTasksPage />}
         {page === 'guilds'        && <GuildsPage />}
-        {page === 'characters'    && <CharacterPage />}
-        {page === 'namefilters'   && <NameFiltersPage />}
+        {page === 'characters'    && <CharacterPage initialGuid={charNavGuid} />}
+        {page === 'namefilters'      && <NameFiltersPage />}
+        {page === 'dashboard-manage' && <DashboardManagePage />}
       </main>
 
       <ToastContainer toasts={toasts} />

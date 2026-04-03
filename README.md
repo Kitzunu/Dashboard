@@ -39,26 +39,29 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 - **Config** — Edit worldserver.conf, authserver.conf, and any module `.conf` files directly in the browser with line numbers, a find bar, unsaved-change indicators, and automatic `.bak` backups
 
 **Game**
-- **Players** — Live online player list with race, class, level, zone, and account; filter by name or account; kick with optional reason; ban by character, account, or IP
 - **Tickets** — View, respond to, comment on, assign, escalate, and close GM tickets; sidebar badge shows open ticket count
 - **Bans** — Three-tab view of active account, character, and IP bans; issue new bans and unban with confirmation
 - **Mutes** — List of all active account mutes with expiry and time remaining; issue new mutes and unmute with confirmation
 - **Announce** — Broadcast server-wide messages (chat announce or on-screen notify) with quick-fill templates and session history
-- **Accounts** — Search by username, email, or IP; view full account detail and characters; set GM level, expansion, email, lock/unlock, reset password, mute/unmute characters, create accounts, and delete accounts
 - **Send Mail** — Send in-game mail, items (up to 12), or money (gold/silver/copper) to any character
-- **Spam Reports** — View player-submitted spam reports (mail / chat / calendar); filter by type; search by spammer name or description; delete individual reports (GM 2+); clear all (Administrator)
 - **Channels** — Browse all active chat channels; view banned players and channel config (rights, speak delay, messages); lock icon for password-protected channels; unban players (GM 2+); delete channel (Administrator)
-- **Guilds** — Browse all guilds with leader, member count, and bank balance; detail panel with member roster (class, level, rank), rank list with bank gold per day, and event log (invites, joins, promotions, demotions, kicks, leaves); tabard colour preview
-- **Characters** — Search all characters by name; detail panel with five tabs: Overview (money, honor/arena points, played time, currency), Equipment (all 19 slots with WoWHead tooltips), Bags (backpack + 4 bag slots), Bank (main bank + 7 bank bag slots), and Reputation (all factions with standing label, progress bar, and at-war indicator)
 - **Name Filters** — View, add, and remove entries in the `profanity_name` and `reserved_name` tables; tabbed interface with live filter and per-entry remove (GM 2+)
+
+**Players**
+- **Players** — Live online player list with race, class, level, zone, and account; filter by name or account; kick with optional reason; ban by character, account, or IP
+- **Accounts** — Search by username, email, or IP; view full account detail and characters; set GM level, expansion, email, lock/unlock, reset password, mute/unmute characters, create accounts, and delete accounts
+- **Characters** — Search all characters by name; detail panel with five tabs: Overview (money, honor/arena points, played time, currency), Equipment (all 19 slots with WoWHead tooltips), Bags (backpack + 4 bag slots), Bank (main bank + 7 bank bag slots), and Reputation (all factions with standing label, progress bar, and at-war indicator)
+- **Guilds** — Browse all guilds with leader, member count, and bank balance; detail panel with member roster (class, level, rank), rank list with bank gold per day, and event log (invites, joins, promotions, demotions, kicks, leaves); tabard colour preview
 
 **Reports**
 - **Lag Reports** — Browse player-submitted lag events; filter by type and minimum latency; aggregate stats with top reporters and top maps; dismiss or clear all
 - **Bug Reports** — Browse FeedbackUI bug reports, suggestions, and feedback; separated into Open/Closed tabs with type filter; assignee and comment fields; close/reopen per report
 
-**Dashboard** *(Administrator only)*
-- **Audit Log** — Immutable record of all critical actions taken through the dashboard: logins (including failed attempts with reason), logouts, server start/stop/restart, config saves (with changed key→value diff), MOTD changes, bans/unbans, account changes, console commands, DB queries, announcements, mail sends, and more — with user, IP, timestamp, and success/failure status
-- **Settings** — Dashboard-wide configuration stored in the `acore_dashboard` database; settings changes are audit-logged; Discord alert toggles per event type
+**Dashboard**
+- **Alerts** — Persistent log of all system alerts stored in the `acore_dashboard` database: latency warning/critical threshold breaches, CPU/memory threshold breaches, server crash/online transitions, and agent disconnects — each with severity badge, type, description, metadata (values and thresholds), and timestamp; filter by severity and type, view detail modal with raw metadata, delete individual entries or clear all *(visible to GM level 1+; clear requires Administrator)*
+- **Audit Log** — Immutable record of all critical actions taken through the dashboard: logins (including failed attempts with reason), logouts, server start/stop/restart, config saves (with changed key→value diff), MOTD changes, bans/unbans, account changes, console commands, DB queries, announcements, mail sends, and more — with user, IP, timestamp, and success/failure status *(Administrator only)*
+- **Settings** — Dashboard-wide configuration stored in the `acore_dashboard` database; settings changes are audit-logged; Discord alert toggles per event type. Also includes an **Environment (.env)** section for editing whitelisted `.env` keys directly from the UI (requires backend restart to apply) *(Administrator only)*
+- **Dashboard Management** — Restart the backend, server agent, or frontend from the UI; each action requires confirmation; agent restart includes a clear warning that game servers will be temporarily unmanaged *(Administrator only)*
 
 **Other**
 - **IP Allowlist** — Backend access restricted to a configurable list of IPs (default: localhost only)
@@ -203,7 +206,7 @@ For scheduled restarts, the target server's Auto-Restart is automatically enable
 # DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/your-webhook-id/your-webhook-token
 ```
 
-Three alert types are supported, each with an independent toggle in **Settings → Discord Alerts**:
+Four alert types are supported, each with an independent toggle in **Settings → Discord Alerts**:
 
 | Alert | Trigger | Cooldown |
 |---|---|---|
@@ -211,6 +214,7 @@ Three alert types are supported, each with an independent toggle in **Settings �
 | Server online | worldserver or authserver transitions from offline → running | 5 min per server |
 | Resource threshold | CPU or memory usage exceeds the configured threshold | 5 min per resource |
 | Agent disconnect | Server agent loses its SSE connection to the dashboard | 5 min |
+| Latency threshold | Mean TCP latency to worldserver exceeds the warn or critical threshold | 5 min per level |
 
 Use the **Send Test Message** button in Settings to verify the webhook is working.
 
@@ -254,8 +258,8 @@ The dashboard uses AzerothCore's `account_access` GM levels for role-based acces
 | Level | Role          | Access |
 |-------|---------------|--------|
 | 1     | Moderator     | Overview, Console, Players (view), Tickets (view), Lag Reports, Bug Reports, Spam Reports (view), Channels (view), Guilds (view), Characters (view) |
-| 2     | Game Master   | + Kick/ban players, manage bans, announcements, send mail, accounts (view/lock/ban/mute), autobroadcast (add/edit), mail server (view), dismiss reports, delete spam reports, unban channel players, name filters (view/add/remove) |
-| 3     | Administrator | + Start/stop servers, scheduled restart, MOTD, DB Query, Config editor, autobroadcast (delete), accounts (GM level/email/password/create/delete), mail server (create/edit/delete), alert thresholds, clear all lag/spam reports, delete channels, Audit Log |
+| 2     | Game Master   | + Kick/ban players, manage bans, mutes, announcements, send mail, accounts (view/lock/ban/mute), autobroadcast (add/edit), mail server (view), dismiss reports, delete spam reports, unban channel players, name filters (view/add/remove) |
+| 3     | Administrator | + Start/stop servers, scheduled restart, MOTD, DB Query, Config editor, scheduled tasks, autobroadcast (delete), accounts (GM level/email/password/flags/create/delete), mail server (create/edit/delete), alert thresholds, clear all lag/spam reports, delete channels, Audit Log, Settings (including .env editor), Dashboard Management (restart backend/agent/frontend) |
 
 To grant GM level 3 (Administrator):
 
@@ -303,6 +307,10 @@ Every action that makes a change is recorded with the acting user, their IP addr
 | Bug Reports | State change, assignee, comment updates |
 | Spam Reports | Delete individual report, clear all |
 | Name Filters | Add profanity name, remove profanity name, add reserved name, remove reserved name |
+| Scheduled Tasks | Create, update, delete, run now |
+| Settings | All setting changes (key=value pairs) |
+| Environment | `.env` key changes with before→after values |
+| Dashboard | Restart backend, restart agent, restart frontend |
 
 ## Running
 
@@ -318,6 +326,8 @@ npm run start:frontend      # Vite frontend on port 5173
 
 The **server agent** (`serverAgent.js`) is a separate process that owns the worldserver and authserver child processes. Because it runs independently, restarting the dashboard backend does not kill the game servers. The dashboard backend reconnects to the agent automatically when it comes back up.
 
+Both the backend and the server agent are wrapped by lightweight runner scripts (`run.js` and `runAgent.js`) that automatically restart their respective process when it exits with code 42. This is how the **Restart Backend** and **Restart Agent** buttons in Dashboard Management work.
+
 ## Pages
 
 ### Overview
@@ -325,7 +335,7 @@ The **server agent** (`serverAgent.js`) is a separate process that owns the worl
 - Player Online, Open Tickets, and Active Bans stat cards
 - System Memory and CPU usage bars; turn amber then red when alert thresholds are exceeded
 - Configurable alert thresholds (⚙ button, Administrator only); saved to `backend/thresholds.json`
-- Browser alert notifications (🔔 button) with audio cues — ascending beep for CPU, descending for memory; fires once per threshold crossing
+- **Alerts** dropdown — independently toggle popup notifications and alert sounds; sounds use the Web Audio API (no external files); popup notifications require browser permission; both settings persist in `localStorage`
 - Worldserver TCP latency panel — mean, median, P95, P99, and max over a rolling 60-minute window
 - Player count sparkline over the last hour (up to 120 data points sampled every 30 s)
 - AzerothCore core revision (clickable link to GitHub commit), DB version, cache ID, and current MOTD
@@ -463,6 +473,25 @@ The **server agent** (`serverAgent.js`) is a separate process that owns the worl
 | Discord Alerts → Agent disconnect alert | On | Posts to Discord when the server agent loses its connection |
 | Discord Alerts → Agent disconnect message | *see below* | Editable message body; no variables |
 
+All sections are collapsible. A gold "unsaved changes" badge appears on any collapsed section that has pending edits.
+
+**Environment (.env) settings** — a separate collapsible section at the bottom of the page for editing whitelisted `.env` keys directly from the UI. Changes are written to the `.env` file on disk and require a backend restart to take effect. Settings affecting server executables (`WORLDSERVER_PATH`, `AUTHSERVER_PATH`, `*_DIR`) also require restarting the server agent. A **Restart Backend** button appears in the warning banner after saving. The following keys are editable:
+
+| Key | Description |
+|---|---|
+| `WORLDSERVER_PATH` / `AUTHSERVER_PATH` | Paths to game server executables |
+| `WORLDSERVER_DIR` / `AUTHSERVER_DIR` | Working directories for game server processes |
+| `WORLDSERVER_HOST` / `WORLDSERVER_PORT` | Host/port used for TCP latency measurement |
+| `DBC_PATH` | Path to WotLK DBFilesClient folder |
+| `CONFIG_PATH` | Directory containing `.conf` files for the Config editor |
+| `BACKUP_PATH` | Where scheduled backup files are saved |
+| `MYSQLDUMP_PATH` | Path to `mysqldump` executable |
+| `FRONTEND_URL` | Comma-separated CORS origins |
+| `ALLOWED_IPS` | Comma-separated IPs allowed to reach the backend |
+| `IDLE_TIMEOUT_MINUTES` | Session idle timeout |
+| `AUDIT_LOG_RETENTION_DAYS` | Audit log retention period |
+| `DISCORD_WEBHOOK_URL` | Discord alert webhook URL |
+
 ### Audit Log *(Administrator only)*
 - Paginated table (50 per page) of all dashboard actions, newest first
 - **Success / Failed / All** tab filter — failed logins and blocked actions are highlighted in red
@@ -477,8 +506,14 @@ The **server agent** (`serverAgent.js`) is a separate process that owns the worl
 - Two tabs — **Profanity** and **Reserved** — each showing the entry count
 - Add a new name (max 12 characters) with inline duplicate and length validation
 - Filter the current list by typing; shows match count when filtering
-- **Remove** any entry with a confirmation-free button (GM 2+)
+- **Remove** any entry with confirmation modal (GM 2+)
 - Actions are audit-logged
+
+### Dashboard Management *(Administrator only)*
+- **Restart Backend** — restarts the Express API server; frontend reconnects automatically within a few seconds
+- **Restart Server Agent** — restarts the standalone agent process; includes prominent warning that game servers will be temporarily unmanaged (running servers are NOT stopped, but cannot be monitored or auto-restarted during the window)
+- **Restart Frontend** — informs the user that the Vite dev server cannot be restarted remotely and must be restarted manually; production static builds do not require restarting
+- All actions require a confirmation modal; all are audit-logged
 
 ### Mail Server
 - Template list with ID, active status, subject, per-faction money, item count, condition count, and recipient count
@@ -517,6 +552,8 @@ Dashboard/
 │   │   ├── servertools.js         # Scheduled restart, MOTD
 │   │   ├── characters.js          # Character search and detail (inventory, bank, reputation, currency)
 │   │   ├── guilds.js              # Guild list and detail (members, ranks, event log)
+│   │   ├── dashboardManage.js     # Dashboard process restart endpoints (backend, agent, frontend)
+│   │   ├── envSettings.js         # .env file read/write for whitelisted keys (Administrator)
 │   │   ├── namefilters.js         # profanity_name and reserved_name CRUD
 │   │   ├── scheduledTasks.js      # Scheduled task CRUD and run-now trigger
 │   │   ├── settingsRoutes.js      # Dashboard settings read/write and Discord webhook test
@@ -524,12 +561,15 @@ Dashboard/
 │   │   ├── thresholds.js          # CPU/memory alert thresholds
 │   │   └── tickets.js             # GM ticket CRUD
 │   ├── audit.js                   # Audit log helper (fire-and-forget write to acore_dashboard)
-│   ├── discord.js                 # Discord webhook sender (server offline/online, thresholds, agent disconnect)
+│   ├── alertLogger.js             # Writes system alerts to the dashboard DB alerts table
+│   ├── discord.js                 # Discord webhook sender (server offline/online, thresholds, latency, agent disconnect)
 │   ├── db.js                      # MySQL connection pools (auth, world, characters, dashboard)
 │   ├── dbc.js                     # WotLK DBC binary parser
 │   ├── latencyMonitor.js          # TCP latency sampling + rolling stats
 │   ├── playerHistory.js           # Rolling player count history buffer
 │   ├── resourceHistory.js         # Rolling CPU and memory history buffer
+│   ├── run.js                     # Backend runner — restarts server.js on exit code 42
+│   ├── runAgent.js                # Agent runner — restarts serverAgent.js on exit code 42
 │   ├── serverAgent.js             # Standalone server agent — owns game server processes
 │   ├── serverBridge.js            # SSE bridge: forwards server agent events to frontend Socket.IO
 │   ├── processManager.js          # Agent HTTP client (async proxy to serverAgent)
@@ -542,6 +582,7 @@ Dashboard/
 │       │   ├── AccountsPage.jsx
 │       │   ├── AnnouncePage.jsx
 │       │   ├── AuditLogPage.jsx
+│       │   ├── DashboardManagePage.jsx
 │       │   ├── AutobroadcastPage.jsx
 │       │   ├── BansPage.jsx
 │       │   ├── BugReportsPage.jsx

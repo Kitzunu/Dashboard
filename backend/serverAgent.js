@@ -224,6 +224,12 @@ app.post('/command', (req, res) => {
   res.json(sendCommand(command));
 });
 
+// POST /restart — gracefully restart the agent process via runAgent.js
+app.post('/restart', (req, res) => {
+  res.json({ ok: true });
+  setTimeout(() => process.exit(42), 500);
+});
+
 // GET /events — SSE stream for the dashboard backend
 app.get('/events', (req, res) => {
   res.setHeader('Content-Type',  'text/event-stream');

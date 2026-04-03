@@ -34,6 +34,21 @@ CREATE TABLE IF NOT EXISTS `audit_logs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   COMMENT='Dashboard audit log';
 
+CREATE TABLE IF NOT EXISTS `alerts` (
+  `id`          INT UNSIGNED    NOT NULL AUTO_INCREMENT,
+  `type`        VARCHAR(64)     NOT NULL,
+  `severity`    ENUM('info','warning','critical') NOT NULL DEFAULT 'warning',
+  `title`       VARCHAR(255)    NOT NULL,
+  `description` TEXT            DEFAULT NULL,
+  `metadata`    JSON            DEFAULT NULL,
+  `created_at`  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_type`       (`type`),
+  KEY `idx_severity`   (`severity`),
+  KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='System alert log';
+
 CREATE TABLE IF NOT EXISTS `scheduled_tasks` (
   `id`          INT UNSIGNED  NOT NULL AUTO_INCREMENT,
   `name`        VARCHAR(100)  NOT NULL,

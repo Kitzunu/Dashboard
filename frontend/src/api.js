@@ -135,6 +135,11 @@ export const api = {
   getSettings:        ()      => request('GET', '/api/settings'),
   saveSettings:       (data)  => request('PUT', '/api/settings', data),
   testDiscordWebhook: ()      => request('POST', '/api/settings/discord/test'),
+  restartBackend:     ()      => request('POST', '/api/dashboard/restart/backend'),
+  restartAgent:       ()      => request('POST', '/api/dashboard/restart/agent'),
+  restartFrontend:    ()      => request('POST', '/api/dashboard/restart/frontend'),
+  getEnvSettings:     ()      => request('GET', '/api/env-settings'),
+  saveEnvSettings:    (data)  => request('PUT', '/api/env-settings', data),
 
   getAuditLog: (page = 1, { user = '', actions = [], success = '', search = '' } = {}) =>
     request('GET', `/api/audit-log?page=${page}&user=${encodeURIComponent(user)}&actions=${encodeURIComponent(actions.join(','))}&success=${success}&search=${encodeURIComponent(search)}`),
@@ -174,6 +179,18 @@ export const api = {
   getGuilds:     ()   => request('GET', '/api/guilds'),
   getGuild:      (id) => request('GET', `/api/guilds/${id}`),
   getGuildBank:  (id) => request('GET', `/api/guilds/${id}/bank`),
+
+  getAlerts: (page = 1, { severity = '', type = '' } = {}) => {
+    const params = new URLSearchParams({ page });
+    if (severity) params.set('severity', severity);
+    if (type)     params.set('type', type);
+    return request('GET', `/api/alerts?${params}`);
+  },
+  deleteAlert:  (id) => request('DELETE', `/api/alerts/${id}`),
+  clearAlerts:  (olderThan = 0) => {
+    const params = olderThan > 0 ? `?olderThan=${olderThan}` : '';
+    return request('DELETE', `/api/alerts${params}`);
+  },
 
   getNameFilters:    ()           => request('GET',    '/api/namefilters'),
   addNameFilter:     (type, name) => request('POST',   `/api/namefilters/${type}`, { name }),
