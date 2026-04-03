@@ -11,6 +11,8 @@ const DEFAULTS = {
   'discord.webhook_avatar_url':         'https://raw.githubusercontent.com/Kitzunu/Dashboard/master/frontend/img/icon.png',
   'discord.alert_server_crash':         'true',
   'discord.message_server_crash':       '**{server}** has gone offline.',
+  'discord.alert_server_stop':          'true',
+  'discord.message_server_stop':        '**{server}** was stopped manually.',
   'discord.alert_server_online':        'true',
   'discord.message_server_online':      '**{server}** is online.',
   'discord.alert_threshold':            'true',

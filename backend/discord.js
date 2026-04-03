@@ -9,19 +9,6 @@ const http     = require('http');
 const { URL }  = require('url');
 const settings = require('./dashboardSettings');
 
-// Cooldown tracking — prevents alert spam (key → last-sent timestamp ms)
-const COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
-const lastSent = new Map();
-
-function onCooldown(key) {
-  const last = lastSent.get(key) ?? 0;
-  return Date.now() - last < COOLDOWN_MS;
-}
-
-function markSent(key) {
-  lastSent.set(key, Date.now());
-}
-
 // ── Low-level HTTP sender ─────────────────────────────────────────────────────
 
 function postWebhook(webhookUrl, payload) {
@@ -99,8 +86,6 @@ async function buildPayload(embed) {
 // ── Public API ────────────────────────────────────────────────────────────────
 
 async function sendServerCrash(server) {
-  const cooldownKey = `crash.${server}`;
-  if (onCooldown(cooldownKey)) return;
   const url = getWebhookUrl();
   if (!url) return;
   if (!(await isGloballyEnabled())) return;
@@ -111,13 +96,9 @@ async function sendServerCrash(server) {
   const description = interpolate(template, { server: displayName });
 
   await postWebhook(url, await buildPayload(buildEmbed(`🔴 ${displayName} Offline`, description, COLORS.red)));
-  markSent(cooldownKey);
-  lastSent.delete(`online.${server}`); // reset opposing state so next online alert isn't blocked
 }
 
 async function sendServerOnline(server) {
-  const cooldownKey = `online.${server}`;
-  if (onCooldown(cooldownKey)) return;
   const url = getWebhookUrl();
   if (!url) return;
   if (!(await isGloballyEnabled())) return;
@@ -128,13 +109,9 @@ async function sendServerOnline(server) {
   const description = interpolate(template, { server: displayName });
 
   await postWebhook(url, await buildPayload(buildEmbed(`🟢 ${displayName} Online`, description, COLORS.green)));
-  markSent(cooldownKey);
-  lastSent.delete(`crash.${server}`); // reset opposing state so next crash alert isn't blocked
 }
 
 async function sendThresholdBreach(resource, pct, threshold) {
-  const cooldownKey = `threshold.${resource}`;
-  if (onCooldown(cooldownKey)) return;
   const url = getWebhookUrl();
   if (!url) return;
   if (!(await isGloballyEnabled())) return;
@@ -145,26 +122,20 @@ async function sendThresholdBreach(resource, pct, threshold) {
   const description = interpolate(template, { resource: label, pct, threshold });
 
   await postWebhook(url, await buildPayload(buildEmbed(`⚠️ ${label} Threshold Breached`, description, COLORS.orange)));
-  markSent(cooldownKey);
 }
 
 async function sendAgentDisconnect() {
-  const cooldownKey = 'agent.disconnect';
-  if (onCooldown(cooldownKey)) return;
   const url = getWebhookUrl();
   if (!url) return;
   if (!(await isGloballyEnabled())) return;
   if (!(await settings.getBoolean('discord.alert_agent_disconnect'))) return;
 
-  const template    = (await settings.get('discord.message_agent_disconnect')) || 'The server agent has disconnected. Game servers may be unmanaged.';
+  const template = (await settings.get('discord.message_agent_disconnect')) || 'The server agent has disconnected. Game servers may be unmanaged.';
 
   await postWebhook(url, await buildPayload(buildEmbed('🔴 Agent Disconnected', template, COLORS.red)));
-  markSent(cooldownKey);
 }
 
 async function sendLatencyAlert(severity, meanMs, threshold) {
-  const cooldownKey = `latency.${severity}`;
-  if (onCooldown(cooldownKey)) return;
   const url = getWebhookUrl();
   if (!url) return;
   if (!(await isGloballyEnabled())) return;
@@ -175,7 +146,18 @@ async function sendLatencyAlert(severity, meanMs, threshold) {
   const description = `Server latency mean is **${meanMs} ms** (threshold: ${threshold} ms).`;
 
   await postWebhook(url, await buildPayload(buildEmbed(`⚠️ Latency ${label}`, description, color)));
-  markSent(cooldownKey);
+}
+
+async function sendServerStop(server) {
+  const url = getWebhookUrl();
+  if (!url) return;
+  if (!(await isGloballyEnabled())) return;
+  if (!(await settings.getBoolean('discord.alert_server_stop'))) return;
+
+  const displayName = server === 'worldserver' ? 'World Server' : 'Auth Server';
+  const template    = (await settings.get('discord.message_server_stop')) || '**{server}** was stopped manually.';
+  const description = interpolate(template, { server: displayName });
+  await postWebhook(url, await buildPayload(buildEmbed(`🔴 ${displayName} Offline`, description, COLORS.red)));
 }
 
 async function sendTest(webhookUrl) {
@@ -184,4 +166,4 @@ async function sendTest(webhookUrl) {
   ));
 }
 
-module.exports = { sendServerCrash, sendServerOnline, sendThresholdBreach, sendAgentDisconnect, sendLatencyAlert, sendTest };
+module.exports = { sendServerCrash, sendServerStop, sendServerOnline, sendThresholdBreach, sendAgentDisconnect, sendLatencyAlert, sendTest };

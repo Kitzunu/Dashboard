@@ -155,6 +155,7 @@ serverBridge.on('server-status', ({ server, running }) => {
   if (wasRunning === true && !running) {
     const label = server === 'worldserver' ? 'World Server' : 'Auth Server';
     if (processManager.consumeIntentionalStop(server)) {
+      discord.sendServerStop(server).catch(() => {});
       alertLogger.log('server_stop', 'info', `${label} stopped`, `${label} was stopped manually.`, { server });
     } else {
       discord.sendServerCrash(server).catch(() => {});

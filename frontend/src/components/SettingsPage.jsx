@@ -104,6 +104,20 @@ const SETTING_DEFS = [
         default: '**{server}** has gone offline.',
       },
       {
+        key: 'discord.alert_server_stop',
+        label: 'Server stopped alert',
+        description: 'Send an alert when worldserver or authserver is stopped manually.',
+        type: 'boolean',
+        default: 'true',
+      },
+      {
+        key: 'discord.message_server_stop',
+        label: 'Server stopped message',
+        description: 'Available variables: {server}',
+        type: 'textarea',
+        default: '**{server}** was stopped manually.',
+      },
+      {
         key: 'discord.alert_server_online',
         label: 'Server online alert',
         description: 'Send an alert when worldserver or authserver comes back online.',
