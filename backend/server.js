@@ -65,7 +65,7 @@ function getFrontendOrigins() {
 function dynamicOrigin(origin, callback) {
   const allowed = getFrontendOrigins();
   if (!origin || allowed.includes(origin)) return callback(null, true);
-  callback(new Error('Not allowed by CORS'));
+  callback(null, false);
 }
 
 const io = new Server(httpServer, {
@@ -78,6 +78,10 @@ app.use(ipAllowlist);
 
 // Serve backend/public so assets like the icon can be referenced from Discord webhooks
 app.use('/img', require('express').static(require('path').join(__dirname, 'public')));
+
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true, bridge: serverBridge.isConnected() });
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/servers', authenticateToken, serverRoutes);
