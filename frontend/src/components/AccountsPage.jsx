@@ -605,7 +605,7 @@ function AccountDetailModal({ account, auth, onClose, onRefresh, onDeleted }) {
                   ? <span className="badge badge-info">Online</span>
                   : <span className="badge" style={{ background: 'var(--surface2)', color: 'var(--text-dim)' }}>Offline</span>
                 }
-                {detail.locked && <span className="badge" style={{ background: 'var(--red)', color: '#fff' }}>Locked</span>}
+                {!!detail.locked && <span className="badge" style={{ background: 'var(--red)', color: '#fff' }}>Locked</span>}
               </span>
             </div>
           </div>
@@ -941,7 +941,7 @@ export default function AccountsPage({ auth }) {
                         ? <span className="badge badge-info">Online</span>
                         : <span className="badge" style={{ background: 'var(--surface2)', color: 'var(--text-dim)' }}>Offline</span>
                       }
-                      {row.locked && (
+                      {!!row.locked && (
                         <span className="badge" style={{ background: 'var(--red)', color: '#fff' }}>Locked</span>
                       )}
                     </span>

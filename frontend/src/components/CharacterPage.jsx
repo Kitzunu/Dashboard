@@ -707,7 +707,7 @@ export default function CharacterPage() {
               <div className="channels-detail-header">
                 <div>
                   <div className="channels-detail-title">
-                    {selected.online && <span style={{ color: 'var(--green)', marginRight: 8, fontSize: 12 }}>● Online</span>}
+                    {!!selected.online && <span style={{ color: 'var(--green)', marginRight: 8, fontSize: 12 }}>● Online</span>}
                     {selected.name}
                   </div>
                   <div className="channels-detail-meta">
