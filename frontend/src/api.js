@@ -168,6 +168,9 @@ export const api = {
   deleteScheduledTask:  (id)      => request('DELETE', `/api/scheduled-tasks/${id}`),
   runScheduledTask:     (id)      => request('POST',   `/api/scheduled-tasks/${id}/run`),
 
+  searchCharacters: (q)    => request('GET', `/api/characters/search?q=${encodeURIComponent(q)}`),
+  getCharacter:     (guid) => request('GET', `/api/characters/${guid}`),
+
   getGuilds:     ()   => request('GET', '/api/guilds'),
   getGuild:      (id) => request('GET', `/api/guilds/${id}`),
   getGuildBank:  (id) => request('GET', `/api/guilds/${id}/bank`),

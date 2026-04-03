@@ -49,6 +49,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 - **Spam Reports** — View player-submitted spam reports (mail / chat / calendar); filter by type; search by spammer name or description; delete individual reports (GM 2+); clear all (Administrator)
 - **Channels** — Browse all active chat channels; view banned players and channel config (rights, speak delay, messages); lock icon for password-protected channels; unban players (GM 2+); delete channel (Administrator)
 - **Guilds** — Browse all guilds with leader, member count, and bank balance; detail panel with member roster (class, level, rank), rank list with bank gold per day, and event log (invites, joins, promotions, demotions, kicks, leaves); tabard colour preview
+- **Characters** — Search all characters by name; detail panel with five tabs: Overview (money, honor/arena points, played time, currency), Equipment (all 19 slots with WoWHead tooltips), Bags (backpack + 4 bag slots), Bank (main bank + 7 bank bag slots), and Reputation (all factions with standing label, progress bar, and at-war indicator)
 
 **Reports**
 - **Lag Reports** — Browse player-submitted lag events; filter by type and minimum latency; aggregate stats with top reporters and top maps; dismiss or clear all
@@ -251,7 +252,7 @@ The dashboard uses AzerothCore's `account_access` GM levels for role-based acces
 
 | Level | Role          | Access |
 |-------|---------------|--------|
-| 1     | Moderator     | Overview, Console, Players (view), Tickets (view), Lag Reports, Bug Reports, Spam Reports (view), Channels (view), Guilds (view) |
+| 1     | Moderator     | Overview, Console, Players (view), Tickets (view), Lag Reports, Bug Reports, Spam Reports (view), Channels (view), Guilds (view), Characters (view) |
 | 2     | Game Master   | + Kick/ban players, manage bans, announcements, send mail, accounts (view/lock/ban/mute), autobroadcast (add/edit), mail server (view), dismiss reports, delete spam reports, unban channel players |
 | 3     | Administrator | + Start/stop servers, scheduled restart, MOTD, DB Query, Config editor, autobroadcast (delete), accounts (GM level/email/password/create/delete), mail server (create/edit/delete), alert thresholds, clear all lag/spam reports, delete channels, Audit Log |
 
@@ -505,6 +506,7 @@ Dashboard/
 │   │   ├── players.js             # Online players, kick, ban
 │   │   ├── servers.js             # Server start/stop/status/logs
 │   │   ├── servertools.js         # Scheduled restart, MOTD
+│   │   ├── characters.js          # Character search and detail (inventory, bank, reputation, currency)
 │   │   ├── guilds.js              # Guild list and detail (members, ranks, event log)
 │   │   ├── scheduledTasks.js      # Scheduled task CRUD and run-now trigger
 │   │   ├── settingsRoutes.js      # Dashboard settings read/write and Discord webhook test
@@ -534,6 +536,7 @@ Dashboard/
 │       │   ├── BansPage.jsx
 │       │   ├── BugReportsPage.jsx
 │       │   ├── ChannelsPage.jsx
+│       │   ├── CharacterPage.jsx
 │       │   ├── GuildsPage.jsx
 │       │   ├── ConfigPage.jsx
 │       │   ├── ConsolePage.jsx
