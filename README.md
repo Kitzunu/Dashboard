@@ -4,27 +4,53 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 
 ## Table of Contents
 
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Configuration](#configuration)
-  - [Server Paths](#server-paths)
-  - [Config Files](#config-files)
-  - [Database](#database)
-  - [Application](#application)
-  - [LAN / Remote Access](#lanremoteaccess)
-  - [Scheduled Tasks](#scheduled-tasks)
-  - [Discord Alerts](#discord-alerts)
-  - [Session Idle Timeout](#session-idle-timeout)
-  - [Audit Log Retention](#audit-log-retention)
-  - [DBC Files](#dbc-files-optional)
-- [Access Levels](#access-levels)
-- [Audit Log Setup](#audit-log-setup)
-- [Running](#running)
-- [Pages](#pages)
-- [Project Structure](#project-structure)
-- [Notes](#notes)
-- [Credits](#credits)
+- [AzerothCore Dashboard](#azerothcore-dashboard)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Requirements](#requirements)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+    - [Server Paths](#server-paths)
+    - [Config Files](#config-files)
+    - [Database](#database)
+    - [Application](#application)
+    - [LAN / Remote Access](#lan--remote-access)
+    - [Scheduled Tasks](#scheduled-tasks)
+    - [Character Dumps (pdump)](#character-dumps-pdump)
+    - [Discord Alerts](#discord-alerts)
+    - [Session Idle Timeout](#session-idle-timeout)
+    - [Audit Log Retention](#audit-log-retention)
+    - [DBC Files (Optional)](#dbc-files-optional)
+  - [Access Levels](#access-levels)
+  - [Audit Log Setup](#audit-log-setup)
+    - [What is logged](#what-is-logged)
+  - [Running](#running)
+  - [Pages](#pages)
+    - [Overview](#overview)
+    - [Console](#console)
+    - [Players](#players)
+    - [Tickets](#tickets)
+    - [Bans](#bans)
+    - [Announcements](#announcements)
+    - [Accounts](#accounts)
+    - [Autobroadcast](#autobroadcast)
+    - [Send Mail](#send-mail)
+    - [Guilds](#guilds)
+    - [Channels](#channels)
+    - [Servers](#servers)
+    - [DB Query](#db-query)
+    - [Config](#config)
+    - [Lag Reports](#lag-reports)
+    - [Bug Reports](#bug-reports)
+    - [Settings *(Administrator only)*](#settings-administrator-only)
+    - [Audit Log *(Administrator only)*](#audit-log-administrator-only)
+    - [Characters](#characters)
+    - [Name Filters](#name-filters)
+    - [Dashboard Management *(Administrator only)*](#dashboard-management-administrator-only)
+    - [Mail Server](#mail-server)
+  - [Project Structure](#project-structure)
+  - [Notes](#notes)
+  - [Credits](#credits)
 
 ## Features
 
@@ -195,6 +221,10 @@ By default the dashboard is only accessible from the machine it runs on. To acce
 
 Backups are saved as `<database>_YYYY-MM-DD_HH-mm.sql` files.
 
+The scheduler checks every minute and fires tasks whose time and day-of-week match. If `mysqldump` is on your system `PATH` you do not need to set `MYSQLDUMP_PATH`.
+
+For scheduled restarts, the target server's Auto-Restart is automatically enabled before the shutdown command is sent so the server agent brings it back up after the countdown.
+
 ### Character Dumps (pdump)
 
 ```env
@@ -208,9 +238,7 @@ PDUMP_OUTPUT_PATH=./pdump
 
 Dumps are plain SQL files of INSERT statements compatible with AzerothCore's `.pdump load` command. They capture the full character: inventory, bank, mail, pets, spells, achievements, reputation, and more across all 31 character tables.
 
-The export produces a file named `<CharacterName>_<GUID>_<timestamp>.sql`. When importing, all GUIDs (characters, items, mail, pets, equipment sets) are automatically remapped to avoid conflicts with existing data. If the requested character name is already taken, a temporary name is assigned and the character is flagged to rename on next login. The scheduler checks every minute and fires tasks whose time and day-of-week match. If `mysqldump` is on your system `PATH` you do not need to set `MYSQLDUMP_PATH`.
-
-For scheduled restarts, the target server's Auto-Restart is automatically enabled before the shutdown command is sent so the server agent brings it back up after the countdown.
+The export produces a file named `<CharacterName>_<GUID>_<timestamp>.sql`. When importing, all GUIDs (characters, items, mail, pets, equipment sets) are automatically remapped to avoid conflicts with existing data. If the requested character name is already taken, a temporary name is assigned and the character is flagged to rename on next login.
 
 ### Discord Alerts
 
@@ -223,13 +251,13 @@ For scheduled restarts, the target server's Auto-Restart is automatically enable
 
 Four alert types are supported, each with an independent toggle in **Settings → Discord Alerts**:
 
-| Alert | Trigger | Cooldown |
-|---|---|---|
-| Server offline | worldserver or authserver transitions from running → offline | 5 min per server |
-| Server online | worldserver or authserver transitions from offline → running | 5 min per server |
-| Resource threshold | CPU or memory usage exceeds the configured threshold | 5 min per resource |
-| Agent disconnect | Server agent loses its SSE connection to the dashboard | 5 min |
-| Latency threshold | Mean TCP latency to worldserver exceeds the warn or critical threshold | 5 min per level |
+| Alert              | Trigger                                                                | Cooldown           |
+| ------------------ | ---------------------------------------------------------------------- | ------------------ |
+| Server offline     | worldserver or authserver transitions from running → offline           | 5 min per server   |
+| Server online      | worldserver or authserver transitions from offline → running           | 5 min per server   |
+| Resource threshold | CPU or memory usage exceeds the configured threshold                   | 5 min per resource |
+| Agent disconnect   | Server agent loses its SSE connection to the dashboard                 | 5 min              |
+| Latency threshold  | Mean TCP latency to worldserver exceeds the warn or critical threshold | 5 min per level    |
 
 Use the **Send Test Message** button in Settings to verify the webhook is working.
 
@@ -270,10 +298,10 @@ Files used: `Map.dbc` (map names), `AreaTable.dbc` (zone/area names), `ChrRaces.
 
 The dashboard uses AzerothCore's `account_access` GM levels for role-based access.
 
-| Level | Role          | Access |
-|-------|---------------|--------|
-| 1     | Moderator     | Overview, Console, Players (view), Tickets (view), Lag Reports, Bug Reports, Spam Reports (view), Channels (view), Guilds (view), Characters (view) |
-| 2     | Game Master   | + Kick/ban players, manage bans, mutes, announcements, send mail, accounts (view/lock/ban/mute), autobroadcast (add/edit), mail server (view), dismiss reports, delete spam reports, unban channel players, name filters (view/add/remove), export/import character dumps |
+| Level | Role          | Access                                                                                                                                                                                                                                                                                                                                                                       |
+| ----- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | Moderator     | Overview, Console, Players (view), Tickets (view), Lag Reports, Bug Reports, Spam Reports (view), Channels (view), Guilds (view), Characters (view)                                                                                                                                                                                                                          |
+| 2     | Game Master   | + Kick/ban players, manage bans, mutes, announcements, send mail, accounts (view/lock/ban/mute), autobroadcast (add/edit), mail server (view), dismiss reports, delete spam reports, unban channel players, name filters (view/add/remove), export/import character dumps                                                                                                    |
 | 3     | Administrator | + Start/stop servers, scheduled restart, MOTD, DB Query, Config editor, scheduled tasks, autobroadcast (delete), accounts (GM level/email/password/flags/create/delete), mail server (create/edit/delete), alert thresholds, clear all lag/spam reports, delete channels, Audit Log, Settings (including .env editor), Dashboard Management (restart backend/agent/frontend) |
 
 To grant GM level 3 (Administrator):
@@ -304,29 +332,29 @@ The dashboard will also auto-create the database and table on first startup if t
 
 Every action that makes a change is recorded with the acting user, their IP address, a timestamp, and a details string describing what changed:
 
-| Category | Actions logged |
-|---|---|
-| Auth | Login (success + reason for failure), logout |
-| Accounts | Create, delete, set GM level, lock/unlock, set email, reset password, mute/unmute |
-| Bans | Ban account/character/IP, unban all three types |
-| Servers | Start, stop, scheduled restart, cancel restart |
-| MOTD | Full new MOTD text recorded on every change |
-| Config | File name + every changed `key: "old" → "new"` pair |
-| Announcements | Type and full message text |
-| Console | Every GM command executed |
-| DB Query | Database name and first 200 characters of the query |
-| Autobroadcast | Create (text + weight), update, delete |
-| Mail Server | Template create, update (subject + active state), delete |
-| Mail | Recipient, subject, and type (text/items/money) |
-| Channels | Unban player, delete channel |
-| Bug Reports | State change, assignee, comment updates |
-| Spam Reports | Delete individual report, clear all |
-| Name Filters | Add profanity name, remove profanity name, add reserved name, remove reserved name |
+| Category        | Actions logged                                                                                                                                                                    |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth            | Login (success + reason for failure), logout                                                                                                                                      |
+| Accounts        | Create, delete, set GM level, lock/unlock, set email, reset password, mute/unmute                                                                                                 |
+| Bans            | Ban account/character/IP, unban all three types                                                                                                                                   |
+| Servers         | Start, stop, scheduled restart, cancel restart                                                                                                                                    |
+| MOTD            | Full new MOTD text recorded on every change                                                                                                                                       |
+| Config          | File name + every changed `key: "old" → "new"` pair                                                                                                                               |
+| Announcements   | Type and full message text                                                                                                                                                        |
+| Console         | Every GM command executed                                                                                                                                                         |
+| DB Query        | Database name and first 200 characters of the query                                                                                                                               |
+| Autobroadcast   | Create (text + weight), update, delete                                                                                                                                            |
+| Mail Server     | Template create, update (subject + active state), delete                                                                                                                          |
+| Mail            | Recipient, subject, and type (text/items/money)                                                                                                                                   |
+| Channels        | Unban player, delete channel                                                                                                                                                      |
+| Bug Reports     | State change, assignee, comment updates                                                                                                                                           |
+| Spam Reports    | Delete individual report, clear all                                                                                                                                               |
+| Name Filters    | Add profanity name, remove profanity name, add reserved name, remove reserved name                                                                                                |
 | Character Dumps | Export dump (`pdump.write` — character name, GUID, output path or download), import dump (`pdump.load` — character name, GUID, target account, source; failure logged with error) |
-| Scheduled Tasks | Create, update, delete, run now |
-| Settings | All setting changes (key=value pairs) |
-| Environment | `.env` key changes with before→after values |
-| Dashboard | Restart backend, restart agent, restart frontend |
+| Scheduled Tasks | Create, update, delete, run now                                                                                                                                                   |
+| Settings        | All setting changes (key=value pairs)                                                                                                                                             |
+| Environment     | `.env` key changes with before→after values                                                                                                                                       |
+| Dashboard       | Restart backend, restart agent, restart frontend                                                                                                                                  |
 
 ## Running
 
@@ -476,40 +504,40 @@ Both the backend and the server agent are wrapped by lightweight runner scripts 
 
 **Available settings:**
 
-| Setting | Default | Description |
-|---|---|---|
-| Config Editor → Create .bak backup on save | On | Creates a `.bak` copy of each config file before overwriting |
-| Discord Alerts → Enable Discord alerts | On | Master switch — when off, no messages are sent |
-| Discord Alerts → Display name | AzerothCore Dashboard | Name shown on Discord messages (overrides webhook default) |
-| Discord Alerts → Avatar URL | *(dashboard icon)* | Direct image URL used as the bot avatar; defaults to the dashboard icon hosted on GitHub |
-| Discord Alerts → Server offline alert | On | Posts to Discord when worldserver or authserver goes offline unexpectedly |
-| Discord Alerts → Server offline message | *see below* | Editable message body; supports `{server}` |
-| Discord Alerts → Server online alert | On | Posts to Discord when worldserver or authserver comes back online |
-| Discord Alerts → Server online message | *see below* | Editable message body; supports `{server}` |
-| Discord Alerts → Resource threshold alert | On | Posts to Discord when CPU or memory exceeds the configured threshold (5-minute cooldown) |
-| Discord Alerts → Resource threshold message | *see below* | Editable message body; supports `{resource}`, `{pct}`, `{threshold}` |
-| Discord Alerts → Agent disconnect alert | On | Posts to Discord when the server agent loses its connection |
-| Discord Alerts → Agent disconnect message | *see below* | Editable message body; no variables |
+| Setting                                     | Default               | Description                                                                              |
+| ------------------------------------------- | --------------------- | ---------------------------------------------------------------------------------------- |
+| Config Editor → Create .bak backup on save  | On                    | Creates a `.bak` copy of each config file before overwriting                             |
+| Discord Alerts → Enable Discord alerts      | On                    | Master switch — when off, no messages are sent                                           |
+| Discord Alerts → Display name               | AzerothCore Dashboard | Name shown on Discord messages (overrides webhook default)                               |
+| Discord Alerts → Avatar URL                 | *(dashboard icon)*    | Direct image URL used as the bot avatar; defaults to the dashboard icon hosted on GitHub |
+| Discord Alerts → Server offline alert       | On                    | Posts to Discord when worldserver or authserver goes offline unexpectedly                |
+| Discord Alerts → Server offline message     | *see below*           | Editable message body; supports `{server}`                                               |
+| Discord Alerts → Server online alert        | On                    | Posts to Discord when worldserver or authserver comes back online                        |
+| Discord Alerts → Server online message      | *see below*           | Editable message body; supports `{server}`                                               |
+| Discord Alerts → Resource threshold alert   | On                    | Posts to Discord when CPU or memory exceeds the configured threshold (5-minute cooldown) |
+| Discord Alerts → Resource threshold message | *see below*           | Editable message body; supports `{resource}`, `{pct}`, `{threshold}`                     |
+| Discord Alerts → Agent disconnect alert     | On                    | Posts to Discord when the server agent loses its connection                              |
+| Discord Alerts → Agent disconnect message   | *see below*           | Editable message body; no variables                                                      |
 
 All sections are collapsible. A gold "unsaved changes" badge appears on any collapsed section that has pending edits.
 
 **Environment (.env) settings** — a separate collapsible section at the bottom of the page for editing whitelisted `.env` keys directly from the UI. Changes are written to the `.env` file on disk and require a backend restart to take effect. Settings affecting server executables (`WORLDSERVER_PATH`, `AUTHSERVER_PATH`, `*_DIR`) also require restarting the server agent. A **Restart Backend** button appears in the warning banner after saving. The following keys are editable:
 
-| Key | Description |
-|---|---|
-| `WORLDSERVER_PATH` / `AUTHSERVER_PATH` | Paths to game server executables |
-| `WORLDSERVER_DIR` / `AUTHSERVER_DIR` | Working directories for game server processes |
-| `WORLDSERVER_HOST` / `WORLDSERVER_PORT` | Host/port used for TCP latency measurement |
-| `DBC_PATH` | Path to WotLK DBFilesClient folder |
-| `CONFIG_PATH` | Directory containing `.conf` files for the Config editor |
-| `BACKUP_PATH` | Where scheduled backup files are saved |
-| `MYSQLDUMP_PATH` | Path to `mysqldump` executable |
-| `PDUMP_OUTPUT_PATH` | Default directory for character dump exports |
-| `FRONTEND_URL` | Comma-separated CORS origins |
-| `ALLOWED_IPS` | Comma-separated IPs allowed to reach the backend |
-| `IDLE_TIMEOUT_MINUTES` | Session idle timeout |
-| `AUDIT_LOG_RETENTION_DAYS` | Audit log retention period |
-| `DISCORD_WEBHOOK_URL` | Discord alert webhook URL |
+| Key                                     | Description                                              |
+| --------------------------------------- | -------------------------------------------------------- |
+| `WORLDSERVER_PATH` / `AUTHSERVER_PATH`  | Paths to game server executables                         |
+| `WORLDSERVER_DIR` / `AUTHSERVER_DIR`    | Working directories for game server processes            |
+| `WORLDSERVER_HOST` / `WORLDSERVER_PORT` | Host/port used for TCP latency measurement               |
+| `DBC_PATH`                              | Path to WotLK DBFilesClient folder                       |
+| `CONFIG_PATH`                           | Directory containing `.conf` files for the Config editor |
+| `BACKUP_PATH`                           | Where scheduled backup files are saved                   |
+| `MYSQLDUMP_PATH`                        | Path to `mysqldump` executable                           |
+| `PDUMP_OUTPUT_PATH`                     | Default directory for character dump exports             |
+| `FRONTEND_URL`                          | Comma-separated CORS origins                             |
+| `ALLOWED_IPS`                           | Comma-separated IPs allowed to reach the backend         |
+| `IDLE_TIMEOUT_MINUTES`                  | Session idle timeout                                     |
+| `AUDIT_LOG_RETENTION_DAYS`              | Audit log retention period                               |
+| `DISCORD_WEBHOOK_URL`                   | Discord alert webhook URL                                |
 
 ### Audit Log *(Administrator only)*
 - Paginated table (50 per page) of all dashboard actions, newest first
