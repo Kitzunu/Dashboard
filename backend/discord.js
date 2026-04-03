@@ -112,6 +112,7 @@ async function sendServerCrash(server) {
 
   await postWebhook(url, await buildPayload(buildEmbed(`🔴 ${displayName} Offline`, description, COLORS.red)));
   markSent(cooldownKey);
+  lastSent.delete(`online.${server}`); // reset opposing state so next online alert isn't blocked
 }
 
 async function sendServerOnline(server) {
@@ -128,6 +129,7 @@ async function sendServerOnline(server) {
 
   await postWebhook(url, await buildPayload(buildEmbed(`🟢 ${displayName} Online`, description, COLORS.green)));
   markSent(cooldownKey);
+  lastSent.delete(`crash.${server}`); // reset opposing state so next crash alert isn't blocked
 }
 
 async function sendThresholdBreach(resource, pct, threshold) {
