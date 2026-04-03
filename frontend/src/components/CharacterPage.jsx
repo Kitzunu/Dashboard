@@ -654,6 +654,17 @@ export default function CharacterPage({ initialGuid = null }) {
     setTimeout(() => window.$WowheadPower?.refreshLinks(), 100);
   };
 
+  const [races, setRaces]     = useState(FALLBACK_RACES);
+  const [classes, setClasses] = useState(FALLBACK_CLASSES);
+  useEffect(() => {
+    api.getDBCRaces().then(({ races: r }) => {
+      if (r && Object.keys(r).length > 0) setRaces(r);
+    }).catch(() => {});
+    api.getDBCClasses().then(({ classes: c }) => {
+      if (c && Object.keys(c).length > 0) setClasses(c);
+    }).catch(() => {});
+  }, []);
+
   return (
     <div className="page-wrap">
       <div className="page-header">
@@ -701,8 +712,8 @@ export default function CharacterPage({ initialGuid = null }) {
                         {c.online ? <span style={{ color: 'var(--green)', marginRight: 4 }}>●</span> : null}
                         {c.name}
                       </td>
-                      <td className="td-muted">{FALLBACK_RACES[c.race]   ?? c.race}</td>
-                      <td className="td-muted">{FALLBACK_CLASSES[c.class] ?? c.class}</td>
+                      <td className="td-muted">{races[c.race] ?? c.race}</td>
+                      <td className="td-muted">{classes[c.class] ?? c.class}</td>
                       <td style={{ textAlign: 'center' }}>{c.level}</td>
                     </tr>
                   ))}
@@ -730,11 +741,11 @@ export default function CharacterPage({ initialGuid = null }) {
                   </div>
                   <div className="channels-detail-meta">
                     <span className="td-muted">
-                      {FALLBACK_RACES[selected.race] ?? `Race ${selected.race}`}
+                      {races[selected.race] ?? selected.race}
                     </span>
                     <span className="td-muted">·</span>
                     <span className="td-muted">
-                      {FALLBACK_CLASSES[selected.class] ?? `Class ${selected.class}`}
+                      {classes[selected.class] ?? selected.class}
                     </span>
                     <span className="td-muted">·</span>
                     <span className="td-muted">Level {selected.level}</span>
