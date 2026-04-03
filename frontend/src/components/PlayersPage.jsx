@@ -108,7 +108,7 @@ function BanModal({ player, onConfirm, onClose }) {
   );
 }
 
-export default function PlayersPage({ auth, serverStatus }) {
+export default function PlayersPage({ auth, serverStatus, onViewCharacter }) {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -241,7 +241,16 @@ export default function PlayersPage({ auth, serverStatus }) {
                   ) : (
                     visible.map((p) => (
                       <tr key={p.guid}>
-                        <td className="td-name">{p.name}</td>
+                        <td className="td-name">
+                          {onViewCharacter ? (
+                            <button
+                              className="btn-link"
+                              onClick={() => onViewCharacter(p.guid)}
+                            >
+                              {p.name}
+                            </button>
+                          ) : p.name}
+                        </td>
                         <td>{races[p.race] ?? p.race}</td>
                         <td>{classes[p.class] ?? p.class}</td>
                         <td>{p.level}</td>

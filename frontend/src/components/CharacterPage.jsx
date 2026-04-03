@@ -589,7 +589,7 @@ function ReputationTab({ reputation }) {
 
 const TABS = ['Overview', 'Stats', 'Equipment', 'Bags', 'Bank', 'Auras', 'Reputation', 'Achievements'];
 
-export default function CharacterPage() {
+export default function CharacterPage({ initialGuid = null }) {
   const [query, setQuery]           = useState('');
   const [results, setResults]       = useState([]);
   const [searching, setSearching]   = useState(false);
@@ -597,6 +597,13 @@ export default function CharacterPage() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [activeTab, setActiveTab]   = useState('Overview');
   const debounceRef = useRef(null);
+
+  // Auto-load a character when navigated here from another page (e.g. Players list)
+  useEffect(() => {
+    if (initialGuid) openDetail(initialGuid);
+  // openDetail is defined below but stable — intentionally omitting from deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialGuid]);
 
   const handleSearch = useCallback((value) => {
     setQuery(value);

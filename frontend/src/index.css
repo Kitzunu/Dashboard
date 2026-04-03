@@ -490,6 +490,8 @@ input:focus, textarea:focus, select:focus { border-color: var(--gold-dim); }
 
 .td-name { font-weight: 600; color: var(--gold); }
 .td-muted { color: var(--text-dim); }
+.btn-link { background: none; border: none; padding: 0; cursor: pointer; font-weight: 600; color: var(--gold); font-size: inherit; font-family: inherit; }
+.btn-link:hover { text-decoration: underline; }
 .td-actions { display: flex; gap: 6px; }
 .empty-cell { text-align: center; color: var(--text-dim); padding: 32px !important; }
 .null-val { color: var(--text-dim); font-style: italic; }

@@ -171,6 +171,7 @@ function getInitialGroupOrder() {
 export default function Layout() {
   const { auth, logout } = useAuth();
   const [page, setPage] = useState('home');
+  const [charNavGuid, setCharNavGuid] = useState(null);
   const [collapsedGroups, setCollapsedGroups] = useState({});
   const [groupOrder, setGroupOrder] = useState(getInitialGroupOrder);
   const [dragOverGroup, setDragOverGroup] = useState(null);
@@ -326,7 +327,7 @@ export default function Layout() {
                   <button
                     key={item.id}
                     className={`nav-item ${page === item.id ? 'active' : ''}`}
-                    onClick={() => setPage(item.id)}
+                    onClick={() => { setPage(item.id); setCharNavGuid(null); }}
                   >
                     <span className="nav-label">{item.label}</span>
                     {item.id === 'players' && playerCount != null && (
@@ -364,7 +365,7 @@ export default function Layout() {
       <main className="main-content">
         {page === 'home'          && <HomePage socket={socket} />}
         {page === 'console'       && <ConsolePage socket={socket} auth={auth} />}
-        {page === 'players'       && <PlayersPage auth={auth} serverStatus={serverStatus} />}
+        {page === 'players'       && <PlayersPage auth={auth} serverStatus={serverStatus} onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
         {page === 'tickets'       && <TicketsPage />}
         {page === 'bans'          && <BansPage />}
         {page === 'mutes'         && <MutesPage />}
@@ -385,7 +386,7 @@ export default function Layout() {
         {page === 'settings'      && <SettingsPage />}
         {page === 'scheduled'     && <ScheduledTasksPage />}
         {page === 'guilds'        && <GuildsPage />}
-        {page === 'characters'    && <CharacterPage />}
+        {page === 'characters'    && <CharacterPage initialGuid={charNavGuid} />}
         {page === 'namefilters'      && <NameFiltersPage />}
         {page === 'dashboard-manage' && <DashboardManagePage />}
       </main>
