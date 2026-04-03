@@ -76,7 +76,7 @@ function TabardPreview({ guild }) {
 
 // ── Detail panel tabs ─────────────────────────────────────────────────────────
 
-function MembersTab({ members }) {
+function MembersTab({ members, onViewCharacter }) {
   if (members.length === 0) return <div className="empty-state">No members.</div>;
   return (
     <div className="table-wrap">
@@ -93,7 +93,11 @@ function MembersTab({ members }) {
         <tbody>
           {members.map((m) => (
             <tr key={m.guid}>
-              <td className="td-name">{m.name}</td>
+              <td className="td-name">
+                {onViewCharacter
+                  ? <button className="btn-link" onClick={() => onViewCharacter(m.guid)}>{m.name}</button>
+                  : m.name}
+              </td>
               <td className="td-muted">{FALLBACK_CLASSES[m.class] ?? m.class}</td>
               <td style={{ textAlign: 'center' }}>{m.level}</td>
               <td>{m.rankName ?? `Rank ${m.rank}`}</td>
@@ -420,7 +424,7 @@ function BankTab({ guildId, bankMoney }) {
 
 const TABS = ['Members', 'Ranks', 'Bank', 'Event Log'];
 
-export default function GuildsPage() {
+export default function GuildsPage({ onViewCharacter }) {
   const [guilds, setGuilds]           = useState([]);
   const [loading, setLoading]         = useState(true);
   const [search, setSearch]           = useState('');
@@ -574,7 +578,7 @@ export default function GuildsPage() {
                 ))}
               </div>
 
-              {activeTab === 'Members'   && <MembersTab  members={selected.members} />}
+              {activeTab === 'Members'   && <MembersTab  members={selected.members} onViewCharacter={onViewCharacter} />}
               {activeTab === 'Ranks'     && <RanksTab    ranks={selected.ranks} />}
               {activeTab === 'Bank'      && <BankTab     guildId={selected.guildid} bankMoney={selected.BankMoney} />}
               {activeTab === 'Event Log' && <EventLogTab eventLog={selected.eventLog} ranks={selected.ranks} />}

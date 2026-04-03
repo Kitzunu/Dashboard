@@ -366,11 +366,11 @@ export default function Layout() {
         {page === 'home'          && <HomePage socket={socket} />}
         {page === 'console'       && <ConsolePage socket={socket} auth={auth} />}
         {page === 'players'       && <PlayersPage auth={auth} serverStatus={serverStatus} onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
-        {page === 'tickets'       && <TicketsPage />}
+        {page === 'tickets'       && <TicketsPage onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
         {page === 'bans'          && <BansPage />}
         {page === 'mutes'         && <MutesPage />}
         {page === 'announce'      && <AnnouncePage />}
-        {page === 'accounts'      && <AccountsPage auth={auth} />}
+        {page === 'accounts'      && <AccountsPage auth={auth} onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
         {page === 'autobroadcast' && <AutobroadcastPage />}
         {page === 'mail'          && <MailPage />}
         {page === 'bugreports'    && <BugReportsPage />}
@@ -385,7 +385,7 @@ export default function Layout() {
         {page === 'audit-log'     && <AuditLogPage />}
         {page === 'settings'      && <SettingsPage />}
         {page === 'scheduled'     && <ScheduledTasksPage />}
-        {page === 'guilds'        && <GuildsPage />}
+        {page === 'guilds'        && <GuildsPage onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
         {page === 'characters'    && <CharacterPage initialGuid={charNavGuid} />}
         {page === 'namefilters'      && <NameFiltersPage />}
         {page === 'dashboard-manage' && <DashboardManagePage />}

@@ -89,7 +89,7 @@ function RespondModal({ ticket, onConfirm, onClose }) {
 }
 
 // ── Single ticket row + expandable detail ─────────────────────────────────────
-function TicketRow({ ticket: raw, onRespond, onAction }) {
+function TicketRow({ ticket: raw, onRespond, onAction, onViewCharacter }) {
   const ticket = normalise(raw);
   const [expanded, setExpanded]     = useState(false);
   const [assignInput, setAssignInput] = useState('');
@@ -110,7 +110,11 @@ function TicketRow({ ticket: raw, onRespond, onAction }) {
         onClick={() => setExpanded((v) => !v)}
       >
         <td className="td-mono td-muted">#{ticket.id}</td>
-        <td className="td-name">{playerName}</td>
+        <td className="td-name" onClick={(e) => e.stopPropagation()}>
+          {onViewCharacter && ticket.playerGuid
+            ? <button className="btn-link" onClick={() => onViewCharacter(ticket.playerGuid)}>{playerName}</button>
+            : playerName}
+        </td>
         <td className="ticket-desc-cell">{ticket.description}</td>
         <td className="td-muted">{fmt(ticket.createTime)}</td>
         {/* Assigned To */}
@@ -255,7 +259,7 @@ function TicketRow({ ticket: raw, onRespond, onAction }) {
 }
 
 // ── Page ───────────────────────────────────────────────────────────────────────
-export default function TicketsPage() {
+export default function TicketsPage({ onViewCharacter }) {
   const [tickets, setTickets]             = useState([]);
   const [loading, setLoading]             = useState(true);
   const [error, setError]                 = useState('');
@@ -388,6 +392,7 @@ export default function TicketsPage() {
                     ticket={t}
                     onRespond={setRespondTarget}
                     onAction={handleAction}
+                    onViewCharacter={onViewCharacter}
                   />
                 ))
               )}

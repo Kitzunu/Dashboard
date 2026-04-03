@@ -372,7 +372,7 @@ function MuteModal({ characterName, onClose, onMuted }) {
 }
 
 // ── Account Detail Modal ──────────────────────────────────────────────────────
-function AccountDetailModal({ account, auth, onClose, onRefresh, onDeleted }) {
+function AccountDetailModal({ account, auth, onClose, onRefresh, onDeleted, onViewCharacter }) {
   const [detail, setDetail]               = useState(account);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [showLockConfirm, setShowLockConfirm]     = useState(false);
@@ -694,7 +694,11 @@ function AccountDetailModal({ account, auth, onClose, onRefresh, onDeleted }) {
                 ) : (
                   characters.map((c) => (
                     <tr key={c.guid}>
-                      <td className="td-name">{c.name}</td>
+                      <td className="td-name">
+                        {onViewCharacter
+                          ? <button className="btn-link" onClick={() => onViewCharacter(c.guid)}>{c.name}</button>
+                          : c.name}
+                      </td>
                       <td>{races[c.race] ?? c.race}</td>
                       <td>{classes[c.class] ?? c.class}</td>
                       <td>{c.level}</td>
@@ -821,7 +825,7 @@ function CreateAccountModal({ onClose, onCreated }) {
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
-export default function AccountsPage({ auth }) {
+export default function AccountsPage({ auth, onViewCharacter }) {
   const [query, setQuery]               = useState('');
   const [results, setResults]           = useState([]);
   const [total, setTotal]               = useState(0);
@@ -977,6 +981,7 @@ export default function AccountsPage({ auth }) {
           onClose={() => setSelectedAccount(null)}
           onRefresh={handleRefresh}
           onDeleted={() => { setSelectedAccount(null); doSearch(); }}
+          onViewCharacter={onViewCharacter}
         />
       )}
 
