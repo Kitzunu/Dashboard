@@ -25,7 +25,7 @@ const PRESETS = [
   {
     label: 'Character inventory',
     db: 'characters',
-    query: 'SELECT c.name AS character, COUNT(i.guid) AS items FROM characters c LEFT JOIN character_inventory i ON c.guid = i.guid GROUP BY c.name ORDER BY items DESC LIMIT 20',
+    query: 'SELECT c.name AS character_name, COUNT(i.item) AS items FROM characters c LEFT JOIN character_inventory i ON c.guid = i.guid GROUP BY c.guid, c.name ORDER BY items DESC LIMIT 20;',
   },
 ];
 
