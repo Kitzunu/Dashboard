@@ -175,6 +175,10 @@ export const api = {
   getGuild:      (id) => request('GET', `/api/guilds/${id}`),
   getGuildBank:  (id) => request('GET', `/api/guilds/${id}/bank`),
 
+  getNameFilters:    ()           => request('GET',    '/api/namefilters'),
+  addNameFilter:     (type, name) => request('POST',   `/api/namefilters/${type}`, { name }),
+  removeNameFilter:  (type, name) => request('DELETE', `/api/namefilters/${type}/${encodeURIComponent(name)}`),
+
   getBans: () => request('GET', '/api/bans'),
   banTarget: (type, target, duration, reason) =>
     request('POST', '/api/bans', { type, target, duration, reason }),

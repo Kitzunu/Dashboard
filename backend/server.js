@@ -36,6 +36,7 @@ const mutesRoutes            = require('./routes/mutes');
 const scheduledTasksRoutes   = require('./routes/scheduledTasks');
 const guildsRoutes           = require('./routes/guilds');
 const charactersRoutes       = require('./routes/characters');
+const namefiltersRoutes      = require('./routes/namefilters');
 const scheduler              = require('./scheduler');
 const { startRetentionJob } = require('./audit');
 const playerHistory      = require('./playerHistory');
@@ -90,6 +91,7 @@ app.use('/api/mutes',            authenticateToken, mutesRoutes);
 app.use('/api/scheduled-tasks', authenticateToken, scheduledTasksRoutes);
 app.use('/api/guilds',          authenticateToken, guildsRoutes);
 app.use('/api/characters',      authenticateToken, charactersRoutes);
+app.use('/api/namefilters',     authenticateToken, namefiltersRoutes);
 
 // Authenticate socket connections with JWT
 io.use((socket, next) => {

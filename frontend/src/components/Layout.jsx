@@ -25,6 +25,7 @@ import MutesPage from './MutesPage.jsx';
 import ScheduledTasksPage from './ScheduledTasksPage.jsx';
 import GuildsPage from './GuildsPage.jsx';
 import CharacterPage from './CharacterPage.jsx';
+import NameFiltersPage from './NameFiltersPage.jsx';
 import { GM_LABELS } from '../constants.js';
 
 const NAV_GROUPS = [
@@ -51,9 +52,10 @@ const NAV_GROUPS = [
       { id: 'announce', label: '📢 Announce', minLevel: 2 },
       { id: 'accounts',  label: '👤 Accounts',  minLevel: 2 },
       { id: 'mail',      label: '✉ Send Mail',  minLevel: 2 },
-      { id: 'channels',  label: '💬 Channels',  minLevel: 1 },
-      { id: 'guilds',      label: '⚔ Guilds',      minLevel: 1 },
-      { id: 'characters',  label: '🧙 Characters',  minLevel: 1 },
+      { id: 'channels',     label: '💬 Channels',      minLevel: 1 },
+      { id: 'guilds',       label: '⚔ Guilds',         minLevel: 1 },
+      { id: 'characters',   label: '🧙 Characters',     minLevel: 1 },
+      { id: 'namefilters',  label: '🚫 Name Filters',   minLevel: 2 },
     ],
   },
   {
@@ -307,6 +309,7 @@ export default function Layout() {
         {page === 'scheduled'     && <ScheduledTasksPage />}
         {page === 'guilds'        && <GuildsPage />}
         {page === 'characters'    && <CharacterPage />}
+        {page === 'namefilters'   && <NameFiltersPage />}
       </main>
 
       <ToastContainer toasts={toasts} />
