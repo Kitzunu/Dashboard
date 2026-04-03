@@ -79,6 +79,305 @@ const STANDING_COLORS = {
   Hated:      '#e05c5c',
 };
 
+// ── PDump Modal ───────────────────────────────────────────────────────────────
+
+function PDumpModal({ guid, name, onClose }) {
+  const [mode, setMode]         = useState('download'); // 'download' | 'server'
+  const [filePath, setFilePath] = useState('');
+  const [busy, setBusy]         = useState(false);
+  const [result, setResult]     = useState(null); // { ok, path } | null
+
+  // Pre-fill path from server config: <defaultDir>/<CharName>_<guid>.sql
+  useEffect(() => {
+    api.pdumpDefaultPath().then(({ path: dir }) => {
+      if (dir) setFilePath(`${dir}/${name}_${guid}.sql`);
+    }).catch(() => {});
+  }, [guid, name]);
+
+  async function handleExport() {
+    setBusy(true);
+    setResult(null);
+    try {
+      if (mode === 'download') {
+        const { blob, filename } = await api.pdumpDownload(guid);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast(`Downloaded ${filename}`, 'success');
+        onClose();
+      } else {
+        if (!filePath.trim()) {
+          toast('Please enter a file path', 'error');
+          setBusy(false);
+          return;
+        }
+        const data = await api.pdumpSave(guid, filePath.trim());
+        setResult(data);
+        toast(`Dump saved to ${data.path}`, 'success');
+      }
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" style={{ maxWidth: 460 }} onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <span>Export Character Dump</span>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div style={{ padding: '0 24px 8px' }}>
+          <p className="td-muted" style={{ marginBottom: 12 }}>
+            Generating a pdump for <strong style={{ color: 'var(--text)' }}>{name}</strong>.
+            The output is compatible with the AzerothCore <code>.pdump load</code> command.
+          </p>
+
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+            <button
+              className={`btn ${mode === 'download' ? '' : 'btn-secondary'}`}
+              onClick={() => { setMode('download'); setResult(null); }}
+            >
+              Download to browser
+            </button>
+            <button
+              className={`btn ${mode === 'server' ? '' : 'btn-secondary'}`}
+              onClick={() => { setMode('server'); setResult(null); }}
+            >
+              Save on server
+            </button>
+          </div>
+
+          {mode === 'server' && (
+            <div style={{ marginBottom: 12 }}>
+              <label className="form-label">Server file path</label>
+              <input
+                className="input"
+                placeholder="e.g. C:\backups\character_dump.sql"
+                value={filePath}
+                onChange={e => setFilePath(e.target.value)}
+                disabled={busy || !!result}
+              />
+              <div className="td-muted" style={{ fontSize: 11, marginTop: 4 }}>
+                The path is resolved on the backend machine. The directory is created automatically if missing.
+              </div>
+            </div>
+          )}
+
+          {result && (
+            <div className="badge badge-green" style={{ display: 'block', wordBreak: 'break-all', padding: '6px 10px', marginBottom: 12 }}>
+              Saved to: {result.path}
+            </div>
+          )}
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={onClose} disabled={busy}>Cancel</button>
+          {!result && (
+            <button className="btn" onClick={handleExport} disabled={busy}>
+              {busy ? 'Generating…' : mode === 'download' ? 'Download' : 'Save to server'}
+            </button>
+          )}
+          {result && (
+            <button className="btn" onClick={onClose}>Done</button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── PDump Load Modal ──────────────────────────────────────────────────────────
+
+function PDumpLoadModal({ onClose }) {
+  const [mode, setMode]               = useState('upload');   // 'upload' | 'server'
+  const [fileContent, setFileContent] = useState('');
+  const [fileName, setFileName]       = useState('');
+  const [filePath, setFilePath]       = useState('');
+  const [accountQuery, setAccountQuery] = useState('');
+  const [accountResults, setAccountResults] = useState([]);
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [charName, setCharName]       = useState('');
+  const [busy, setBusy]               = useState(false);
+  const [result, setResult]           = useState(null);
+  const accountDebounce               = useRef(null);
+
+  // Pre-fill path with the configured default dump directory
+  useEffect(() => {
+    api.pdumpDefaultPath().then(({ path: dir }) => {
+      if (dir) setFilePath(dir);
+    }).catch(() => {});
+  }, []);
+
+  function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (ev) => setFileContent(ev.target.result);
+    reader.readAsText(file, 'utf-8');
+  }
+
+  function handleAccountSearch(value) {
+    setAccountQuery(value);
+    setSelectedAccount(null);
+    clearTimeout(accountDebounce.current);
+    if (value.length < 2) { setAccountResults([]); return; }
+    accountDebounce.current = setTimeout(async () => {
+      try {
+        const data = await api.searchAccounts(value);
+        setAccountResults(Array.isArray(data) ? data : (data.rows ?? []));
+      } catch { setAccountResults([]); }
+    }, 300);
+  }
+
+  async function handleLoad() {
+    if (!selectedAccount) { toast('Select a target account first', 'error'); return; }
+    if (mode === 'upload' && !fileContent) { toast('Select a dump file first', 'error'); return; }
+    if (mode === 'server' && !filePath.trim()) { toast('Enter a server file path', 'error'); return; }
+
+    setBusy(true);
+    setResult(null);
+    try {
+      const body = {
+        accountId: selectedAccount.id,
+        characterName: charName.trim(),
+      };
+      if (mode === 'upload') body.content  = fileContent;
+      else                   body.filePath = filePath.trim();
+
+      const data = await api.pdumpLoad(body);
+      setResult(data);
+      toast(`Character ${data.characterName} loaded (GUID ${data.characterGuid})`, 'success');
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <span>Import Character Dump</span>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div style={{ padding: '0 24px 8px' }}>
+
+          {/* Source mode */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+            <button className={`btn ${mode === 'upload' ? '' : 'btn-secondary'}`} onClick={() => { setMode('upload'); setResult(null); }}>
+              Upload file
+            </button>
+            <button className={`btn ${mode === 'server' ? '' : 'btn-secondary'}`} onClick={() => { setMode('server'); setResult(null); }}>
+              Server path
+            </button>
+          </div>
+
+          {mode === 'upload' && (
+            <div style={{ marginBottom: 14 }}>
+              <label className="form-label">Dump file (.sql)</label>
+              <input type="file" accept=".sql,.txt" className="input" onChange={handleFileSelect} disabled={busy || !!result} />
+              {fileName && <div className="td-muted" style={{ fontSize: 11, marginTop: 4 }}>Selected: {fileName}</div>}
+            </div>
+          )}
+
+          {mode === 'server' && (
+            <div style={{ marginBottom: 14 }}>
+              <label className="form-label">Server file path</label>
+              <input
+                className="input"
+                placeholder="e.g. C:\backups\character_dump.sql"
+                value={filePath}
+                onChange={e => setFilePath(e.target.value)}
+                disabled={busy || !!result}
+              />
+            </div>
+          )}
+
+          {/* Account selector */}
+          <div style={{ marginBottom: 14, position: 'relative' }}>
+            <label className="form-label">Target account</label>
+            {selectedAccount ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span className="badge badge-green">{selectedAccount.username} (#{selectedAccount.id})</span>
+                <button className="btn btn-secondary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={() => { setSelectedAccount(null); setAccountQuery(''); }} disabled={busy || !!result}>
+                  Change
+                </button>
+              </div>
+            ) : (
+              <>
+                <input
+                  className="input"
+                  placeholder="Search account by username…"
+                  value={accountQuery}
+                  onChange={e => handleAccountSearch(e.target.value)}
+                  disabled={busy || !!result}
+                />
+                {accountResults.length > 0 && (
+                  <div style={{
+                    position: 'absolute', zIndex: 10, background: 'var(--surface)',
+                    border: '1px solid var(--border)', borderRadius: 4,
+                    width: '100%', maxHeight: 180, overflowY: 'auto',
+                  }}>
+                    {accountResults.map(a => (
+                      <div
+                        key={a.id}
+                        style={{ padding: '6px 10px', cursor: 'pointer' }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-hover)'}
+                        onMouseLeave={e => e.currentTarget.style.background = ''}
+                        onClick={() => { setSelectedAccount(a); setAccountQuery(a.username); setAccountResults([]); }}
+                      >
+                        {a.username} <span className="td-muted">#{a.id}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Optional character name */}
+          <div style={{ marginBottom: 14 }}>
+            <label className="form-label">New character name <span className="td-muted" style={{ textTransform: 'none', fontWeight: 400 }}>(optional — leave blank to keep original)</span></label>
+            <input
+              className="input"
+              placeholder="Leave blank to use name from dump"
+              value={charName}
+              onChange={e => setCharName(e.target.value)}
+              disabled={busy || !!result}
+            />
+          </div>
+
+          {/* Result */}
+          {result && (
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 4, padding: '10px 12px', marginBottom: 8, fontSize: 13 }}>
+              <div style={{ color: 'var(--green)', fontWeight: 600, marginBottom: 6 }}>Character imported successfully</div>
+              <div><span className="td-muted">Name:</span> {result.characterName}{result.forceRename ? <span className="badge badge-warn" style={{ marginLeft: 6, fontSize: 10 }}>rename on login</span> : null}</div>
+              <div><span className="td-muted">GUID:</span> {result.characterGuid}</div>
+              <div><span className="td-muted">Statements executed:</span> {result.tablesLoaded}</div>
+            </div>
+          )}
+        </div>
+
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={onClose} disabled={busy}>Close</button>
+          {!result && (
+            <button className="btn" onClick={handleLoad} disabled={busy}>
+              {busy ? 'Importing…' : 'Import'}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Tab components ────────────────────────────────────────────────────────────
 
 function StatsTab({ stats, charClass }) {
@@ -607,6 +906,8 @@ export default function CharacterPage({ initialGuid = null }) {
   const [selected, setSelected]     = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [activeTab, setActiveTab]   = useState('Overview');
+  const [showDump, setShowDump]     = useState(false);
+  const [showLoad, setShowLoad]     = useState(false);
   const debounceRef = useRef(null);
 
   // Auto-load a character when navigated here from another page (e.g. Players list)
@@ -667,8 +968,13 @@ export default function CharacterPage({ initialGuid = null }) {
 
   return (
     <div className="page-wrap">
+      {showLoad && <PDumpLoadModal onClose={() => setShowLoad(false)} />}
+
       <div className="page-header">
         <h1 className="page-title">Characters</h1>
+        <button className="btn btn-secondary" style={{ fontSize: 13 }} onClick={() => setShowLoad(true)}>
+          Import Dump
+        </button>
       </div>
 
       <div className="channels-layout">
@@ -733,6 +1039,14 @@ export default function CharacterPage({ initialGuid = null }) {
 
           {!detailLoading && selected && (
             <>
+              {showDump && (
+                <PDumpModal
+                  guid={selected.guid}
+                  name={selected.name}
+                  onClose={() => setShowDump(false)}
+                />
+              )}
+
               <div className="channels-detail-header">
                 <div>
                   <div className="channels-detail-title">
@@ -751,6 +1065,14 @@ export default function CharacterPage({ initialGuid = null }) {
                     <span className="td-muted">Level {selected.level}</span>
                   </div>
                 </div>
+                <button
+                  className="btn btn-secondary"
+                  style={{ fontSize: 12, padding: '4px 10px' }}
+                  onClick={() => setShowDump(true)}
+                  title="Export character dump (.pdump write)"
+                >
+                  Export Dump
+                </button>
               </div>
 
               <div className="guild-tabs">

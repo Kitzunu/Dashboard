@@ -40,6 +40,7 @@ const namefiltersRoutes      = require('./routes/namefilters');
 const envSettingsRoutes      = require('./routes/envSettings');
 const dashboardManageRoutes  = require('./routes/dashboardManage');
 const alertsRoutes           = require('./routes/alertsRoutes');
+const pdumpRoutes            = require('./routes/pdump');
 const alertLogger            = require('./alertLogger');
 const scheduler              = require('./scheduler');
 const { startRetentionJob } = require('./audit');
@@ -114,6 +115,7 @@ app.use('/api/namefilters',     authenticateToken, namefiltersRoutes);
 app.use('/api/env-settings',   authenticateToken, envSettingsRoutes);
 app.use('/api/dashboard',      authenticateToken, dashboardManageRoutes);
 app.use('/api/alerts',         authenticateToken, alertsRoutes);
+app.use('/api/pdump',          authenticateToken, pdumpRoutes);
 
 // Authenticate socket connections with JWT
 io.use((socket, next) => {

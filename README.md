@@ -50,7 +50,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 **Players**
 - **Players** — Live online player list with race, class, level, zone, and account; filter by name or account; kick with optional reason; ban by character, account, or IP
 - **Accounts** — Search by username, email, or IP; view full account detail and characters; set GM level, expansion, email, lock/unlock, reset password, mute/unmute characters, create accounts, and delete accounts
-- **Characters** — Search all characters by name; detail panel with five tabs: Overview (money, honor/arena points, played time, currency), Equipment (all 19 slots with WoWHead tooltips), Bags (backpack + 4 bag slots), Bank (main bank + 7 bank bag slots), and Reputation (all factions with standing label, progress bar, and at-war indicator)
+- **Characters** — Search all characters by name; detail panel with eight tabs: Overview (money, honor/arena points, played time, currency), Stats (base stats, health/power, combat stats, resistances), Equipment (all 19 slots with WoWHead tooltips), Bags (backpack + 4 bag slots), Bank (main bank + 7 bank bag slots), Auras (active buffs/debuffs with duration), Reputation (all factions with standing label, progress bar, and at-war indicator), and Achievements (grouped by category with completion date). **Export Dump** — generate a `.pdump`-compatible SQL dump for any character (download to browser or save to a server path). **Import Dump** — load a dump file into any account with full GUID remapping compatible with the AzerothCore `.pdump load` command
 - **Guilds** — Browse all guilds with leader, member count, and bank balance; detail panel with member roster (class, level, rank), rank list with bank gold per day, and event log (invites, joins, promotions, demotions, kicks, leaves); tabard colour preview
 
 **Reports**
@@ -193,7 +193,22 @@ By default the dashboard is only accessible from the machine it runs on. To acce
 # MYSQLDUMP_PATH=C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqldump.exe
 ```
 
-Backups are saved as `<database>_YYYY-MM-DD_HH-mm.sql` files. The scheduler checks every minute and fires tasks whose time and day-of-week match. If `mysqldump` is on your system `PATH` you do not need to set `MYSQLDUMP_PATH`.
+Backups are saved as `<database>_YYYY-MM-DD_HH-mm.sql` files.
+
+### Character Dumps (pdump)
+
+```env
+# Default output directory for character dump exports.
+# The "Save on server" mode in the Export Dump modal pre-fills the path as
+# <PDUMP_OUTPUT_PATH>/<CharacterName>_<GUID>.sql so no typing is required.
+# The directory is created automatically if it does not exist.
+# Defaults to ./pdump (a folder named "pdump" inside the project root).
+PDUMP_OUTPUT_PATH=./pdump
+```
+
+Dumps are plain SQL files of INSERT statements compatible with AzerothCore's `.pdump load` command. They capture the full character: inventory, bank, mail, pets, spells, achievements, reputation, and more across all 31 character tables.
+
+The export produces a file named `<CharacterName>_<GUID>_<timestamp>.sql`. When importing, all GUIDs (characters, items, mail, pets, equipment sets) are automatically remapped to avoid conflicts with existing data. If the requested character name is already taken, a temporary name is assigned and the character is flagged to rename on next login. The scheduler checks every minute and fires tasks whose time and day-of-week match. If `mysqldump` is on your system `PATH` you do not need to set `MYSQLDUMP_PATH`.
 
 For scheduled restarts, the target server's Auto-Restart is automatically enabled before the shutdown command is sent so the server agent brings it back up after the countdown.
 
@@ -258,7 +273,7 @@ The dashboard uses AzerothCore's `account_access` GM levels for role-based acces
 | Level | Role          | Access |
 |-------|---------------|--------|
 | 1     | Moderator     | Overview, Console, Players (view), Tickets (view), Lag Reports, Bug Reports, Spam Reports (view), Channels (view), Guilds (view), Characters (view) |
-| 2     | Game Master   | + Kick/ban players, manage bans, mutes, announcements, send mail, accounts (view/lock/ban/mute), autobroadcast (add/edit), mail server (view), dismiss reports, delete spam reports, unban channel players, name filters (view/add/remove) |
+| 2     | Game Master   | + Kick/ban players, manage bans, mutes, announcements, send mail, accounts (view/lock/ban/mute), autobroadcast (add/edit), mail server (view), dismiss reports, delete spam reports, unban channel players, name filters (view/add/remove), export/import character dumps |
 | 3     | Administrator | + Start/stop servers, scheduled restart, MOTD, DB Query, Config editor, scheduled tasks, autobroadcast (delete), accounts (GM level/email/password/flags/create/delete), mail server (create/edit/delete), alert thresholds, clear all lag/spam reports, delete channels, Audit Log, Settings (including .env editor), Dashboard Management (restart backend/agent/frontend) |
 
 To grant GM level 3 (Administrator):
@@ -307,6 +322,7 @@ Every action that makes a change is recorded with the acting user, their IP addr
 | Bug Reports | State change, assignee, comment updates |
 | Spam Reports | Delete individual report, clear all |
 | Name Filters | Add profanity name, remove profanity name, add reserved name, remove reserved name |
+| Character Dumps | Export dump (`pdump.write` — character name, GUID, output path or download), import dump (`pdump.load` — character name, GUID, target account, source; failure logged with error) |
 | Scheduled Tasks | Create, update, delete, run now |
 | Settings | All setting changes (key=value pairs) |
 | Environment | `.env` key changes with before→after values |
@@ -488,6 +504,7 @@ All sections are collapsible. A gold "unsaved changes" badge appears on any coll
 | `CONFIG_PATH` | Directory containing `.conf` files for the Config editor |
 | `BACKUP_PATH` | Where scheduled backup files are saved |
 | `MYSQLDUMP_PATH` | Path to `mysqldump` executable |
+| `PDUMP_OUTPUT_PATH` | Default directory for character dump exports |
 | `FRONTEND_URL` | Comma-separated CORS origins |
 | `ALLOWED_IPS` | Comma-separated IPs allowed to reach the backend |
 | `IDLE_TIMEOUT_MINUTES` | Session idle timeout |
@@ -503,6 +520,30 @@ All sections are collapsible. A gold "unsaved changes" badge appears on any coll
 - Colour-coded action badges by category: account changes (gold), bans (red), server ops (amber), console commands (red), config saves (amber), announcements/mail (green), channels (blue), reports (neutral)
 - Config saves show a per-key diff: `WorldServerPort: "8085" → "8086"` so you can see exactly what changed
 - Stored in the separate `acore_dashboard` database — unaffected by AzerothCore upgrades
+
+### Characters
+
+- Search all characters by name (min 2 characters); results show race, class, level, and online indicator
+- Click any result to open the detail panel with eight tabs:
+  - **Overview** — money, played time, honor/arena points, currencies
+  - **Stats** — base stats (Str/Agi/Sta/Int/Spi), health and power, combat stats (attack power, crit %, dodge, parry, block, armor, resilience), and all six resistances
+  - **Equipment** — all 19 slots with item name, quality colour, and WoWHead tooltips
+  - **Bags** — backpack and up to 4 equipped bag slots with item links
+  - **Bank** — main bank slots and up to 7 bank bag slots
+  - **Auras** — all active buff/debuff auras with spell ID, remaining duration, stacks, and caster
+  - **Reputation** — all tracked factions with standing label (Exalted → Hated), progress bar, and At War indicator; filter by standing or at-war state, sortable by standing value
+  - **Achievements** — all completed achievements grouped by category with completion date; collapsed categories expand on click
+
+**Export Dump** button (per character, GM 2+):
+- Generates a full `.pdump`-compatible SQL file covering all 31 character tables (inventory, bank, mail, pets, spells, achievements, reputation, etc.)
+- **Download to browser** — sends the file directly as a `.sql` attachment
+- **Save on server** — writes to a path on the backend machine; pre-fills `PDUMP_OUTPUT_PATH` if configured
+
+**Import Dump** button (page-level, GM 2+):
+- Accepts a `.sql` dump file (uploaded from the browser) or a server-side file path
+- Account selector with live search — assign the imported character to any account
+- Optional character name override — if blank, the name from the dump is used; if that name is taken a temporary name (`originalName + GUID_HEX`) is assigned and the character is flagged to rename on next login
+- Full GUID remapping for characters, items, mail, pets, and equipment sets — same logic as AzerothCore's native `.pdump load`; compatible with dumps from both the dashboard and the in-game command
 
 ### Name Filters
 - Two tabs — **Profanity** and **Reserved** — each showing the entry count
@@ -553,6 +594,7 @@ Dashboard/
 │   │   ├── servers.js             # Server start/stop/status/logs
 │   │   ├── servertools.js         # Scheduled restart, MOTD
 │   │   ├── characters.js          # Character search and detail (inventory, bank, reputation, currency)
+│   │   ├── pdump.js               # Character dump export (write) and import (load) with full GUID remapping
 │   │   ├── guilds.js              # Guild list and detail (members, ranks, event log)
 │   │   ├── dashboardManage.js     # Dashboard process restart endpoints (backend, agent, frontend)
 │   │   ├── envSettings.js         # .env file read/write for whitelisted keys (Administrator)

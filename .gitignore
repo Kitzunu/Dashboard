@@ -3,6 +3,7 @@
 .env
 .claude/
 backups/
+pdump/
 
 # compiled output
 /dist

@@ -192,6 +192,39 @@ export const api = {
     return request('DELETE', `/api/alerts${params}`);
   },
 
+  // pdump — fetch the configured default output directory from the server
+  pdumpDefaultPath: () => request('GET', '/api/pdump/default-path'),
+
+  // pdump load — import a dump (content string or server-side filePath)
+  pdumpLoad: (body) => request('POST', '/api/pdump/load', body),
+
+  // pdump — save to server path (returns JSON)
+  pdumpSave: (guid, filePath) =>
+    request('POST', `/api/pdump/${guid}`, { filePath }),
+
+  // pdump — download to browser (returns a Blob + suggested filename)
+  pdumpDownload: async (guid) => {
+    const token = getToken();
+    const res = await fetch(`${BASE_URL}/api/pdump/${guid}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({}),
+    });
+    if (!res.ok) {
+      if (res.status === 401) window.dispatchEvent(new Event('auth-expired'));
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || res.statusText);
+    }
+    const blob = await res.blob();
+    const disposition = res.headers.get('Content-Disposition') || '';
+    const match = disposition.match(/filename="([^"]+)"/);
+    const filename = match ? match[1] : `dump_${guid}.sql`;
+    return { blob, filename };
+  },
+
   getNameFilters:    ()           => request('GET',    '/api/namefilters'),
   addNameFilter:     (type, name) => request('POST',   `/api/namefilters/${type}`, { name }),
   removeNameFilter:  (type, name) => request('DELETE', `/api/namefilters/${type}/${encodeURIComponent(name)}`),
