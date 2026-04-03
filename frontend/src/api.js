@@ -135,6 +135,10 @@ export const api = {
   getSettings:        ()      => request('GET', '/api/settings'),
   saveSettings:       (data)  => request('PUT', '/api/settings', data),
   testDiscordWebhook: ()      => request('POST', '/api/settings/discord/test'),
+  restartBackend:     ()      => request('POST', '/api/settings/restart'),
+
+  getEnvSettings:     ()      => request('GET', '/api/env-settings'),
+  saveEnvSettings:    (data)  => request('PUT', '/api/env-settings', data),
 
   getAuditLog: (page = 1, { user = '', actions = [], success = '', search = '' } = {}) =>
     request('GET', `/api/audit-log?page=${page}&user=${encodeURIComponent(user)}&actions=${encodeURIComponent(actions.join(','))}&success=${success}&search=${encodeURIComponent(search)}`),

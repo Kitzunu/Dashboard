@@ -37,6 +37,7 @@ const scheduledTasksRoutes   = require('./routes/scheduledTasks');
 const guildsRoutes           = require('./routes/guilds');
 const charactersRoutes       = require('./routes/characters');
 const namefiltersRoutes      = require('./routes/namefilters');
+const envSettingsRoutes      = require('./routes/envSettings');
 const scheduler              = require('./scheduler');
 const { startRetentionJob } = require('./audit');
 const playerHistory      = require('./playerHistory');
@@ -51,7 +52,10 @@ const dbc = require('./dbc');
 const app = express();
 const httpServer = http.createServer(app);
 
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+// Support comma-separated origins so both localhost and LAN IPs work simultaneously
+const rawFrontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+const frontendOrigins = rawFrontendUrl.split(',').map((s) => s.trim()).filter(Boolean);
+const frontendUrl = frontendOrigins.length === 1 ? frontendOrigins[0] : frontendOrigins;
 
 const io = new Server(httpServer, {
   cors: { origin: frontendUrl, methods: ['GET', 'POST'] },
@@ -92,6 +96,7 @@ app.use('/api/scheduled-tasks', authenticateToken, scheduledTasksRoutes);
 app.use('/api/guilds',          authenticateToken, guildsRoutes);
 app.use('/api/characters',      authenticateToken, charactersRoutes);
 app.use('/api/namefilters',     authenticateToken, namefiltersRoutes);
+app.use('/api/env-settings',   authenticateToken, envSettingsRoutes);
 
 // Authenticate socket connections with JWT
 io.use((socket, next) => {

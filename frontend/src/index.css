@@ -172,8 +172,10 @@ html, body, #root {
   margin-bottom: 16px;
   font-size: 13px;
 }
-.alert-error { background: rgba(224, 92, 92, 0.15); border: 1px solid var(--red); color: #f08080; }
-.alert-info  { background: rgba(61, 220, 132, 0.1); border: 1px solid var(--green); color: var(--green); }
+.alert-error   { background: rgba(224, 92, 92, 0.15); border: 1px solid var(--red); color: #f08080; }
+.alert-info    { background: rgba(61, 220, 132, 0.1); border: 1px solid var(--green); color: var(--green); }
+.alert-warning { background: rgba(201,162,39,0.12); border: 1px solid var(--gold); color: var(--gold); }
+.input-dirty   { border-color: var(--gold) !important; }
 
 /* ── Buttons ─────────────────────────────────────────────────── */
 .btn {

@@ -5,7 +5,7 @@
   "scripts": {
     "start": "concurrently \"npm run start:server-agent\" \"npm run start:backend\" \"npm run start:frontend\"",
     "start:server-agent": "cd backend && node serverAgent.js",
-    "start:backend": "cd backend && npm start",
+    "start:backend": "cd backend && node run.js",
     "start:frontend": "cd frontend && npm run dev",
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install"
   },
