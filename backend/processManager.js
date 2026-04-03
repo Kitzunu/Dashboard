@@ -40,6 +40,25 @@ function request(method, path, body) {
   });
 }
 
+// ── Intentional-stop tracking ─────────────────────────────────────────────────
+// Lets the stop route signal that a shutdown was user-initiated so the
+// server-status handler can distinguish a deliberate stop from a crash.
+
+const intentionalStops = new Set();
+
+function markIntentionalStop(serverName) {
+  intentionalStops.add(serverName);
+}
+
+/** Returns true (and clears the flag) if this stop was user-initiated. */
+function consumeIntentionalStop(serverName) {
+  if (intentionalStops.has(serverName)) {
+    intentionalStops.delete(serverName);
+    return true;
+  }
+  return false;
+}
+
 // ── Public API (mirrors original synchronous API, now async) ──────────────────
 
 /** No-op: event bridging is handled by serverBridge.js. */
@@ -93,4 +112,4 @@ async function restartAgent() {
   catch (err) { return { success: false, error: err.message }; }
 }
 
-module.exports = { setIO, startServer, stopServer, setAutoRestart, sendCommand, getStatus, getAllStatus, getLogs, restartAgent };
+module.exports = { setIO, startServer, stopServer, setAutoRestart, sendCommand, getStatus, getAllStatus, getLogs, restartAgent, markIntentionalStop, consumeIntentionalStop };

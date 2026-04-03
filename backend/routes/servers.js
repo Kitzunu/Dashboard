@@ -38,6 +38,7 @@ router.post('/:name/stop', requireGMLevel(3), async (req, res) => {
   if (!VALID_SERVERS.includes(name)) return res.status(400).json({ error: 'Invalid server name' });
   const { mode = 'exit', delay = 0 } = req.body;
   audit(req, 'server.stop', `server=${name} mode=${mode} delay=${delay}`);
+  processManager.markIntentionalStop(name);
   res.json(await processManager.stopServer(name, mode, parseInt(delay, 10) || 0));
 });
 

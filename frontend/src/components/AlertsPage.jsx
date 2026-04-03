@@ -14,6 +14,7 @@ const TYPE_LABELS = {
   threshold:        'Resource Threshold',
   server_crash:     'Server Crash',
   server_online:    'Server Online',
+  server_stop:      'Server Stopped',
   agent_disconnect: 'Agent Disconnect',
 };
 
@@ -34,6 +35,7 @@ function typeBadgeClass(type) {
     case 'threshold':        return 'badge badge-warn';
     case 'server_crash':     return 'badge badge-red';
     case 'server_online':    return 'badge badge-green';
+    case 'server_stop':      return 'badge badge-dim';
     case 'agent_disconnect': return 'badge badge-danger';
     default:                 return 'badge badge-dim';
   }

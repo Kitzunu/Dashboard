@@ -145,9 +145,13 @@ serverBridge.on('server-status', ({ server, running }) => {
   const wasRunning = serverRunning[server];
   serverRunning[server] = running;
   if (wasRunning === true && !running) {
-    discord.sendServerCrash(server).catch(() => {});
     const label = server === 'worldserver' ? 'World Server' : 'Auth Server';
-    alertLogger.log('server_crash', 'critical', `${label} went offline`, `${label} stopped or crashed unexpectedly.`, { server });
+    if (processManager.consumeIntentionalStop(server)) {
+      alertLogger.log('server_stop', 'info', `${label} stopped`, `${label} was stopped manually.`, { server });
+    } else {
+      discord.sendServerCrash(server).catch(() => {});
+      alertLogger.log('server_crash', 'critical', `${label} went offline`, `${label} stopped or crashed unexpectedly.`, { server });
+    }
   }
   if (wasRunning === false && running) {
     discord.sendServerOnline(server).catch(() => {});
