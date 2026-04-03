@@ -38,6 +38,7 @@ const guildsRoutes           = require('./routes/guilds');
 const charactersRoutes       = require('./routes/characters');
 const namefiltersRoutes      = require('./routes/namefilters');
 const envSettingsRoutes      = require('./routes/envSettings');
+const dashboardManageRoutes  = require('./routes/dashboardManage');
 const scheduler              = require('./scheduler');
 const { startRetentionJob } = require('./audit');
 const playerHistory      = require('./playerHistory');
@@ -97,6 +98,7 @@ app.use('/api/guilds',          authenticateToken, guildsRoutes);
 app.use('/api/characters',      authenticateToken, charactersRoutes);
 app.use('/api/namefilters',     authenticateToken, namefiltersRoutes);
 app.use('/api/env-settings',   authenticateToken, envSettingsRoutes);
+app.use('/api/dashboard',      authenticateToken, dashboardManageRoutes);
 
 // Authenticate socket connections with JWT
 io.use((socket, next) => {

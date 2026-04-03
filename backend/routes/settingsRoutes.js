@@ -31,13 +31,6 @@ router.put('/', requireGMLevel(3), async (req, res) => {
   }
 });
 
-// POST /api/settings/restart — gracefully restart the backend process via the runner
-router.post('/restart', requireGMLevel(3), (req, res) => {
-  audit(req, 'settings.restart_backend');
-  res.json({ ok: true });
-  setTimeout(() => process.exit(42), 500);
-});
-
 // POST /api/settings/discord/test — sends a test message to the configured webhook URL
 router.post('/discord/test', requireGMLevel(3), async (req, res) => {
   const url = process.env.DISCORD_WEBHOOK_URL || '';

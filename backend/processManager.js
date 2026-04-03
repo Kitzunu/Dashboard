@@ -88,4 +88,9 @@ async function getLogs(serverName) {
   } catch { return []; }
 }
 
-module.exports = { setIO, startServer, stopServer, setAutoRestart, sendCommand, getStatus, getAllStatus, getLogs };
+async function restartAgent() {
+  try { return await request('POST', '/restart'); }
+  catch (err) { return { success: false, error: err.message }; }
+}
+
+module.exports = { setIO, startServer, stopServer, setAutoRestart, sendCommand, getStatus, getAllStatus, getLogs, restartAgent };

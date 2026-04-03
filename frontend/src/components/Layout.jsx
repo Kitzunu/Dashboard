@@ -26,6 +26,7 @@ import ScheduledTasksPage from './ScheduledTasksPage.jsx';
 import GuildsPage from './GuildsPage.jsx';
 import CharacterPage from './CharacterPage.jsx';
 import NameFiltersPage from './NameFiltersPage.jsx';
+import DashboardManagePage from './DashboardManagePage.jsx';
 import { GM_LABELS } from '../constants.js';
 
 const NAV_GROUPS = [
@@ -69,8 +70,9 @@ const NAV_GROUPS = [
   {
     group: 'Dashboard',
     items: [
-      { id: 'audit-log', label: '📋 Audit Log',  minLevel: 3 },
-      { id: 'settings',  label: '⚙ Settings',    minLevel: 3 },
+      { id: 'audit-log',         label: '📋 Audit Log',          minLevel: 3 },
+      { id: 'settings',          label: '⚙ Settings',            minLevel: 3 },
+      { id: 'dashboard-manage',  label: '🔧 Dashboard Manage',   minLevel: 3 },
     ],
   },
 ];
@@ -309,7 +311,8 @@ export default function Layout() {
         {page === 'scheduled'     && <ScheduledTasksPage />}
         {page === 'guilds'        && <GuildsPage />}
         {page === 'characters'    && <CharacterPage />}
-        {page === 'namefilters'   && <NameFiltersPage />}
+        {page === 'namefilters'      && <NameFiltersPage />}
+        {page === 'dashboard-manage' && <DashboardManagePage />}
       </main>
 
       <ToastContainer toasts={toasts} />

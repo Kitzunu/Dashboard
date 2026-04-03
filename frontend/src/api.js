@@ -135,8 +135,9 @@ export const api = {
   getSettings:        ()      => request('GET', '/api/settings'),
   saveSettings:       (data)  => request('PUT', '/api/settings', data),
   testDiscordWebhook: ()      => request('POST', '/api/settings/discord/test'),
-  restartBackend:     ()      => request('POST', '/api/settings/restart'),
-
+  restartBackend:     ()      => request('POST', '/api/dashboard/restart/backend'),
+  restartAgent:       ()      => request('POST', '/api/dashboard/restart/agent'),
+  restartFrontend:    ()      => request('POST', '/api/dashboard/restart/frontend'),
   getEnvSettings:     ()      => request('GET', '/api/env-settings'),
   saveEnvSettings:    (data)  => request('PUT', '/api/env-settings', data),
 
