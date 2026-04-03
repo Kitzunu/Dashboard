@@ -30,8 +30,9 @@ function playAlertSound(type) {
 }
 
 // ── Browser notification helper ───────────────────────────────────────────────
-function fireNotification(type, pct, threshold) {
-  playAlertSound(type);
+function fireNotification(type, pct, threshold, { sound = true, popup = true } = {}) {
+  if (sound) playAlertSound(type);
+  if (!popup) return;
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
   const label = type === 'cpu' ? 'CPU' : 'Memory';
   try {
@@ -43,42 +44,75 @@ function fireNotification(type, pct, threshold) {
   } catch {}
 }
 
-// ── Notification permission bell ──────────────────────────────────────────────
-function NotificationBell({ enabled, onToggle }) {
+// ── Alerts dropdown ───────────────────────────────────────────────────────────
+function AlertsDropdown({ notifEnabled, soundEnabled, onToggleNotif, onToggleSound }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
   const supported = typeof Notification !== 'undefined';
   const [permission, setPermission] = useState(supported ? Notification.permission : 'unsupported');
 
-  if (!supported || permission === 'unsupported') return null;
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
 
-  const handleRequest = async () => {
+  const handleRequestPermission = async () => {
     const result = await Notification.requestPermission();
     setPermission(result);
     if (result === 'granted') toast('Browser notifications enabled');
     else if (result === 'denied') toast('Notifications blocked — enable them in browser settings', 'error');
   };
 
-  if (permission === 'granted') {
-    return enabled ? (
-      <button className="btn btn-ghost btn-xs" onClick={onToggle} title="Mute browser alert notifications">
-        🔔 Alerts On
-      </button>
-    ) : (
-      <button className="btn btn-ghost btn-xs" onClick={onToggle} title="Unmute browser alert notifications">
-        🔕 Alerts Muted
-      </button>
-    );
-  }
-  if (permission === 'denied') {
-    return (
-      <span className="notif-status notif-denied" title="Notifications blocked — enable in browser settings">
-        🔕 Alerts blocked
-      </span>
-    );
-  }
+  // Derive button label
+  const anyOn = notifEnabled || soundEnabled;
+  const btnLabel = anyOn ? '🔔 Alerts' : '🔕 Alerts';
+
   return (
-    <button className="btn btn-ghost btn-xs" onClick={handleRequest} title="Enable browser alert notifications">
-      🔔 Enable Alerts
-    </button>
+    <div style={{ position: 'relative' }} ref={ref}>
+      <button
+        className={`btn btn-ghost btn-xs${anyOn ? '' : ' btn-muted'}`}
+        onClick={() => setOpen((o) => !o)}
+        title="Alert settings"
+      >
+        {btnLabel} <span className={`action-multiselect-chevron${open ? ' open' : ''}`}>›</span>
+      </button>
+
+      {open && (
+        <div className="action-multiselect-dropdown" style={{ right: 0, left: 'auto', width: 220 }}>
+          <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Alert Settings
+          </div>
+
+          {/* Master alerts toggle (popup notifications) */}
+          <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', cursor: 'pointer', gap: 8 }}>
+            <span style={{ fontSize: 13 }}>
+              {notifEnabled ? '🔔' : '🔕'} Popup Alerts
+            </span>
+            {!supported || permission === 'unsupported' ? (
+              <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>Not supported</span>
+            ) : permission === 'denied' ? (
+              <span style={{ fontSize: 11, color: 'var(--color-danger, #e53e3e)' }}>Blocked</span>
+            ) : permission === 'default' ? (
+              <button className="btn btn-primary btn-xs" onClick={handleRequestPermission} style={{ fontSize: 11 }}>Enable</button>
+            ) : (
+              <input type="checkbox" checked={notifEnabled} onChange={onToggleNotif} />
+            )}
+          </label>
+
+          {/* Sound toggle */}
+          <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', cursor: 'pointer', gap: 8, borderTop: '1px solid var(--border)' }}>
+            <span style={{ fontSize: 13 }}>
+              {soundEnabled ? '🔊' : '🔇'} Alert Sound
+            </span>
+            <input type="checkbox" checked={soundEnabled} onChange={onToggleSound} />
+          </label>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -356,7 +390,7 @@ function ThresholdSettings({ thresholds, onSaved }) {
   return (
     <div className="threshold-settings">
       <button className="btn btn-ghost btn-xs threshold-toggle" onClick={() => setOpen((o) => !o)}>
-        ⚙ Alert Thresholds {open ? '▲' : '▼'}
+        ⚙ Alert Thresholds <span className={`action-multiselect-chevron${open ? ' open' : ''}`}>›</span>
       </button>
 
       {open && (
@@ -411,16 +445,21 @@ export default function HomePage({ socket }) {
   const [notifEnabled, setNotifEnabled] = useState(
     () => localStorage.getItem('ac-notif-enabled') !== 'false'
   );
+  const [soundEnabled, setSoundEnabled] = useState(
+    () => localStorage.getItem('ac-sound-enabled') !== 'false'
+  );
 
   // Refs so the socket callback always reads current values without stale closures
   const thresholdsRef    = useRef({ cpu: 80, memory: 85, graphMinutes: 60 });
   const alertStateRef    = useRef({ cpu: false, mem: false });
   const notifEnabledRef  = useRef(notifEnabled);
+  const soundEnabledRef  = useRef(soundEnabled);
   const agentConnectedRef = useRef(null); // null = unknown (first load)
 
-  // Keep thresholdsRef and notifEnabledRef in sync whenever state changes
+  // Keep refs in sync whenever state changes
   useEffect(() => { thresholdsRef.current = thresholds; }, [thresholds]);
   useEffect(() => { notifEnabledRef.current = notifEnabled; }, [notifEnabled]);
+  useEffect(() => { soundEnabledRef.current = soundEnabled; }, [soundEnabled]);
 
   const handleToggleNotif = () => {
     const next = !notifEnabledRef.current;
@@ -430,6 +469,14 @@ export default function HomePage({ socket }) {
     toast(next ? 'Alert notifications enabled' : 'Alert notifications muted');
   };
 
+  const handleToggleSound = () => {
+    const next = !soundEnabledRef.current;
+    soundEnabledRef.current = next;
+    localStorage.setItem('ac-sound-enabled', next);
+    setSoundEnabled(next);
+    toast(next ? 'Alert sounds enabled' : 'Alert sounds muted');
+  };
+
   // Check alert transitions and fire notifications as needed
   const checkAlerts = (cpuPct, memPct) => {
     const t        = thresholdsRef.current;
@@ -437,9 +484,10 @@ export default function HomePage({ socket }) {
     const memAlert = memPct  >= t.memory;
     const prev     = alertStateRef.current;
 
-    if (notifEnabledRef.current) {
-      if (cpuAlert && !prev.cpu) fireNotification('cpu',    cpuPct,  t.cpu);
-      if (memAlert && !prev.mem) fireNotification('memory', memPct,  t.memory);
+    if (notifEnabledRef.current || soundEnabledRef.current) {
+      const opts = { sound: soundEnabledRef.current, popup: notifEnabledRef.current };
+      if (cpuAlert && !prev.cpu) fireNotification('cpu',    cpuPct,  t.cpu,    opts);
+      if (memAlert && !prev.mem) fireNotification('memory', memPct,  t.memory, opts);
     }
 
     alertStateRef.current = { cpu: cpuAlert, mem: memAlert };
@@ -527,7 +575,12 @@ export default function HomePage({ socket }) {
       <div className="page-header">
         <h2 className="page-title">Dashboard Overview</h2>
         <div className="overview-header-controls">
-          <NotificationBell enabled={notifEnabled} onToggle={handleToggleNotif} />
+          <AlertsDropdown
+            notifEnabled={notifEnabled}
+            soundEnabled={soundEnabled}
+            onToggleNotif={handleToggleNotif}
+            onToggleSound={handleToggleSound}
+          />
           <ThresholdSettings thresholds={thresholds} onSaved={setThresholds} />
         </div>
       </div>
