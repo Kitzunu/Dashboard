@@ -27,14 +27,23 @@ const ACCOUNT_FLAGS = [
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+function parseDate(val) {
+  if (!val) return null;
+  if (typeof val === 'number') return new Date(val * 1000);
+  // MySQL DATETIME strings use space separator — replace with T for ISO 8601
+  return new Date(String(val).replace(' ', 'T'));
+}
+
 function fmtUnix(unix) {
-  if (!unix) return '—';
-  return new Date(unix * 1000).toLocaleDateString();
+  const d = parseDate(unix);
+  if (!d || isNaN(d)) return '—';
+  return d.toLocaleDateString();
 }
 
 function fmtUnixFull(unix) {
-  if (!unix) return '—';
-  return new Date(unix * 1000).toLocaleString();
+  const d = parseDate(unix);
+  if (!d || isNaN(d)) return '—';
+  return d.toLocaleString();
 }
 
 function fmtPlaytime(seconds) {
