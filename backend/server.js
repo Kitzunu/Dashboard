@@ -51,7 +51,10 @@ const dbc = require('./dbc');
 const app = express();
 const httpServer = http.createServer(app);
 
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+// Support comma-separated origins so both localhost and LAN IPs work simultaneously
+const rawFrontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+const frontendOrigins = rawFrontendUrl.split(',').map((s) => s.trim()).filter(Boolean);
+const frontendUrl = frontendOrigins.length === 1 ? frontendOrigins[0] : frontendOrigins;
 
 const io = new Server(httpServer, {
   cors: { origin: frontendUrl, methods: ['GET', 'POST'] },
