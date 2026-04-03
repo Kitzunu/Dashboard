@@ -26,9 +26,10 @@ function parseAllowlist() {
   return [...expanded];
 }
 
-const allowlist = parseAllowlist();
-
 function ipAllowlist(req, res, next) {
+  // Re-read process.env each request so changes made via the .env editor take
+  // effect immediately without requiring a server restart.
+  const allowlist = parseAllowlist();
   // req.ip honours the Express `trust proxy` setting; fall back to socket address.
   const ip = req.ip || req.socket?.remoteAddress || '';
   if (allowlist.includes(ip)) return next();
