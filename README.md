@@ -58,7 +58,8 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 
 **Dashboard** *(Administrator only)*
 - **Audit Log** — Immutable record of all critical actions taken through the dashboard: logins (including failed attempts with reason), logouts, server start/stop/restart, config saves (with changed key→value diff), MOTD changes, bans/unbans, account changes, console commands, DB queries, announcements, mail sends, and more — with user, IP, timestamp, and success/failure status
-- **Settings** — Dashboard-wide configuration stored in the `acore_dashboard` database; settings changes are audit-logged; Discord alert toggles per event type
+- **Settings** — Dashboard-wide configuration stored in the `acore_dashboard` database; settings changes are audit-logged; Discord alert toggles per event type. Also includes an **Environment (.env)** section for editing whitelisted `.env` keys directly from the UI (requires backend restart to apply)
+- **Dashboard Management** — Restart the backend, server agent, or frontend from the UI; each action requires confirmation; agent restart includes a clear warning that game servers will be temporarily unmanaged
 
 **Other**
 - **IP Allowlist** — Backend access restricted to a configurable list of IPs (default: localhost only)
@@ -254,8 +255,8 @@ The dashboard uses AzerothCore's `account_access` GM levels for role-based acces
 | Level | Role          | Access |
 |-------|---------------|--------|
 | 1     | Moderator     | Overview, Console, Players (view), Tickets (view), Lag Reports, Bug Reports, Spam Reports (view), Channels (view), Guilds (view), Characters (view) |
-| 2     | Game Master   | + Kick/ban players, manage bans, announcements, send mail, accounts (view/lock/ban/mute), autobroadcast (add/edit), mail server (view), dismiss reports, delete spam reports, unban channel players, name filters (view/add/remove) |
-| 3     | Administrator | + Start/stop servers, scheduled restart, MOTD, DB Query, Config editor, autobroadcast (delete), accounts (GM level/email/password/create/delete), mail server (create/edit/delete), alert thresholds, clear all lag/spam reports, delete channels, Audit Log |
+| 2     | Game Master   | + Kick/ban players, manage bans, mutes, announcements, send mail, accounts (view/lock/ban/mute), autobroadcast (add/edit), mail server (view), dismiss reports, delete spam reports, unban channel players, name filters (view/add/remove) |
+| 3     | Administrator | + Start/stop servers, scheduled restart, MOTD, DB Query, Config editor, scheduled tasks, autobroadcast (delete), accounts (GM level/email/password/flags/create/delete), mail server (create/edit/delete), alert thresholds, clear all lag/spam reports, delete channels, Audit Log, Settings (including .env editor), Dashboard Management (restart backend/agent/frontend) |
 
 To grant GM level 3 (Administrator):
 
@@ -303,6 +304,10 @@ Every action that makes a change is recorded with the acting user, their IP addr
 | Bug Reports | State change, assignee, comment updates |
 | Spam Reports | Delete individual report, clear all |
 | Name Filters | Add profanity name, remove profanity name, add reserved name, remove reserved name |
+| Scheduled Tasks | Create, update, delete, run now |
+| Settings | All setting changes (key=value pairs) |
+| Environment | `.env` key changes with before→after values |
+| Dashboard | Restart backend, restart agent, restart frontend |
 
 ## Running
 
@@ -318,6 +323,8 @@ npm run start:frontend      # Vite frontend on port 5173
 
 The **server agent** (`serverAgent.js`) is a separate process that owns the worldserver and authserver child processes. Because it runs independently, restarting the dashboard backend does not kill the game servers. The dashboard backend reconnects to the agent automatically when it comes back up.
 
+Both the backend and the server agent are wrapped by lightweight runner scripts (`run.js` and `runAgent.js`) that automatically restart their respective process when it exits with code 42. This is how the **Restart Backend** and **Restart Agent** buttons in Dashboard Management work.
+
 ## Pages
 
 ### Overview
@@ -325,7 +332,7 @@ The **server agent** (`serverAgent.js`) is a separate process that owns the worl
 - Player Online, Open Tickets, and Active Bans stat cards
 - System Memory and CPU usage bars; turn amber then red when alert thresholds are exceeded
 - Configurable alert thresholds (⚙ button, Administrator only); saved to `backend/thresholds.json`
-- Browser alert notifications (🔔 button) with audio cues — ascending beep for CPU, descending for memory; fires once per threshold crossing
+- **Alerts** dropdown — independently toggle popup notifications and alert sounds; sounds use the Web Audio API (no external files); popup notifications require browser permission; both settings persist in `localStorage`
 - Worldserver TCP latency panel — mean, median, P95, P99, and max over a rolling 60-minute window
 - Player count sparkline over the last hour (up to 120 data points sampled every 30 s)
 - AzerothCore core revision (clickable link to GitHub commit), DB version, cache ID, and current MOTD
@@ -463,6 +470,25 @@ The **server agent** (`serverAgent.js`) is a separate process that owns the worl
 | Discord Alerts → Agent disconnect alert | On | Posts to Discord when the server agent loses its connection |
 | Discord Alerts → Agent disconnect message | *see below* | Editable message body; no variables |
 
+All sections are collapsible. A gold "unsaved changes" badge appears on any collapsed section that has pending edits.
+
+**Environment (.env) settings** — a separate collapsible section at the bottom of the page for editing whitelisted `.env` keys directly from the UI. Changes are written to the `.env` file on disk and require a backend restart to take effect. Settings affecting server executables (`WORLDSERVER_PATH`, `AUTHSERVER_PATH`, `*_DIR`) also require restarting the server agent. A **Restart Backend** button appears in the warning banner after saving. The following keys are editable:
+
+| Key | Description |
+|---|---|
+| `WORLDSERVER_PATH` / `AUTHSERVER_PATH` | Paths to game server executables |
+| `WORLDSERVER_DIR` / `AUTHSERVER_DIR` | Working directories for game server processes |
+| `WORLDSERVER_HOST` / `WORLDSERVER_PORT` | Host/port used for TCP latency measurement |
+| `DBC_PATH` | Path to WotLK DBFilesClient folder |
+| `CONFIG_PATH` | Directory containing `.conf` files for the Config editor |
+| `BACKUP_PATH` | Where scheduled backup files are saved |
+| `MYSQLDUMP_PATH` | Path to `mysqldump` executable |
+| `FRONTEND_URL` | Comma-separated CORS origins |
+| `ALLOWED_IPS` | Comma-separated IPs allowed to reach the backend |
+| `IDLE_TIMEOUT_MINUTES` | Session idle timeout |
+| `AUDIT_LOG_RETENTION_DAYS` | Audit log retention period |
+| `DISCORD_WEBHOOK_URL` | Discord alert webhook URL |
+
 ### Audit Log *(Administrator only)*
 - Paginated table (50 per page) of all dashboard actions, newest first
 - **Success / Failed / All** tab filter — failed logins and blocked actions are highlighted in red
@@ -477,8 +503,14 @@ The **server agent** (`serverAgent.js`) is a separate process that owns the worl
 - Two tabs — **Profanity** and **Reserved** — each showing the entry count
 - Add a new name (max 12 characters) with inline duplicate and length validation
 - Filter the current list by typing; shows match count when filtering
-- **Remove** any entry with a confirmation-free button (GM 2+)
+- **Remove** any entry with confirmation modal (GM 2+)
 - Actions are audit-logged
+
+### Dashboard Management *(Administrator only)*
+- **Restart Backend** — restarts the Express API server; frontend reconnects automatically within a few seconds
+- **Restart Server Agent** — restarts the standalone agent process; includes prominent warning that game servers will be temporarily unmanaged (running servers are NOT stopped, but cannot be monitored or auto-restarted during the window)
+- **Restart Frontend** — informs the user that the Vite dev server cannot be restarted remotely and must be restarted manually; production static builds do not require restarting
+- All actions require a confirmation modal; all are audit-logged
 
 ### Mail Server
 - Template list with ID, active status, subject, per-faction money, item count, condition count, and recipient count
@@ -517,6 +549,8 @@ Dashboard/
 │   │   ├── servertools.js         # Scheduled restart, MOTD
 │   │   ├── characters.js          # Character search and detail (inventory, bank, reputation, currency)
 │   │   ├── guilds.js              # Guild list and detail (members, ranks, event log)
+│   │   ├── dashboardManage.js     # Dashboard process restart endpoints (backend, agent, frontend)
+│   │   ├── envSettings.js         # .env file read/write for whitelisted keys (Administrator)
 │   │   ├── namefilters.js         # profanity_name and reserved_name CRUD
 │   │   ├── scheduledTasks.js      # Scheduled task CRUD and run-now trigger
 │   │   ├── settingsRoutes.js      # Dashboard settings read/write and Discord webhook test
@@ -530,6 +564,8 @@ Dashboard/
 │   ├── latencyMonitor.js          # TCP latency sampling + rolling stats
 │   ├── playerHistory.js           # Rolling player count history buffer
 │   ├── resourceHistory.js         # Rolling CPU and memory history buffer
+│   ├── run.js                     # Backend runner — restarts server.js on exit code 42
+│   ├── runAgent.js                # Agent runner — restarts serverAgent.js on exit code 42
 │   ├── serverAgent.js             # Standalone server agent — owns game server processes
 │   ├── serverBridge.js            # SSE bridge: forwards server agent events to frontend Socket.IO
 │   ├── processManager.js          # Agent HTTP client (async proxy to serverAgent)
@@ -542,6 +578,7 @@ Dashboard/
 │       │   ├── AccountsPage.jsx
 │       │   ├── AnnouncePage.jsx
 │       │   ├── AuditLogPage.jsx
+│       │   ├── DashboardManagePage.jsx
 │       │   ├── AutobroadcastPage.jsx
 │       │   ├── BansPage.jsx
 │       │   ├── BugReportsPage.jsx
