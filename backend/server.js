@@ -55,16 +55,24 @@ const dbc = require('./dbc');
 const app = express();
 const httpServer = http.createServer(app);
 
-// Support comma-separated origins so both localhost and LAN IPs work simultaneously
-const rawFrontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-const frontendOrigins = rawFrontendUrl.split(',').map((s) => s.trim()).filter(Boolean);
-const frontendUrl = frontendOrigins.length === 1 ? frontendOrigins[0] : frontendOrigins;
+// Re-read FRONTEND_URL from process.env each time so changes via the .env editor
+// take effect immediately without a server restart.
+function getFrontendOrigins() {
+  const raw = process.env.FRONTEND_URL || 'http://localhost:5173';
+  return raw.split(',').map((s) => s.trim()).filter(Boolean);
+}
+
+function dynamicOrigin(origin, callback) {
+  const allowed = getFrontendOrigins();
+  if (!origin || allowed.includes(origin)) return callback(null, true);
+  callback(new Error('Not allowed by CORS'));
+}
 
 const io = new Server(httpServer, {
-  cors: { origin: frontendUrl, methods: ['GET', 'POST'] },
+  cors: { origin: dynamicOrigin, methods: ['GET', 'POST'] },
 });
 
-app.use(cors({ origin: frontendUrl }));
+app.use(cors({ origin: dynamicOrigin }));
 app.use(express.json({ limit: '10mb' }));
 app.use(ipAllowlist);
 
@@ -275,5 +283,5 @@ startRetentionJob();
 const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, '0.0.0.0', () => {
   console.log(`AzerothCore Dashboard backend listening on port ${PORT}`);
-  console.log(`  Frontend: ${frontendUrl}`);
+  console.log(`  Frontend: ${getFrontendOrigins().join(', ')}`);
 });
