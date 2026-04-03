@@ -248,7 +248,7 @@ export default function SettingsPage() {
       await api.saveEnvSettings(changed);
       setEnvDirty({});
       setEnvRestart(true);
-      toast('Environment settings saved — restart required to apply changes');
+      toast('Environment settings saved — Note: You need to restart the backend server for the changes to take effect');
     } catch (err) {
       toast(err.message, 'error');
     } finally {
@@ -397,7 +397,7 @@ export default function SettingsPage() {
       })}
 
       <div className="settings-section-title" style={{ marginTop: 24, marginBottom: 12 }}>
-        Environment (.env) — <span style={{ color: 'var(--gold)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>restart required to apply changes</span>
+        Environment (.env) — <span style={{ color: 'var(--gold)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>Note: You need to restart the backend server for the changes to take effect.</span>
       </div>
 
       {ENV_SETTING_DEFS.map((section) => {
