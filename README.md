@@ -57,10 +57,11 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 - **Lag Reports** — Browse player-submitted lag events; filter by type and minimum latency; aggregate stats with top reporters and top maps; dismiss or clear all
 - **Bug Reports** — Browse FeedbackUI bug reports, suggestions, and feedback; separated into Open/Closed tabs with type filter; assignee and comment fields; close/reopen per report
 
-**Dashboard** *(Administrator only)*
-- **Audit Log** — Immutable record of all critical actions taken through the dashboard: logins (including failed attempts with reason), logouts, server start/stop/restart, config saves (with changed key→value diff), MOTD changes, bans/unbans, account changes, console commands, DB queries, announcements, mail sends, and more — with user, IP, timestamp, and success/failure status
-- **Settings** — Dashboard-wide configuration stored in the `acore_dashboard` database; settings changes are audit-logged; Discord alert toggles per event type. Also includes an **Environment (.env)** section for editing whitelisted `.env` keys directly from the UI (requires backend restart to apply)
-- **Dashboard Management** — Restart the backend, server agent, or frontend from the UI; each action requires confirmation; agent restart includes a clear warning that game servers will be temporarily unmanaged
+**Dashboard**
+- **Alerts** — Persistent log of all system alerts stored in the `acore_dashboard` database: latency warning/critical threshold breaches, CPU/memory threshold breaches, server crash/online transitions, and agent disconnects — each with severity badge, type, description, metadata (values and thresholds), and timestamp; filter by severity and type, view detail modal with raw metadata, delete individual entries or clear all *(visible to GM level 1+; clear requires Administrator)*
+- **Audit Log** — Immutable record of all critical actions taken through the dashboard: logins (including failed attempts with reason), logouts, server start/stop/restart, config saves (with changed key→value diff), MOTD changes, bans/unbans, account changes, console commands, DB queries, announcements, mail sends, and more — with user, IP, timestamp, and success/failure status *(Administrator only)*
+- **Settings** — Dashboard-wide configuration stored in the `acore_dashboard` database; settings changes are audit-logged; Discord alert toggles per event type. Also includes an **Environment (.env)** section for editing whitelisted `.env` keys directly from the UI (requires backend restart to apply) *(Administrator only)*
+- **Dashboard Management** — Restart the backend, server agent, or frontend from the UI; each action requires confirmation; agent restart includes a clear warning that game servers will be temporarily unmanaged *(Administrator only)*
 
 **Other**
 - **IP Allowlist** — Backend access restricted to a configurable list of IPs (default: localhost only)
@@ -205,7 +206,7 @@ For scheduled restarts, the target server's Auto-Restart is automatically enable
 # DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/your-webhook-id/your-webhook-token
 ```
 
-Three alert types are supported, each with an independent toggle in **Settings → Discord Alerts**:
+Four alert types are supported, each with an independent toggle in **Settings → Discord Alerts**:
 
 | Alert | Trigger | Cooldown |
 |---|---|---|
@@ -213,6 +214,7 @@ Three alert types are supported, each with an independent toggle in **Settings �
 | Server online | worldserver or authserver transitions from offline → running | 5 min per server |
 | Resource threshold | CPU or memory usage exceeds the configured threshold | 5 min per resource |
 | Agent disconnect | Server agent loses its SSE connection to the dashboard | 5 min |
+| Latency threshold | Mean TCP latency to worldserver exceeds the warn or critical threshold | 5 min per level |
 
 Use the **Send Test Message** button in Settings to verify the webhook is working.
 
@@ -559,7 +561,8 @@ Dashboard/
 │   │   ├── thresholds.js          # CPU/memory alert thresholds
 │   │   └── tickets.js             # GM ticket CRUD
 │   ├── audit.js                   # Audit log helper (fire-and-forget write to acore_dashboard)
-│   ├── discord.js                 # Discord webhook sender (server offline/online, thresholds, agent disconnect)
+│   ├── alertLogger.js             # Writes system alerts to the dashboard DB alerts table
+│   ├── discord.js                 # Discord webhook sender (server offline/online, thresholds, latency, agent disconnect)
 │   ├── db.js                      # MySQL connection pools (auth, world, characters, dashboard)
 │   ├── dbc.js                     # WotLK DBC binary parser
 │   ├── latencyMonitor.js          # TCP latency sampling + rolling stats

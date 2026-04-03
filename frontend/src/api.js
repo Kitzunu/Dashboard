@@ -180,6 +180,18 @@ export const api = {
   getGuild:      (id) => request('GET', `/api/guilds/${id}`),
   getGuildBank:  (id) => request('GET', `/api/guilds/${id}/bank`),
 
+  getAlerts: (page = 1, { severity = '', type = '' } = {}) => {
+    const params = new URLSearchParams({ page });
+    if (severity) params.set('severity', severity);
+    if (type)     params.set('type', type);
+    return request('GET', `/api/alerts?${params}`);
+  },
+  deleteAlert:  (id) => request('DELETE', `/api/alerts/${id}`),
+  clearAlerts:  (olderThan = 0) => {
+    const params = olderThan > 0 ? `?olderThan=${olderThan}` : '';
+    return request('DELETE', `/api/alerts${params}`);
+  },
+
   getNameFilters:    ()           => request('GET',    '/api/namefilters'),
   addNameFilter:     (type, name) => request('POST',   `/api/namefilters/${type}`, { name }),
   removeNameFilter:  (type, name) => request('DELETE', `/api/namefilters/${type}/${encodeURIComponent(name)}`),

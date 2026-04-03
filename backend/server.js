@@ -39,6 +39,8 @@ const charactersRoutes       = require('./routes/characters');
 const namefiltersRoutes      = require('./routes/namefilters');
 const envSettingsRoutes      = require('./routes/envSettings');
 const dashboardManageRoutes  = require('./routes/dashboardManage');
+const alertsRoutes           = require('./routes/alertsRoutes');
+const alertLogger            = require('./alertLogger');
 const scheduler              = require('./scheduler');
 const { startRetentionJob } = require('./audit');
 const playerHistory      = require('./playerHistory');
@@ -99,6 +101,7 @@ app.use('/api/characters',      authenticateToken, charactersRoutes);
 app.use('/api/namefilters',     authenticateToken, namefiltersRoutes);
 app.use('/api/env-settings',   authenticateToken, envSettingsRoutes);
 app.use('/api/dashboard',      authenticateToken, dashboardManageRoutes);
+app.use('/api/alerts',         authenticateToken, alertsRoutes);
 
 // Authenticate socket connections with JWT
 io.use((socket, next) => {
@@ -143,14 +146,19 @@ serverBridge.on('server-status', ({ server, running }) => {
   serverRunning[server] = running;
   if (wasRunning === true && !running) {
     discord.sendServerCrash(server).catch(() => {});
+    const label = server === 'worldserver' ? 'World Server' : 'Auth Server';
+    alertLogger.log('server_crash', 'critical', `${label} went offline`, `${label} stopped or crashed unexpectedly.`, { server });
   }
   if (wasRunning === false && running) {
     discord.sendServerOnline(server).catch(() => {});
+    const label = server === 'worldserver' ? 'World Server' : 'Auth Server';
+    alertLogger.log('server_online', 'info', `${label} is online`, `${label} started successfully.`, { server });
   }
 });
 
 serverBridge.on('agent-disconnected', () => {
   discord.sendAgentDisconnect().catch(() => {});
+  alertLogger.log('agent_disconnect', 'critical', 'Server agent disconnected', 'The server agent has disconnected. Game servers may be unmanaged.');
 });
 
 // Pre-load DBC lookup tables (gracefully no-ops if DBC_PATH is not set)
@@ -225,10 +233,29 @@ function pollResources() {
     const total  = os.totalmem();
     const memory = Math.round(((total - os.freemem()) / total) * 100);
     resourceHistory.record(cpu, memory);
-    // Threshold breach Discord alerts
+    // Threshold breach Discord alerts + DB logging
     const t = thresholds.load();
-    if (t.cpu    && cpu    >= t.cpu)    discord.sendThresholdBreach('cpu',    cpu,    t.cpu).catch(() => {});
-    if (t.memory && memory >= t.memory) discord.sendThresholdBreach('memory', memory, t.memory).catch(() => {});
+    if (t.cpu && cpu >= t.cpu) {
+      discord.sendThresholdBreach('cpu', cpu, t.cpu).catch(() => {});
+      alertLogger.log('threshold', 'warning', 'CPU threshold breached', `CPU usage reached ${cpu}% (threshold: ${t.cpu}%).`, { resource: 'cpu', value: cpu, threshold: t.cpu });
+    }
+    if (t.memory && memory >= t.memory) {
+      discord.sendThresholdBreach('memory', memory, t.memory).catch(() => {});
+      alertLogger.log('threshold', 'warning', 'Memory threshold breached', `Memory usage reached ${memory}% (threshold: ${t.memory}%).`, { resource: 'memory', value: memory, threshold: t.memory });
+    }
+
+    // Latency threshold check
+    const latStats = latencyMonitor.getStats();
+    if (latStats) {
+      if (t.latencyCritical && latStats.mean >= t.latencyCritical) {
+        discord.sendLatencyAlert('critical', latStats.mean, t.latencyCritical).catch(() => {});
+        alertLogger.log('latency', 'critical', 'Latency critical threshold breached', `Mean latency is ${latStats.mean} ms (threshold: ${t.latencyCritical} ms).`, { mean: latStats.mean, p95: latStats.p95, p99: latStats.p99, max: latStats.max, threshold: t.latencyCritical });
+      } else if (t.latencyWarn && latStats.mean >= t.latencyWarn) {
+        discord.sendLatencyAlert('warning', latStats.mean, t.latencyWarn).catch(() => {});
+        alertLogger.log('latency', 'warning', 'Latency warning threshold breached', `Mean latency is ${latStats.mean} ms (threshold: ${t.latencyWarn} ms).`, { mean: latStats.mean, p95: latStats.p95, p99: latStats.p99, max: latStats.max, threshold: t.latencyWarn });
+      }
+    }
+
     emitOverview();
   }, 200);
 }

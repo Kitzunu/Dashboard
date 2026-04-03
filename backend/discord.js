@@ -160,10 +160,26 @@ async function sendAgentDisconnect() {
   markSent(cooldownKey);
 }
 
+async function sendLatencyAlert(severity, meanMs, threshold) {
+  const cooldownKey = `latency.${severity}`;
+  if (onCooldown(cooldownKey)) return;
+  const url = getWebhookUrl();
+  if (!url) return;
+  if (!(await isGloballyEnabled())) return;
+  if (!(await settings.getBoolean('discord.alert_threshold'))) return;
+
+  const label       = severity === 'critical' ? 'Critical' : 'Warning';
+  const color       = severity === 'critical' ? COLORS.red : COLORS.orange;
+  const description = `Server latency mean is **${meanMs} ms** (threshold: ${threshold} ms).`;
+
+  await postWebhook(url, await buildPayload(buildEmbed(`⚠️ Latency ${label}`, description, color)));
+  markSent(cooldownKey);
+}
+
 async function sendTest(webhookUrl) {
   await postWebhook(webhookUrl, await buildPayload(
     buildEmbed('✅ Webhook Test', 'AzerothCore Dashboard webhook is configured correctly.', COLORS.green)
   ));
 }
 
-module.exports = { sendServerCrash, sendServerOnline, sendThresholdBreach, sendAgentDisconnect, sendTest };
+module.exports = { sendServerCrash, sendServerOnline, sendThresholdBreach, sendAgentDisconnect, sendLatencyAlert, sendTest };

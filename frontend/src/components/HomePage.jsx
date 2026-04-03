@@ -359,24 +359,36 @@ function LatencyPanel({ latency }) {
 
 // ── Threshold settings ────────────────────────────────────────────────────────
 function ThresholdSettings({ thresholds, onSaved }) {
-  const [open, setOpen]       = useState(false);
-  const [cpu, setCpu]         = useState(thresholds.cpu);
-  const [mem, setMem]         = useState(thresholds.memory);
+  const [open, setOpen]         = useState(false);
+  const [cpu, setCpu]           = useState(thresholds.cpu);
+  const [mem, setMem]           = useState(thresholds.memory);
   const [graphMin, setGraphMin] = useState(thresholds.graphMinutes ?? 60);
-  const [busy, setBusy]       = useState(false);
+  const [latWarn, setLatWarn]   = useState(thresholds.latencyWarn ?? 100);
+  const [latCrit, setLatCrit]   = useState(thresholds.latencyCritical ?? 500);
+  const [busy, setBusy]         = useState(false);
 
   useEffect(() => {
     setCpu(thresholds.cpu);
     setMem(thresholds.memory);
     setGraphMin(thresholds.graphMinutes ?? 60);
+    setLatWarn(thresholds.latencyWarn ?? 100);
+    setLatCrit(thresholds.latencyCritical ?? 500);
   }, [thresholds]);
 
-  const isDirty = cpu !== thresholds.cpu || mem !== thresholds.memory || graphMin !== (thresholds.graphMinutes ?? 60);
+  const isDirty = cpu !== thresholds.cpu
+    || mem !== thresholds.memory
+    || graphMin !== (thresholds.graphMinutes ?? 60)
+    || latWarn !== (thresholds.latencyWarn ?? 100)
+    || latCrit !== (thresholds.latencyCritical ?? 500);
 
   const handleSave = async () => {
+    if (latWarn >= latCrit) {
+      toast('Latency warning must be less than critical threshold', 'error');
+      return;
+    }
     setBusy(true);
     try {
-      const saved = await api.saveThresholds({ cpu, memory: mem, graphMinutes: graphMin });
+      const saved = await api.saveThresholds({ cpu, memory: mem, graphMinutes: graphMin, latencyWarn: latWarn, latencyCritical: latCrit });
       toast('Alert thresholds saved');
       onSaved(saved);
       setOpen(false);
@@ -409,6 +421,23 @@ function ThresholdSettings({ thresholds, onSaved }) {
               <input type="number" min="1" max="100" value={mem}
                 onChange={(e) => setMem(Math.min(100, Math.max(1, parseInt(e.target.value, 10) || 1)))} />
               <span className="td-muted">%</span>
+            </div>
+          </div>
+          <div className="threshold-divider" />
+          <div className="threshold-row">
+            <label>Latency warning at</label>
+            <div className="threshold-input-wrap">
+              <input type="number" min="1" value={latWarn}
+                onChange={(e) => setLatWarn(Math.max(1, parseInt(e.target.value, 10) || 1))} />
+              <span className="td-muted">ms</span>
+            </div>
+          </div>
+          <div className="threshold-row">
+            <label>Latency critical at</label>
+            <div className="threshold-input-wrap">
+              <input type="number" min="1" value={latCrit}
+                onChange={(e) => setLatCrit(Math.max(1, parseInt(e.target.value, 10) || 1))} />
+              <span className="td-muted">ms</span>
             </div>
           </div>
           <div className="threshold-divider" />
