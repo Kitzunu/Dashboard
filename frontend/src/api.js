@@ -180,6 +180,14 @@ export const api = {
   getGuild:      (id) => request('GET', `/api/guilds/${id}`),
   getGuildBank:  (id) => request('GET', `/api/guilds/${id}/bank`),
 
+  getArenaTeams: ()   => request('GET', '/api/arena'),
+  getArenaTeam:  (id) => request('GET', `/api/arena/${id}`),
+  getArenaMatches: (id) => request('GET', `/api/arena/${id}/matches`),
+  createArenaTeam: (data) => request('POST', '/api/arena', data),
+  updateArenaTeam: (id, data) => request('PATCH', `/api/arena/${id}`, data),
+  removeArenaMember: (id, guid) => request('DELETE', `/api/arena/${id}/members/${guid}`),
+  deleteArenaTeam: (id) => request('DELETE', `/api/arena/${id}`),
+
   getAlerts: (page = 1, { severity = '', type = '' } = {}) => {
     const params = new URLSearchParams({ page });
     if (severity) params.set('severity', severity);
