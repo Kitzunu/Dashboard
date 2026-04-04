@@ -206,7 +206,7 @@ async function emitOverview() {
   const totalMem = os.totalmem();
   const freeMem  = os.freemem();
   const memPct   = Math.round(((totalMem - freeMem) / totalMem) * 100);
-  const t        = thresholds.load();
+  const t        = await thresholds.load();
   const windowMs = (t.graphMinutes ?? 60) * 60 * 1000;
   const cutoff   = Date.now() - windowMs;
   const latest   = resourceHistory.getHistory().slice(-1)[0];
@@ -239,7 +239,7 @@ setInterval(pollPlayerCount, 30000);
 // Poll CPU and memory every 30 s and store in rolling history
 function pollResources() {
   const snap1 = os.cpus().map((c) => ({ ...c.times }));
-  setTimeout(() => {
+  setTimeout(async () => {
     const snap2 = os.cpus();
     let totalIdle = 0, totalTick = 0;
     snap2.forEach((cpu, i) => {
@@ -255,7 +255,7 @@ function pollResources() {
     const memory = Math.round(((total - os.freemem()) / total) * 100);
     resourceHistory.record(cpu, memory);
     // Threshold breach Discord alerts + DB logging
-    const t = thresholds.load();
+    const t = await thresholds.load();
     if (t.cpu && cpu >= t.cpu) {
       discord.sendThresholdBreach('cpu', cpu, t.cpu).catch(() => {});
       alertLogger.log('threshold', 'warning', 'CPU threshold breached', `CPU usage reached ${cpu}% (threshold: ${t.cpu}%).`, { resource: 'cpu', value: cpu, threshold: t.cpu });

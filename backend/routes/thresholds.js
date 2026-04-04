@@ -5,12 +5,16 @@ const thresholds = require('../thresholds');
 const router = express.Router();
 
 // GET /api/thresholds
-router.get('/', requireGMLevel(1), (req, res) => {
-  res.json(thresholds.load());
+router.get('/', requireGMLevel(1), async (req, res) => {
+  try {
+    res.json(await thresholds.load());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // PUT /api/thresholds  { cpu: 0-100, memory: 0-100, graphMinutes: 1-60, latencyWarn: ms, latencyCritical: ms }
-router.put('/', requireGMLevel(3), (req, res) => {
+router.put('/', requireGMLevel(3), async (req, res) => {
   const { cpu, memory, graphMinutes, latencyWarn, latencyCritical } = req.body;
 
   const cpuVal           = parseInt(cpu, 10);
@@ -32,8 +36,12 @@ router.put('/', requireGMLevel(3), (req, res) => {
   if (latencyWarnVal >= latencyCriticalVal)
     return res.status(400).json({ error: 'latencyWarn must be less than latencyCritical' });
 
-  const saved = thresholds.save({ cpu: cpuVal, memory: memoryVal, graphMinutes: graphMinutesVal, latencyWarn: latencyWarnVal, latencyCritical: latencyCriticalVal });
-  res.json(saved);
+  try {
+    const saved = await thresholds.save({ cpu: cpuVal, memory: memoryVal, graphMinutes: graphMinutesVal, latencyWarn: latencyWarnVal, latencyCritical: latencyCriticalVal });
+    res.json(saved);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

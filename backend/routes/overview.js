@@ -36,7 +36,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
     const totalMem = os.totalmem();
     const freeMem  = os.freemem();
     const memPct   = Math.round(((totalMem - freeMem) / totalMem) * 100);
-    const t        = thresholds.load();
+    const t        = await thresholds.load();
     const windowMs = (t.graphMinutes ?? 60) * 60 * 1000;
     const cutoff   = Date.now() - windowMs;
 

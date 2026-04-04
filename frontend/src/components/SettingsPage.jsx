@@ -64,6 +64,59 @@ const SETTING_DEFS = [
     ],
   },
   {
+    section: 'Alert Thresholds',
+    settings: [
+      {
+        key: 'threshold.cpu',
+        label: 'CPU warning at',
+        description: 'Trigger a threshold alert when CPU usage reaches this percentage (1–100).',
+        type: 'number',
+        min: 1,
+        max: 100,
+        default: '80',
+        unit: '%',
+      },
+      {
+        key: 'threshold.memory',
+        label: 'Memory warning at',
+        description: 'Trigger a threshold alert when memory usage reaches this percentage (1–100).',
+        type: 'number',
+        min: 1,
+        max: 100,
+        default: '85',
+        unit: '%',
+      },
+      {
+        key: 'threshold.latencyWarn',
+        label: 'Latency warning at',
+        description: 'Trigger a latency warning alert when mean world server latency reaches this value.',
+        type: 'number',
+        min: 1,
+        default: '100',
+        unit: 'ms',
+      },
+      {
+        key: 'threshold.latencyCritical',
+        label: 'Latency critical at',
+        description: 'Trigger a critical latency alert when mean world server latency reaches this value. Must be higher than the warning threshold.',
+        type: 'number',
+        min: 1,
+        default: '500',
+        unit: 'ms',
+      },
+      {
+        key: 'threshold.graphMinutes',
+        label: 'Graph history',
+        description: 'Number of minutes of resource history displayed on the Overview page (1–60).',
+        type: 'number',
+        min: 1,
+        max: 60,
+        default: '60',
+        unit: 'min',
+      },
+    ],
+  },
+  {
     section: 'Discord Alerts',
     settings: [
       {
@@ -359,6 +412,20 @@ export default function SettingsPage() {
                             checked={getValue(def.key, def.default) === 'true'}
                             onChange={(val) => handleChange(def.key, val)}
                           />
+                        )}
+                        {def.type === 'number' && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <input
+                              className="filter-input"
+                              type="number"
+                              min={def.min}
+                              max={def.max}
+                              value={getValue(def.key, def.default)}
+                              onChange={(e) => handleChange(def.key, e.target.value)}
+                              style={{ width: 80 }}
+                            />
+                            {def.unit && <span className="td-muted">{def.unit}</span>}
+                          </div>
                         )}
                         {def.type === 'text' && (
                           <input
