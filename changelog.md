@@ -1,5 +1,36 @@
 # Changelog
 
+## 6523bbc — Add arena team interface (#48)
+
+**Author**: Copilot | **Date**: 2026-04-04 16:37:11 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/6523bbc2d59ab2cb25be4dac7bd049ff862b2f77
+
+Adds the ability to create arena teams from the dashboard and documents the full Arena Teams feature in the README.
+
+### Backend
+- `POST /api/arena` (GM 3+) — creates a new arena team with name, bracket type (2/3/5), and captain
+- Validates name length (2–24), bracket type, captain existence, duplicate name, and captain not already in a team of the same bracket
+- Generates next `arenaTeamId` via `MAX+1` (AzerothCore doesn't use AUTO_INCREMENT for this table)
+- Inserts both `arena_team` and `arena_team_member` (captain as first member)
+- Audit-logged as `arena.create`
+
+### Frontend
+- `CreateTeamModal` with name input, bracket selector, and character search for captain selection
+- "Create Team" button in page header, gated to GM 3+
+- Auto-navigates to newly created team detail on success
+- `api.createArenaTeam()` wired up in `api.js`
+
+### README
+- Added Arena Teams to: features summary, table of contents, access levels table (GM 1/2/3), pages section (full subsection), and audit log table
+
+* closes https://github.com/Kitzunu/Dashboard/issues/5
+
+---------
+
+Co-authored-by: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## 1c570df — Add calendar interface (#47)
 
 **Author**: Copilot | **Date**: 2026-04-04 15:50:40 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/1c570dfe189e51c819a513d1b95cb6ca02bae4d6
