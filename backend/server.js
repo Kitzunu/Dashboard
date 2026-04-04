@@ -62,6 +62,7 @@ const ipAllowlist = require('./middleware/ipAllowlist');
 const processManager = require('./processManager');
 const serverBridge   = require('./serverBridge');
 const dbc = require('./dbc');
+const wsConfig = require('./worldservers');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -169,7 +170,7 @@ io.use((socket, next) => {
 
 io.on('connection', (socket) => {
   socket.on('subscribe', (serverName) => {
-    if (['worldserver', 'authserver'].includes(serverName)) {
+    if (wsConfig.getValidServers().includes(serverName)) {
       socket.join(`console-${serverName}`);
     }
   });
@@ -192,13 +193,20 @@ serverBridge.init(io);   // connect to agent SSE stream and bridge events
 const discord = require('./discord');
 
 // Track last-known running state per server to detect crash transitions
-const serverRunning = { worldserver: null, authserver: null };
+const serverRunning = {};
+for (const id of wsConfig.getValidServers()) {
+  serverRunning[id] = null;
+}
 
 serverBridge.on('server-status', ({ server, running }) => {
   const wasRunning = serverRunning[server];
   serverRunning[server] = running;
+
+  // Determine display label
+  const wsEntry = wsConfig.getById(server);
+  const label = wsEntry ? wsEntry.name : (server === 'authserver' ? 'Auth Server' : server);
+
   if (wasRunning === true && !running) {
-    const label = server === 'worldserver' ? 'World Server' : 'Auth Server';
     if (processManager.consumeIntentionalStop(server)) {
       discord.sendServerStop(server).catch(() => {});
       alertLogger.log('server_stop', 'info', `${label} stopped`, `${label} was stopped manually.`, { server });
@@ -209,7 +217,6 @@ serverBridge.on('server-status', ({ server, running }) => {
   }
   if (wasRunning === false && running) {
     discord.sendServerOnline(server).catch(() => {});
-    const label = server === 'worldserver' ? 'World Server' : 'Auth Server';
     alertLogger.log('server_online', 'info', `${label} is online`, `${label} started successfully.`, { server });
   }
 });
@@ -248,8 +255,15 @@ async function emitOverview() {
   const cutoff   = Date.now() - windowMs;
   const latest   = resourceHistory.getHistory().slice(-1)[0];
 
+  // Build servers object dynamically
+  const servers = { authserver: agentStatus.authserver };
+  for (const id of wsConfig.getIds()) {
+    servers[id] = agentStatus[id] || { running: false, autoRestart: false, pid: null, startTime: null };
+  }
+
   io.to('overview').emit('overview:update', {
-    servers:   { worldserver: agentStatus.worldserver, authserver: agentStatus.authserver },
+    servers,
+    worldservers: wsConfig.load().map((ws) => ({ id: ws.id, name: ws.name })),
     dashboard: { backendUptime: process.uptime(), agentConnected: serverBridge.isConnected(), agentUptime: agentStatus.uptime ?? null },
     players:   { current: playerCount },
     tickets:   { open:    ticketCount },
@@ -260,7 +274,7 @@ async function emitOverview() {
     version,
     playerHistory:   playerHistory.getHistory(),
     resourceHistory: resourceHistory.getHistory().filter((p) => p.time >= cutoff),
-    serverLatency:   latencyMonitor.getStats(),
+    serverLatency:   latencyMonitor.getAllStats(),
   });
 }
 

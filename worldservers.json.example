@@ -1,0 +1,22 @@
+[
+  {
+    "id": "worldserver",
+    "name": "Main Realm",
+    "path": "C:\\AzerothCore\\worldserver.exe",
+    "dir": "",
+    "host": "127.0.0.1",
+    "port": 8085,
+    "characterDb": "acore_characters",
+    "worldDb": "acore_world"
+  },
+  {
+    "id": "worldserver-2",
+    "name": "Second Realm",
+    "path": "C:\\AzerothCore-2\\worldserver.exe",
+    "dir": "",
+    "host": "127.0.0.1",
+    "port": 8086,
+    "characterDb": "acore_characters_2",
+    "worldDb": "acore_world_2"
+  }
+]

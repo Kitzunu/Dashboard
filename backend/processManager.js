@@ -79,8 +79,8 @@ async function setAutoRestart(serverName, enabled) {
   catch (err) { return { success: false, error: err.message }; }
 }
 
-async function sendCommand(command) {
-  try { return await request('POST', '/command', { command }); }
+async function sendCommand(command, serverName) {
+  try { return await request('POST', '/command', { command, server: serverName }); }
   catch (err) { return { success: false, error: err.message }; }
 }
 

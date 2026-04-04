@@ -8,6 +8,7 @@
 
 const http         = require('http');
 const EventEmitter = require('events');
+const wsConfig     = require('./worldservers');
 
 const emitter = new EventEmitter();
 
@@ -88,14 +89,12 @@ function handleEvent(event) {
 
   switch (event.type) {
     case 'init':
-      // Sync initial server status to all frontend clients and internal listeners
-      if (event.worldserver) {
-        frontendIO.emit('server-status', { server: 'worldserver', running: event.worldserver.running });
-        emitter.emit('server-status', { server: 'worldserver', running: event.worldserver.running });
-      }
-      if (event.authserver) {
-        frontendIO.emit('server-status', { server: 'authserver', running: event.authserver.running });
-        emitter.emit('server-status', { server: 'authserver', running: event.authserver.running });
+      // Sync initial server status for all servers to frontend clients and internal listeners
+      for (const id of wsConfig.getValidServers()) {
+        if (event[id]) {
+          frontendIO.emit('server-status', { server: id, running: event[id].running });
+          emitter.emit('server-status', { server: id, running: event[id].running });
+        }
       }
       break;
 
@@ -112,8 +111,9 @@ function handleEvent(event) {
 
 function notifyServersDown() {
   if (!frontendIO) return;
-  frontendIO.emit('server-status', { server: 'worldserver', running: false });
-  frontendIO.emit('server-status', { server: 'authserver',  running: false });
+  for (const id of wsConfig.getValidServers()) {
+    frontendIO.emit('server-status', { server: id, running: false });
+  }
 }
 
 function scheduleReconnect() {

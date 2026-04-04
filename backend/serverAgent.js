@@ -1,5 +1,5 @@
 /**
- * Server Agent — standalone process that manages worldserver and authserver.
+ * Server Agent — standalone process that manages worldserver(s) and authserver.
  *
  * Run independently of the dashboard backend so game servers survive a
  * dashboard restart:
@@ -8,6 +8,10 @@
  *
  * The dashboard backend connects to this agent via HTTP (REST) and an
  * SSE stream (/events) for real-time log forwarding.
+ *
+ * Multiple worldservers are supported via worldservers.json — see
+ * worldservers.json.example.  When that file is absent the agent falls
+ * back to the single WORLDSERVER_PATH defined in .env.
  */
 
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
@@ -16,6 +20,7 @@ const express = require('express');
 const http    = require('http');
 const { spawn } = require('child_process');
 const path    = require('path');
+const wsConfig = require('./worldservers');
 
 const PORT   = parseInt(process.env.AGENT_PORT, 10) || 3002;
 const SECRET = process.env.AGENT_SECRET || 'changeme';
@@ -30,11 +35,22 @@ function sanitizeOutput(str) {
     .replace(/\x1B[^[\]m]/g, '');
 }
 
-const processes   = { worldserver: null, authserver: null };
-const processLogs = { worldserver: [], authserver: [] };
-const autoRestart = { worldserver: false, authserver: false };
-const stopping    = { worldserver: false, authserver: false };
-const startTimes  = { worldserver: null, authserver: null };
+// Dynamic maps — one entry per worldserver + authserver
+const processes   = { authserver: null };
+const processLogs = { authserver: [] };
+const autoRestart = { authserver: false };
+const stopping    = { authserver: false };
+const startTimes  = { authserver: null };
+
+// Initialise slots for every configured worldserver
+for (const ws of wsConfig.load()) {
+  processes[ws.id]   = null;
+  processLogs[ws.id] = [];
+  autoRestart[ws.id] = false;
+  stopping[ws.id]    = false;
+  startTimes[ws.id]  = null;
+}
+
 const MAX_LOG_LINES = 2000;
 
 // SSE clients connected from the dashboard backend
@@ -61,16 +77,20 @@ function startServer(serverName) {
     return { success: false, error: 'Server is already running' };
   }
 
-  const exePath = serverName === 'worldserver'
-    ? process.env.WORLDSERVER_PATH
-    : process.env.AUTHSERVER_PATH;
+  let exePath, workDir;
 
-  const workDir = serverName === 'worldserver'
-    ? (process.env.WORLDSERVER_DIR || null)
-    : (process.env.AUTHSERVER_DIR || null);
+  if (serverName === 'authserver') {
+    exePath = process.env.AUTHSERVER_PATH;
+    workDir = process.env.AUTHSERVER_DIR || null;
+  } else {
+    const ws = wsConfig.getById(serverName);
+    if (!ws) return { success: false, error: `Unknown server: ${serverName}` };
+    exePath = ws.path;
+    workDir = ws.dir || null;
+  }
 
   if (!exePath) {
-    return { success: false, error: `${serverName} path not configured in .env` };
+    return { success: false, error: `${serverName} path not configured` };
   }
 
   try {
@@ -123,7 +143,7 @@ function stopServer(serverName, mode = 'exit', delay = 0) {
 
   stopping[serverName] = true;
 
-  if (serverName === 'worldserver') {
+  if (wsConfig.isWorldserver(serverName)) {
     try {
       if (mode === 'shutdown') {
         proc.stdin.write(`server shutdown ${delay}\n`);
@@ -144,9 +164,11 @@ function setAutoRestart(serverName, enabled) {
   return { success: true };
 }
 
-function sendCommand(command) {
-  const proc = processes['worldserver'];
-  if (!proc) return { success: false, error: 'World server is not running' };
+function sendCommand(command, serverName) {
+  // Default to first configured worldserver for backward compatibility
+  const target = serverName || wsConfig.getIds()[0] || 'worldserver';
+  const proc = processes[target];
+  if (!proc) return { success: false, error: `${target} is not running` };
   try {
     proc.stdin.write(command + '\n');
     return { success: true };
@@ -177,15 +199,15 @@ app.use((req, res, next) => {
   next();
 });
 
-const VALID = ['worldserver', 'authserver'];
+const VALID = wsConfig.getValidServers();
 
 // GET /status
 app.get('/status', (req, res) => {
-  res.json({
-    worldserver: getStatus('worldserver'),
-    authserver:  getStatus('authserver'),
-    uptime:      process.uptime(),
-  });
+  const result = { authserver: getStatus('authserver'), uptime: process.uptime() };
+  for (const id of wsConfig.getIds()) {
+    result[id] = getStatus(id);
+  }
+  res.json(result);
 });
 
 // GET /:name/logs
@@ -219,9 +241,9 @@ app.post('/:name/autorestart', (req, res) => {
 
 // POST /command
 app.post('/command', (req, res) => {
-  const { command } = req.body;
+  const { command, server } = req.body;
   if (!command) return res.status(400).json({ error: 'command is required' });
-  res.json(sendCommand(command));
+  res.json(sendCommand(command, server));
 });
 
 // POST /restart — gracefully restart the agent process via runAgent.js
@@ -246,7 +268,11 @@ app.get('/events', (req, res) => {
   sseClients.add(send);
 
   // Send current status immediately so the client is in sync
-  res.write(`data: ${JSON.stringify({ type: 'init', worldserver: getStatus('worldserver'), authserver: getStatus('authserver') })}\n\n`);
+  const initEvent = { type: 'init', authserver: getStatus('authserver') };
+  for (const id of wsConfig.getIds()) {
+    initEvent[id] = getStatus(id);
+  }
+  res.write(`data: ${JSON.stringify(initEvent)}\n\n`);
 
   req.on('close', () => {
     clearInterval(heartbeat);
