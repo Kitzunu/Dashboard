@@ -1,0 +1,81 @@
+name: Update Changelog
+
+on:
+  push:
+    branches: [ "master" ]
+    # Self-trigger prevention:
+    # 1. paths-ignore ensures this workflow is not triggered when the ONLY file
+    #    changed is changelog.md (i.e. the changelog-update commit itself).
+    # 2. The changelog commit message contains "[skip ci]" so GitHub will not
+    #    queue any workflow runs for it even if paths-ignore were not present.
+    paths-ignore:
+      - 'changelog.md'
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Append commit to changelog
+        run: |
+          python3 << 'PYEOF'
+          import os
+          import subprocess
+
+          sha     = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode().strip()
+          short   = sha[:7]
+          subject = subprocess.check_output(['git', 'log', '-1', '--format=%s']).decode().strip()
+          author  = subprocess.check_output(['git', 'log', '-1', '--format=%an']).decode().strip()
+          date    = subprocess.check_output(['git', 'log', '-1', '--format=%ci']).decode().strip()
+          body    = subprocess.check_output(['git', 'log', '-1', '--format=%b']).decode().strip()
+          repo    = os.environ['GITHUB_REPOSITORY']
+          link    = f"https://github.com/{repo}/commit/{sha}"
+
+          # Skip the automated changelog-update commits themselves so they
+          # never appear as real entries in the changelog.
+          if subject.startswith("chore: update changelog"):
+              print(f"Skipping changelog-update commit {short}")
+              exit(0)
+
+          SEPARATOR = "<!-- entry-separator -->"
+
+          entry = f"## {short} \u2014 {subject}\n\n"
+          entry += f"**Author**: {author} | **Date**: {date} | **Link**: {link}\n"
+          if body:
+              entry += f"\n{body}\n"
+
+          existing = ""
+          if os.path.exists("changelog.md"):
+              with open("changelog.md", "r", encoding="utf-8") as f:
+                  existing = f.read()
+
+          # Preserve the '# Changelog' header and prepend the new entry.
+          HEADER = "# Changelog\n"
+          with open("changelog.md", "w", encoding="utf-8") as f:
+              if existing.startswith(HEADER):
+                  rest = existing[len(HEADER):].lstrip("\n")
+                  f.write(HEADER + "\n")
+                  f.write(entry)
+                  if rest:
+                      f.write(f"\n{SEPARATOR}\n\n")
+                      f.write(rest)
+              else:
+                  f.write(entry)
+                  if existing:
+                      f.write(f"\n{SEPARATOR}\n\n")
+                      f.write(existing)
+          PYEOF
+
+      - name: Commit and push changelog
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add changelog.md
+          git diff --staged --quiet || git commit -m "chore: update changelog [skip ci]"
+          git push
