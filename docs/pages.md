@@ -7,20 +7,20 @@
 - Toast notifications stack in the bottom-right corner (bottom-center on mobile)
 
 ## Overview
-- Live server status cards (PID, uptime timer) for worldserver and authserver; Dashboard card showing backend and server agent connectivity
+- Live server status cards (PID, uptime timer) for each configured worldserver and authserver; Dashboard card showing backend and server agent connectivity
 - Player Online, Open Tickets, and Active Bans stat cards
 - System Memory and CPU usage bars; turn amber then red when alert thresholds are exceeded
 - Configurable alert thresholds in **Settings → Alert Thresholds** (Administrator only); persisted to the `acore_dashboard` database
 - **Alerts** dropdown — independently toggle popup notifications and alert sounds; sounds use the Web Audio API (no external files); popup notifications require browser permission; both settings persist in `localStorage`
-- Worldserver TCP latency panel — mean, median, P95, P99, and max over a rolling 60-minute window
+- Worldserver TCP latency panel — mean, median, P95, P99, and max over a rolling 60-minute window; one panel per worldserver when multiple are configured
 - Player count sparkline over the last hour (up to 120 data points sampled every 30 s)
 - AzerothCore core revision (clickable link to GitHub commit), DB version, cache ID, and current MOTD
 - Real-time push updates via Socket.IO (no polling)
 
 ## Console
-- Live log streaming for worldserver and authserver via Socket.IO
+- Live log streaming for each configured worldserver and authserver via Socket.IO — when multiple worldservers are configured, a panel is shown for each
 - Full ANSI SGR colour rendering — log colours from `worldserver.conf` render correctly
-- GM command input with up/down arrow history navigation (persisted per session)
+- GM command input with up/down arrow history navigation (persisted per session); commands are sent to the specific worldserver panel they are entered in
 - Auto-scroll toggle, saved to `localStorage`
 
 ## Players
@@ -41,6 +41,12 @@
 - Tabs for Account, Character, and IP bans
 - Each row shows target, banned by, reason, date, and expiry
 - Issue new bans and unban with a confirmation modal
+
+## Mutes
+- List of all active account mutes with account name, muted by, reason, mute date, and expiry with time remaining
+- **Mute** — issue a new mute by character name with duration (minutes) and reason (GM 2+)
+- **Unmute** — remove a mute with confirmation modal (GM 2+)
+- Actions are audit-logged
 
 ## Announcements
 - **Announce** (chat) or **Notify** (on-screen popup) message types
@@ -114,11 +120,11 @@
 - Custom event actions are audit-logged
 
 ## Servers
-- Start and stop worldserver and authserver
+- Start and stop worldserver(s) and authserver — when multiple worldservers are configured via `worldservers.json`, a card is shown for each
 - **Exit** — immediate clean shutdown via `server exit`
 - **Shutdown** — `server shutdown <N>` countdown with configurable delay
 - **Auto-restart** — toggle per server; restarts on unexpected crashes only, not manual stops
-- **Scheduled Restart** — preset delays (1m–1h) or custom value; cancel button available
+- **Scheduled Restart** — preset delays (1m–1h) or custom value; target server selector when multiple worldservers are configured; cancel button available
 - **MOTD** — read and edit via `server set motd`; unsaved-changes indicator
 
 ## DB Query

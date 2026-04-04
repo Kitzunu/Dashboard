@@ -65,6 +65,7 @@ Dashboard/
 │   ├── serverBridge.js            # SSE bridge: forwards server agent events to frontend Socket.IO
 │   ├── processManager.js          # Agent HTTP client (async proxy to serverAgent)
 │   ├── thresholds.js              # Alert threshold persistence (reads/writes via dashboardSettings)
+│   ├── worldservers.js            # Multi-worldserver config loader (worldservers.json or .env fallback)
 │   └── server.js                  # Express + Socket.IO entry point
 ├── frontend/
 │   └── src/
@@ -116,5 +117,6 @@ Dashboard/
 ├── sql/
 │   └── acore_dashboard.sql        # One-time setup: creates acore_dashboard DB, grants access, creates audit_logs table
 ├── .env.example
+├── worldservers.json.example      # Template for multi-worldserver configuration
 └── package.json                   # Root scripts (start, install:all)
 ```

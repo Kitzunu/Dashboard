@@ -1,6 +1,7 @@
 # Notes
 
 - Game servers are managed by the standalone **server agent** (`serverAgent.js`), not the dashboard backend. Restarting the backend does not stop the game servers — they keep running and the backend reconnects automatically.
+- **Multiple worldservers** — to manage multiple realms from one dashboard, create a `worldservers.json` file (see `worldservers.json.example`). When absent, the dashboard falls back to `.env` variables for a single worldserver with full backward compatibility.
 - **Auto-restart** tracks intentional stops via a flag — it only restarts on unexpected crashes, not manual stops from the dashboard.
 - **Authentication** uses AzerothCore's SRP6 verifier (salt + verifier columns) — no plain-text passwords are ever compared or stored.
 - Login is rate-limited to 10 attempts per 15 minutes per IP.

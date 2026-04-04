@@ -18,6 +18,57 @@ AUTHSERVER_PATH=C:\AzerothCore\authserver.exe
 # WORLDSERVER_PORT=8085
 ```
 
+## Multiple Worldservers
+
+To manage multiple worldserver instances (e.g. multiple realms), create a `worldservers.json` file in the project root. See `worldservers.json.example` for the format.
+
+When `worldservers.json` is present, the `WORLDSERVER_*` environment variables above are ignored — all worldserver settings come from the JSON file instead. The auth server remains configured via `AUTHSERVER_PATH`.
+
+```json
+[
+  {
+    "id": "worldserver",
+    "name": "Main Realm",
+    "path": "C:\\AzerothCore\\worldserver.exe",
+    "dir": "",
+    "host": "127.0.0.1",
+    "port": 8085,
+    "characterDb": "acore_characters",
+    "worldDb": "acore_world"
+  },
+  {
+    "id": "worldserver-2",
+    "name": "Second Realm",
+    "path": "C:\\AzerothCore-2\\worldserver.exe",
+    "dir": "",
+    "host": "127.0.0.1",
+    "port": 8086,
+    "characterDb": "acore_characters_2",
+    "worldDb": "acore_world_2"
+  }
+]
+```
+
+| Field          | Description                                                              |
+| -------------- | ------------------------------------------------------------------------ |
+| `id`           | Unique slug used in API routes and Socket.IO rooms (required)            |
+| `name`         | Human-readable display name shown in the UI                              |
+| `path`         | Absolute path to the worldserver executable                              |
+| `dir`          | Working directory (defaults to the exe's directory if empty)             |
+| `host`         | Hostname for TCP latency measurement (default: `127.0.0.1`)             |
+| `port`         | Game port for TCP latency measurement (default: `8085`)                  |
+| `characterDb`  | Name of the characters database (default: `CHARACTERS_DB` or `acore_characters`) |
+| `worldDb`      | Name of the world database (default: `WORLD_DB` or `acore_world`)       |
+
+When `worldservers.json` is absent, the dashboard falls back to the `.env` variables for a single worldserver — no changes needed for existing single-server setups.
+
+With multiple worldservers configured:
+- The **Overview** page shows a status card for each worldserver
+- The **Console** page shows a log panel per worldserver, each with its own command input
+- The **Servers** page shows start/stop/auto-restart cards for each worldserver
+- TCP latency is monitored independently per worldserver
+- Discord alerts include the worldserver display name
+
 ## Config Files
 
 ```env
@@ -39,6 +90,18 @@ AUTH_DB=acore_auth
 WORLD_DB=acore_world
 CHARACTERS_DB=acore_characters
 DASHBOARD_DB=acore_dashboard
+```
+
+## Server Agent
+
+```env
+# Server agent port — the standalone process that keeps game servers running
+# independently of the dashboard backend. Change if 3002 is already in use.
+AGENT_PORT=3002
+
+# Shared secret between the dashboard backend and the server agent.
+# Change this to a random string for security.
+AGENT_SECRET=changeme
 ```
 
 ## Application
@@ -133,12 +196,12 @@ Six alert types are supported, each with an independent toggle in **Settings →
 
 | Alert              | Trigger                                                                | Cooldown           |
 | ------------------ | ---------------------------------------------------------------------- | ------------------ |
-| Server offline     | worldserver or authserver transitions from running → offline           | 5 min per server   |
-| Server online      | worldserver or authserver transitions from offline → running           | 5 min per server   |
-| Server stop        | worldserver or authserver is manually stopped from the dashboard       | 5 min per server   |
+| Server offline     | A worldserver or authserver transitions from running → offline         | 5 min per server   |
+| Server online      | A worldserver or authserver transitions from offline → running         | 5 min per server   |
+| Server stop        | A worldserver or authserver is manually stopped from the dashboard     | 5 min per server   |
 | Resource threshold | CPU or memory usage exceeds the configured threshold                   | 5 min per resource |
 | Agent disconnect   | Server agent loses its SSE connection to the dashboard                 | 5 min              |
-| Latency threshold  | Mean TCP latency to worldserver exceeds the warn or critical threshold | 5 min per level    |
+| Latency threshold  | Mean TCP latency to a worldserver exceeds the warn or critical threshold | 5 min per level  |
 
 Use the **Send Test Message** button in Settings to verify the webhook is working.
 
@@ -147,9 +210,10 @@ Use the **Send Test Message** button in Settings to verify the webhook is workin
 ## Session Idle Timeout
 
 ```env
-# Auto-logout after this many minutes of inactivity (default: disabled).
+# Auto-logout after this many minutes of inactivity.
+# The .env.example ships with a 30-minute default.
 # Set to 0 or leave blank to disable.
-# IDLE_TIMEOUT_MINUTES=30
+IDLE_TIMEOUT_MINUTES=30
 ```
 
 When set, a 60-second warning modal appears before the session expires. Any mouse movement, click, key press, or scroll resets the timer. The value is sent to the frontend at login so no Vite rebuild is needed after changing it.
@@ -158,8 +222,9 @@ When set, a 60-second warning modal appears before the session expires. Any mous
 
 ```env
 # Delete audit log entries older than this many days.
-# Set to 0 or leave blank (default) to keep logs forever.
-# AUDIT_LOG_RETENTION_DAYS=90
+# The .env.example ships with a 90-day default.
+# Set to 0 or leave blank to keep logs forever.
+AUDIT_LOG_RETENTION_DAYS=90
 ```
 
 When set, the backend runs a purge on startup and then once every 24 hours, deleting rows from `audit_logs` whose `created_at` is older than the configured number of days.
