@@ -86,8 +86,8 @@ export default function NotificationBell({ onNavigate }) {
 
   return (
     <div className="notification-bell-container" ref={panelRef}>
-      <button className="notification-bell-btn" onClick={handleOpen} aria-label="Notifications" title="Notifications">
-        🔔
+      <button className="notification-bell-btn" onClick={handleOpen} aria-label="Notifications">
+        <span className="notification-bell-icon">🔔</span>
         {unreadCount > 0 && (
           <span className="notification-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
         )}

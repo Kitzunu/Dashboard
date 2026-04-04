@@ -47,7 +47,7 @@ function SimpleChart({ data, label, color }) {
 
     ctx.clearRect(0, 0, w, h);
 
-    const values = data.map((d) => d.value);
+    const values = data.map((d) => parseFloat(d.value) || 0);
     const maxVal = Math.max(...values, 1);
     const minVal = Math.min(...values, 0);
     const range = maxVal - minVal || 1;
@@ -77,7 +77,8 @@ function SimpleChart({ data, label, color }) {
 
     data.forEach((d, i) => {
       const x = padding.left + (i / (data.length - 1 || 1)) * plotW;
-      const y = padding.top + plotH - ((d.value - minVal) / range) * plotH;
+      const val = parseFloat(d.value) || 0;
+      const y = padding.top + plotH - ((val - minVal) / range) * plotH;
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     });

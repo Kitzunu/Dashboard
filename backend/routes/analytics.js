@@ -66,10 +66,10 @@ router.get('/', requireGMLevel(1), async (req, res) => {
 router.get('/summary', requireGMLevel(1), async (req, res) => {
   try {
     const peakQuery = `SELECT MAX(value) as peak FROM analytics_history
-                       WHERE type = 'player_count' AND recorded_at >= DATE_SUB(NOW(), INTERVAL ? DAY)`;
+                       WHERE type = 'player_count' AND recorded_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? DAY)`;
 
     const avgQuery = `SELECT AVG(value) as average FROM analytics_history
-                      WHERE type = ? AND recorded_at >= DATE_SUB(NOW(), INTERVAL 1 DAY)`;
+                      WHERE type = ? AND recorded_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY)`;
 
     const [[peak24h], [peak7d], [peak30d], [avgCpu], [avgMemory]] = await Promise.all([
       dashPool.query(peakQuery, [1]),
@@ -97,10 +97,9 @@ router.get('/summary', requireGMLevel(1), async (req, res) => {
 
 async function recordSnapshot(playerCount, cpu, memory) {
   try {
-    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
     await dashPool.query(
-      'INSERT INTO analytics_history (type, value, recorded_at) VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?)',
-      ['player_count', playerCount, now, 'cpu', cpu, now, 'memory', memory, now]
+      'INSERT INTO analytics_history (type, value, recorded_at) VALUES (?, ?, UTC_TIMESTAMP()), (?, ?, UTC_TIMESTAMP()), (?, ?, UTC_TIMESTAMP())',
+      ['player_count', playerCount, 'cpu', cpu, 'memory', memory]
     );
   } catch (err) {
     console.error('[analytics] Failed to record snapshot:', err.message);
