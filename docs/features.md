@@ -46,5 +46,7 @@
 
 ## Other
 
-- **IP Allowlist** — Backend access restricted to a configurable list of IPs (default: localhost only)
+- **IP Allowlist** — Backend access restricted to a configurable list of IPs; defaults to accepting all private/LAN addresses when `ALLOWED_IPS` is not set
+- **CORS** — Private/LAN origins are always accepted; additional origins can be added via `FRONTEND_URL`
+- **Mobile Responsive** — Collapsible sidebar with hamburger toggle, optimised layouts for tablet (≤ 768px) and phone (≤ 480px) screens
 - **Role-based access** — GM level controls what each user can see and do

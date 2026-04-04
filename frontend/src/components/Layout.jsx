@@ -190,6 +190,7 @@ export default function Layout() {
   const [playerCount, setPlayerCount]   = useState(null);
   const [ticketCount, setTicketCount]   = useState(null);
   const [toasts, setToasts] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const toastId        = useRef(0);
   const worldRunningRef = useRef(false); // tracks live world status for polling closure
 
@@ -295,7 +296,11 @@ export default function Layout() {
 
   return (
     <div className="layout">
-      <aside className="sidebar">
+      <button className="sidebar-toggle" onClick={() => setSidebarOpen((p) => !p)} aria-label="Toggle menu">
+        <span className="hamburger-icon" />
+      </button>
+      {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
+      <aside className={`sidebar${sidebarOpen ? ' sidebar-open' : ''}`}>
         <div className="sidebar-brand">
           <span className="brand-icon">
             <img src="../../img/icon.png" alt="image" width="38" height="auto" />
@@ -333,7 +338,7 @@ export default function Layout() {
                   <button
                     key={item.id}
                     className={`nav-item ${page === item.id ? 'active' : ''}`}
-                    onClick={() => { setPage(item.id); setCharNavGuid(null); }}
+                    onClick={() => { setPage(item.id); setCharNavGuid(null); setSidebarOpen(false); }}
                   >
                     <span className="nav-label">{item.label}</span>
                     {item.id === 'players' && playerCount != null && (

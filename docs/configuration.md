@@ -50,12 +50,18 @@ JWT_SECRET=change-this-to-a-random-secret
 # Backend port (default: 3001)
 PORT=3001
 
-# Comma-separated IPs allowed to reach the backend (default: localhost only)
-# Add your LAN/WAN IP here if you need remote access
-ALLOWED_IPS=127.0.0.1,::1
+# Comma-separated IPs allowed to reach the backend.
+# When not set, all private/LAN IPs are accepted by default so that
+# mobile devices and other machines on the same network can connect
+# without extra configuration.
+# Set this to restrict access to specific IPs only.
+# ALLOWED_IPS=127.0.0.1,::1,192.168.1.50
 
-# Frontend URL for CORS (default: http://localhost:5173)
-FRONTEND_URL=http://localhost:5173
+# Frontend URL for CORS — comma-separated origins.
+# Private/LAN origins (10.x, 172.16-31.x, 192.168.x, localhost) are
+# always accepted regardless of this setting so mobile and LAN devices
+# work out of the box.  Set this for any additional public origins.
+# FRONTEND_URL=http://localhost:5173
 ```
 
 > Generate a strong `JWT_SECRET` with:
@@ -65,17 +71,19 @@ FRONTEND_URL=http://localhost:5173
 
 ## LAN / Remote Access
 
-By default the dashboard is only accessible from the machine it runs on. To access it from another device on the same network:
+By default the dashboard accepts connections from any private/LAN IP address and allows CORS requests from private-network origins. This means mobile devices and other machines on the same network can connect without any extra configuration — just open the dashboard using the server's LAN IP, e.g. `http://192.168.1.100:5173`.
 
-1. Set `ALLOWED_IPS` to include the IP(s) that will connect to the backend:
-   ```env
-   ALLOWED_IPS=127.0.0.1,::1,192.168.1.50
-   ```
-2. Set `FRONTEND_URL` to the address the frontend will be served from (used for CORS):
-   ```env
-   FRONTEND_URL=http://192.168.1.100:5173
-   ```
-3. Open the dashboard on the remote device using the server's LAN IP, e.g. `http://192.168.1.100:5173`. The frontend automatically connects the API and WebSocket back to the same host — no additional configuration needed.
+The frontend automatically detects the host's protocol and address and connects the API and WebSocket back to the same host, so no `VITE_API_URL` override is needed for LAN access.
+
+To **restrict** access to specific IPs only, set `ALLOWED_IPS`:
+```env
+ALLOWED_IPS=127.0.0.1,::1,192.168.1.50
+```
+
+To allow CORS from a public (non-LAN) origin, set `FRONTEND_URL`:
+```env
+FRONTEND_URL=https://dashboard.example.com
+```
 
 ## Scheduled Tasks
 

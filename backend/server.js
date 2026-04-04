@@ -66,9 +66,28 @@ function getFrontendOrigins() {
   return raw.split(',').map((s) => s.trim()).filter(Boolean);
 }
 
+/** Check whether a URL origin belongs to a private / LAN address. */
+function isPrivateOrigin(origin) {
+  try {
+    const { hostname } = new URL(origin);
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') return true;
+    // IPv4 private ranges: 10.x, 172.16-31.x, 192.168.x
+    if (/^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.)/.test(hostname)) return true;
+    // IPv6 link-local / unique-local
+    if (/^(fe80|fd[0-9a-f]{2}):/i.test(hostname)) return true;
+  } catch {}
+  return false;
+}
+
 function dynamicOrigin(origin, callback) {
+  if (!origin) return callback(null, true);
   const allowed = getFrontendOrigins();
-  if (!origin || allowed.includes(origin)) return callback(null, true);
+  if (allowed.includes(origin)) return callback(null, true);
+  // Always accept origins from private/LAN addresses so mobile devices on the
+  // same network can connect.  CORS is a browser-level mechanism; actual access
+  // control is handled by authentication and the IP allowlist middleware.
+  if (isPrivateOrigin(origin)) return callback(null, true);
+  console.warn(`[CORS] Rejected origin: ${origin}  (allowed: ${allowed.join(', ')})`);
   callback(null, false);
 }
 

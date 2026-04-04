@@ -1,5 +1,11 @@
 # Pages
 
+## Layout
+- Sidebar navigation with collapsible groups and page links; selecting a page closes the sidebar on mobile
+- On screens ≤ 768px the sidebar collapses off-screen and a hamburger toggle (☰) button appears in the top-left corner; tapping the overlay or selecting a page closes the sidebar
+- On screens ≤ 480px, spacing and font sizes are further reduced for small phones
+- Toast notifications stack in the bottom-right corner (bottom-center on mobile)
+
 ## Overview
 - Live server status cards (PID, uptime timer) for worldserver and authserver; Dashboard card showing backend and server agent connectivity
 - Player Online, Open Tickets, and Active Bans stat cards
