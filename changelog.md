@@ -1,23 +1,5 @@
 # Changelog
 
-## 8dba57d — Fix CORS blocking for LAN/mobile devices & update docs
-
-**Author**: Copilot | **Date**: 2026-04-04
-
-### Backend
-- CORS now **always** accepts private/LAN origins regardless of `FRONTEND_URL` setting — previously the private-origin fallback was disabled when `FRONTEND_URL` was explicitly configured, blocking mobile/LAN devices
-- Added `console.warn` logging when a non-private origin is rejected by CORS, showing the rejected origin and allowed list
-
-### Frontend
-- Login error detection uses `err instanceof TypeError` instead of brittle exact string matching — covers all browsers (Safari, Chrome, Firefox)
-- Login error message now shows the API URL being targeted for easier debugging
-
-### Documentation
-- Updated "LAN / Remote Access" section to reflect that LAN access works out-of-the-box with no configuration needed
-- Clarified that `ALLOWED_IPS` defaults to all private/LAN IPs when unset (not localhost-only)
-- Clarified that `FRONTEND_URL` is only needed for non-private origins
-- Updated env reference table descriptions
-
 ## 6523bbc — Add arena team interface (#48)
 
 **Author**: Copilot | **Date**: 2026-04-04 16:37:11 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/6523bbc2d59ab2cb25be4dac7bd049ff862b2f77

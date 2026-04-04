@@ -194,15 +194,12 @@ JWT_SECRET=change-this-to-a-random-secret
 # Backend port (default: 3001)
 PORT=3001
 
-# Comma-separated IPs allowed to reach the backend.
-# When unset, all private/LAN IPs (10.x, 172.16-31.x, 192.168.x) are allowed.
-# Set this to restrict access to specific IPs only.
-# ALLOWED_IPS=127.0.0.1,::1,192.168.1.50
+# Comma-separated IPs allowed to reach the backend (default: localhost only)
+# Add your LAN/WAN IP here if you need remote access
+ALLOWED_IPS=127.0.0.1,::1
 
-# Comma-separated CORS origins (default: http://localhost:5173).
-# Private/LAN origins are always accepted regardless of this setting.
-# Only needed for non-private origins (e.g. a public domain).
-# FRONTEND_URL=http://localhost:5173
+# Frontend URL for CORS (default: http://localhost:5173)
+FRONTEND_URL=http://localhost:5173
 ```
 
 > Generate a strong `JWT_SECRET` with:
@@ -212,19 +209,17 @@ PORT=3001
 
 ### LAN / Remote Access
 
-By default the dashboard is accessible from any device on the same local network — no configuration is needed. CORS automatically accepts private/LAN origins, and when `ALLOWED_IPS` is unset the IP allowlist permits all private IP ranges (10.x, 172.16–31.x, 192.168.x, IPv6 link-local).
+By default the dashboard is only accessible from the machine it runs on. To access it from another device on the same network:
 
-Open the dashboard on a remote device using the server's LAN IP, e.g. `http://192.168.1.100:5173`. The frontend automatically connects the API and WebSocket back to the same host.
-
-To **restrict** LAN access to specific IPs only, set `ALLOWED_IPS`:
-
-```env
-ALLOWED_IPS=127.0.0.1,::1,192.168.1.50
-```
-
-> **Note:** When `ALLOWED_IPS` is set, *only* the listed IPs (and their IPv6-mapped equivalents) are allowed — the private-range fallback is disabled. Make sure to include every device that needs access.
-
-`FRONTEND_URL` is only needed if you serve the frontend from a non-private origin (e.g. a public domain). Private/LAN origins are always accepted by CORS regardless of this setting.
+1. Set `ALLOWED_IPS` to include the IP(s) that will connect to the backend:
+   ```env
+   ALLOWED_IPS=127.0.0.1,::1,192.168.1.50
+   ```
+2. Set `FRONTEND_URL` to the address the frontend will be served from (used for CORS):
+   ```env
+   FRONTEND_URL=http://192.168.1.100:5173
+   ```
+3. Open the dashboard on the remote device using the server's LAN IP, e.g. `http://192.168.1.100:5173`. The frontend automatically connects the API and WebSocket back to the same host — no additional configuration needed.
 
 ### Scheduled Tasks
 
@@ -595,8 +590,8 @@ All sections are collapsible. A gold "unsaved changes" badge appears on any coll
 | `BACKUP_PATH`                           | Where scheduled backup files are saved                   |
 | `MYSQLDUMP_PATH`                        | Path to `mysqldump` executable                           |
 | `PDUMP_OUTPUT_PATH`                     | Default directory for character dump exports             |
-| `FRONTEND_URL`                          | Comma-separated CORS origins (private/LAN origins are always allowed) |
-| `ALLOWED_IPS`                           | Comma-separated IPs allowed to reach the backend (when unset, all private/LAN IPs are allowed) |
+| `FRONTEND_URL`                          | Comma-separated CORS origins                             |
+| `ALLOWED_IPS`                           | Comma-separated IPs allowed to reach the backend         |
 | `IDLE_TIMEOUT_MINUTES`                  | Session idle timeout                                     |
 | `AUDIT_LOG_RETENTION_DAYS`              | Audit log retention period                               |
 | `DISCORD_WEBHOOK_URL`                   | Discord alert webhook URL                                |
