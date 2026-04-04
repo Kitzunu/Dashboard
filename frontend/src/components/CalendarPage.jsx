@@ -63,8 +63,17 @@ function expandGameEvent(ev, from, to) {
   // Zero end_time means event is always active
   const isUnbounded = endTime.getTime() <= 0 || ev.end_time === '0000-00-00 00:00:00';
 
-  // Walk occurrences
-  let eventStart = new Date(startTime);
+  // Jump ahead: calculate how many full occurrences fit before the window starts,
+  // then begin iteration from just before the window.
+  const msFromStart = from.getTime() - startTime.getTime();
+  let eventStart;
+  if (msFromStart > 0) {
+    const skipCount = Math.max(0, Math.floor(msFromStart / occurMs) - 1);
+    eventStart = new Date(startTime.getTime() + skipCount * occurMs);
+  } else {
+    eventStart = new Date(startTime);
+  }
+
   const limit = isUnbounded ? new Date(to.getTime() + 365 * 24 * 60 * 60 * 1000) : endTime;
   let iterationCount = 0;
 

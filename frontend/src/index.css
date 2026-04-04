@@ -250,6 +250,7 @@ input[type="password"],
 input[type="number"],
 input[type="email"],
 input[type="search"],
+input[type="datetime-local"],
 input:not([type]),
 textarea,
 select {
