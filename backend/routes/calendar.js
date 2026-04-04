@@ -114,7 +114,7 @@ router.delete('/events/:id', requireGMLevel(2), async (req, res) => {
 });
 
 // ── GET /api/calendar/game-events?from=&to= ─────────────────────────────────
-// Returns active/upcoming WoW game events from acore_world.game_event
+// Returns active/upcoming WoW game holiday events (holiday > 0) from acore_world.game_event
 router.get('/game-events', requireGMLevel(1), async (req, res) => {
   try {
     const [rows] = await worldPool.query(
