@@ -15,7 +15,7 @@ Reorganize Table of Contents for better readability
 The `---` entry separator collided with the same token used in PR/merge commit bodies, causing the parser to split mid-entry and absorb all remaining entries as the first commit's body — only 1 entry rendered instead of 130+. The hash badge was a plain label with a redundant separate link column.
 
 ### Separator (`changelog.md`, `changelog.js`, `changelog.yml`)
-- Replaced `---` with `<!-- entry-separator -->` — an HTML comment that cannot appear in any git commit message
+- Replaced `---` with entry-separator — an HTML comment that cannot appear in any git commit message
 - Backend parser (`parseChangelog`) now splits on the new token
 - Workflow writes new entries using the same token
 
