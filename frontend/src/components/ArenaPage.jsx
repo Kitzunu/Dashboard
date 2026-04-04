@@ -110,6 +110,134 @@ function DeleteTeamModal({ team, onConfirm, onClose }) {
   );
 }
 
+// ── Create team modal ─────────────────────────────────────────────────────────
+
+function CreateTeamModal({ onSave, onClose }) {
+  const [name, setName]               = useState('');
+  const [type, setType]               = useState('2');
+  const [captainSearch, setCaptainSearch] = useState('');
+  const [captainResults, setCaptainResults] = useState([]);
+  const [captainGuid, setCaptainGuid] = useState(null);
+  const [captainName, setCaptainName] = useState('');
+  const [searching, setSearching]     = useState(false);
+  const [saving, setSaving]           = useState(false);
+
+  const valid = name.trim().length >= 2 && name.trim().length <= 24 && captainGuid > 0;
+
+  const handleSearch = async () => {
+    if (!captainSearch.trim()) return;
+    setSearching(true);
+    try {
+      const results = await api.searchCharacters(captainSearch.trim());
+      setCaptainResults(Array.isArray(results) ? results : []);
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!valid) return;
+    setSaving(true);
+    try {
+      await onSave({ name: name.trim(), type: parseInt(type, 10), captainGuid });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose} onKeyDown={(e) => e.key === 'Escape' && onClose()}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>Create Arena Team</h3>
+
+        <div className="form-group">
+          <label>Team Name</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter team name…"
+            maxLength={24}
+            autoFocus
+          />
+          <small>2–24 characters</small>
+        </div>
+
+        <div className="form-group">
+          <label>Bracket</label>
+          <select value={type} onChange={(e) => setType(e.target.value)}>
+            <option value="2">2v2</option>
+            <option value="3">3v3</option>
+            <option value="5">5v5</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label>Captain</label>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <input
+              type="text"
+              value={captainSearch}
+              onChange={(e) => setCaptainSearch(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              placeholder="Search character name…"
+              style={{ flex: 1 }}
+            />
+            <button className="btn btn-secondary btn-sm" onClick={handleSearch} disabled={searching}>
+              {searching ? '…' : 'Search'}
+            </button>
+          </div>
+          {captainGuid && (
+            <div className="td-muted" style={{ marginTop: 4, fontSize: 13 }}>
+              Selected: <strong>{captainName}</strong> (GUID: {captainGuid})
+            </div>
+          )}
+          {captainResults.length > 0 && (
+            <div className="table-wrap" style={{ maxHeight: 160, overflowY: 'auto', marginTop: 6 }}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Level</th>
+                    <th>Class</th>
+                    <th style={{ width: 60 }}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {captainResults.map((c) => (
+                    <tr key={c.guid} className={captainGuid === c.guid ? 'row-selected' : ''}>
+                      <td className="td-name">{c.name}</td>
+                      <td>{c.level}</td>
+                      <td className="td-muted">{FALLBACK_CLASSES[c.class] ?? c.class}</td>
+                      <td>
+                        <button
+                          className="btn btn-primary btn-xs"
+                          onClick={() => { setCaptainGuid(c.guid); setCaptainName(c.name); }}
+                        >
+                          Select
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="modal-actions">
+          <button className="btn btn-primary" onClick={handleSave} disabled={!valid || saving}>
+            {saving ? 'Creating…' : 'Create Team'}
+          </button>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Members tab ───────────────────────────────────────────────────────────────
 
 function MembersTab({ members, team, auth, onViewCharacter, onRemoveMember }) {
@@ -256,6 +384,7 @@ export default function ArenaPage({ auth, onViewCharacter }) {
   const [activeTab, setActiveTab]       = useState('Members');
   const [editTarget, setEditTarget]     = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [showCreate, setShowCreate]     = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -281,6 +410,18 @@ export default function ArenaPage({ auth, onViewCharacter }) {
       toast(err.message, 'error');
     } finally {
       setDetailLoading(false);
+    }
+  };
+
+  const handleCreateTeam = async (data) => {
+    try {
+      const result = await api.createArenaTeam(data);
+      toast('Arena team created', 'success');
+      setShowCreate(false);
+      await load();
+      if (result.arenaTeamId) await openDetail(result.arenaTeamId);
+    } catch (err) {
+      toast(err.message, 'error');
     }
   };
 
@@ -334,7 +475,12 @@ export default function ArenaPage({ auth, onViewCharacter }) {
     <div className="page-wrap">
       <div className="page-header">
         <h1 className="page-title">Arena Teams</h1>
-        <button className="btn btn-ghost btn-sm" onClick={load}>Refresh</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {auth.gmlevel >= 3 && (
+            <button className="btn btn-primary btn-sm" onClick={() => setShowCreate(true)}>Create Team</button>
+          )}
+          <button className="btn btn-ghost btn-sm" onClick={load}>Refresh</button>
+        </div>
       </div>
 
       <div className="channels-layout">
@@ -484,6 +630,14 @@ export default function ArenaPage({ auth, onViewCharacter }) {
           )}
         </div>
       </div>
+
+      {/* Create team modal */}
+      {showCreate && (
+        <CreateTeamModal
+          onSave={handleCreateTeam}
+          onClose={() => setShowCreate(false)}
+        />
+      )}
 
       {/* Edit team modal */}
       {editTarget && (

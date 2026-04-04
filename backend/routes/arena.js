@@ -97,6 +97,81 @@ router.get('/:id/matches', requireGMLevel(1), async (req, res) => {
   }
 });
 
+// POST /api/arena — create a new arena team (GM 3+)
+router.post('/', requireGMLevel(3), async (req, res) => {
+  const { name, type, captainGuid } = req.body;
+
+  // Validate name
+  if (!name || !name.trim()) return res.status(400).json({ error: 'Team name is required' });
+  const trimmedName = name.trim();
+  if (trimmedName.length < 2 || trimmedName.length > 24) {
+    return res.status(400).json({ error: 'Team name must be between 2 and 24 characters' });
+  }
+
+  // Validate bracket type
+  const bracketType = parseInt(type, 10);
+  if (![2, 3, 5].includes(bracketType)) {
+    return res.status(400).json({ error: 'Bracket type must be 2, 3, or 5' });
+  }
+
+  // Validate captain
+  const captain = parseInt(captainGuid, 10);
+  if (!captain || captain <= 0) {
+    return res.status(400).json({ error: 'A valid captain character is required' });
+  }
+
+  try {
+    // Verify captain character exists
+    const [[captainChar]] = await charPool.query(
+      'SELECT guid, name FROM characters WHERE guid = ?',
+      [captain]
+    );
+    if (!captainChar) return res.status(400).json({ error: 'Captain character not found' });
+
+    // Check captain is not already in an arena team of the same type
+    const [[existing]] = await charPool.query(`
+      SELECT atm.arenaTeamId FROM arena_team_member atm
+      JOIN arena_team at ON atm.arenaTeamId = at.arenaTeamId
+      WHERE atm.guid = ? AND at.type = ?
+    `, [captain, bracketType]);
+    if (existing) {
+      return res.status(400).json({ error: 'Captain is already in a team of this bracket type' });
+    }
+
+    // Check name uniqueness
+    const [[dup]] = await charPool.query(
+      'SELECT arenaTeamId FROM arena_team WHERE name = ?',
+      [trimmedName]
+    );
+    if (dup) return res.status(400).json({ error: 'An arena team with that name already exists' });
+
+    // Get next arenaTeamId
+    const [[{ nextId }]] = await charPool.query(
+      'SELECT COALESCE(MAX(arenaTeamId), 0) + 1 AS nextId FROM arena_team'
+    );
+
+    // Insert the team
+    await charPool.query(`
+      INSERT INTO arena_team (arenaTeamId, name, captainGuid, type, rating,
+        seasonGames, seasonWins, weekGames, weekWins, \`rank\`,
+        BackgroundColor, EmblemStyle, EmblemColor, BorderStyle, BorderColor)
+      VALUES (?, ?, ?, ?, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    `, [nextId, trimmedName, captain, bracketType]);
+
+    // Add captain as first member
+    await charPool.query(`
+      INSERT INTO arena_team_member (arenaTeamId, guid, weekGames, weekWins,
+        seasonGames, seasonWins, personalRating)
+      VALUES (?, ?, 0, 0, 0, 0, 0)
+    `, [nextId, captain]);
+
+    audit(req, 'arena.create', `arenaTeamId=${nextId} name=${trimmedName} type=${bracketType} captain=${captainChar.name}(${captain})`);
+    res.json({ success: true, arenaTeamId: nextId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // PATCH /api/arena/:id — update arena team (rating, captain) (GM 3+)
 router.patch('/:id', requireGMLevel(3), async (req, res) => {
   const arenaTeamId = parseInt(req.params.id, 10);

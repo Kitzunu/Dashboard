@@ -183,6 +183,7 @@ export const api = {
   getArenaTeams: ()   => request('GET', '/api/arena'),
   getArenaTeam:  (id) => request('GET', `/api/arena/${id}`),
   getArenaMatches: (id) => request('GET', `/api/arena/${id}/matches`),
+  createArenaTeam: (data) => request('POST', '/api/arena', data),
   updateArenaTeam: (id, data) => request('PATCH', `/api/arena/${id}`, data),
   removeArenaMember: (id, guid) => request('DELETE', `/api/arena/${id}/members/${guid}`),
   deleteArenaTeam: (id) => request('DELETE', `/api/arena/${id}`),
