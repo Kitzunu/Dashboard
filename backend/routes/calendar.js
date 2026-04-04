@@ -121,8 +121,9 @@ router.get('/game-events', requireGMLevel(1), async (req, res) => {
       `SELECT eventEntry, start_time, end_time, occurence, length,
               holiday, description, world_event
        FROM game_event
-       WHERE end_time > NOW() OR end_time IS NULL
-          OR CAST(end_time AS CHAR) = '0000-00-00 00:00:00'
+       WHERE holiday > 0
+         AND (end_time > NOW() OR end_time IS NULL
+              OR CAST(end_time AS CHAR) = '0000-00-00 00:00:00')
        ORDER BY start_time ASC`
     );
     res.json({ events: rows });

@@ -245,7 +245,7 @@ function DayDetail({ date, events, canModerate, onEdit, onDelete, onClose }) {
                   )}
                   <div className="cal-event-meta">
                     <span className="badge" style={{ background: color.bg, color: color.text, fontSize: 10 }}>
-                      {ev.source === 'game' ? 'Game Event' : ev.source === 'ingame' ? 'In-Game' : ev.source === 'raid' ? 'Raid Reset' : ev.type === 'note' ? 'Note' : 'Custom'}
+                      {ev.source === 'game' ? 'Game Holiday' : ev.source === 'ingame' ? 'In-Game' : ev.source === 'raid' ? 'Raid Reset' : ev.type === 'note' ? 'Note' : 'Custom'}
                     </span>
                     {ev.created_by && <span className="td-muted" style={{ fontSize: 11 }}>by {ev.created_by}</span>}
                     {ev.creator_name && <span className="td-muted" style={{ fontSize: 11 }}>by {ev.creator_name}</span>}
@@ -271,7 +271,7 @@ function CalendarLegend({ filters, onToggle }) {
   const items = [
     { key: 'custom', label: 'Custom Events', color: TYPE_COLORS.custom.bg },
     { key: 'note',   label: 'Notes',         color: TYPE_COLORS.note.bg },
-    { key: 'game',   label: 'Game Events',   color: TYPE_COLORS.game.bg },
+    { key: 'game',   label: 'Game Holidays', color: TYPE_COLORS.game.bg },
     { key: 'ingame', label: 'In-Game Calendar', color: TYPE_COLORS.ingame.bg },
     { key: 'raid',   label: 'Raid Resets',   color: TYPE_COLORS.raid.bg },
   ];
