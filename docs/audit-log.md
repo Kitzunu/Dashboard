@@ -43,6 +43,10 @@ Every action that makes a change is recorded with the acting user, their IP addr
 | Arena Teams     | Create team (name, type, captain), update team (rating, captain), delete team, remove member                                                                                      |
 | Calendar        | Create event, update event, delete event                                                                                                                                          |
 | Scheduled Tasks | Create, update, delete, run now                                                                                                                                                   |
+| Backups         | Create (databases list), restore (filename + database), delete (filename)                                                                                                         |
+| Batch Ops       | Batch kick, ban, mail, and GM level changes (per-target results)                                                                                                                  |
+| Char Transfer   | Transfer character (GUID, from account, to account)                                                                                                                               |
+| Sessions        | Revoke session, revoke all sessions                                                                                                                                               |
 | Settings        | All setting changes (key=value pairs)                                                                                                                                             |
 | Environment     | `.env` key changes with before→after values                                                                                                                                       |
 | Dashboard       | Restart backend, restart agent, restart frontend                                                                                                                                  |
