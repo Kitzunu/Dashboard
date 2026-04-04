@@ -454,6 +454,23 @@ router.get('/default-path', requireGMLevel(2), (req, res) => {
   res.json({ path: dir ? path.resolve(dir) : '' });
 });
 
+// GET /api/pdump/list-files
+// Lists .sql/.txt dump files in the configured PDUMP_OUTPUT_PATH directory
+router.get('/list-files', requireGMLevel(2), async (req, res) => {
+  const dir = process.env.PDUMP_OUTPUT_PATH || '';
+  if (!dir) return res.json({ files: [] });
+  const resolved = path.resolve(dir);
+  try {
+    const entries = await fs.readdir(resolved, { withFileTypes: true });
+    const files = entries
+      .filter(e => e.isFile() && /\.(sql|txt)$/i.test(e.name))
+      .map(e => ({ name: e.name, path: path.join(resolved, e.name) }));
+    return res.json({ files });
+  } catch {
+    return res.json({ files: [] });
+  }
+});
+
 // POST /api/pdump/load
 // Body: { content?: string, filePath?: string, accountId: number, characterName?: string, characterGuid?: number }
 //   content   → raw dump text sent from the browser

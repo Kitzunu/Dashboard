@@ -195,6 +195,9 @@ export const api = {
   // pdump — fetch the configured default output directory from the server
   pdumpDefaultPath: () => request('GET', '/api/pdump/default-path'),
 
+  // pdump — list .sql/.txt files in the configured server dump directory
+  pdumpListFiles: () => request('GET', '/api/pdump/list-files'),
+
   // pdump load — import a dump (content string or server-side filePath)
   pdumpLoad: (body) => request('POST', '/api/pdump/load', body),
 

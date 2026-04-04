@@ -198,10 +198,12 @@ function PDumpLoadModal({ onClose }) {
   const [fileContent, setFileContent] = useState('');
   const [fileName, setFileName]       = useState('');
   const [filePath, setFilePath]       = useState('');
+  const [serverFiles, setServerFiles] = useState([]);
   const [accountQuery, setAccountQuery] = useState('');
   const [accountResults, setAccountResults] = useState([]);
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [charName, setCharName]       = useState('');
+  const [charGuid, setCharGuid]       = useState('');
   const [busy, setBusy]               = useState(false);
   const [result, setResult]           = useState(null);
   const accountDebounce               = useRef(null);
@@ -210,6 +212,9 @@ function PDumpLoadModal({ onClose }) {
   useEffect(() => {
     api.pdumpDefaultPath().then(({ path: dir }) => {
       if (dir) setFilePath(dir);
+    }).catch(() => {});
+    api.pdumpListFiles().then(({ files }) => {
+      setServerFiles(Array.isArray(files) ? files : []);
     }).catch(() => {});
   }, []);
 
@@ -246,6 +251,7 @@ function PDumpLoadModal({ onClose }) {
       const body = {
         accountId: selectedAccount.id,
         characterName: charName.trim(),
+        characterGuid: charGuid.trim() ? parseInt(charGuid.trim(), 10) : 0,
       };
       if (mode === 'upload') body.content  = fileContent;
       else                   body.filePath = filePath.trim();
@@ -297,6 +303,21 @@ function PDumpLoadModal({ onClose }) {
                 onChange={e => setFilePath(e.target.value)}
                 disabled={busy || !!result}
               />
+              {serverFiles.length > 0 && (
+                <div style={{ border: '1px solid var(--border)', borderRadius: 4, marginTop: 6, maxHeight: 150, overflowY: 'auto' }}>
+                  {serverFiles.map(f => (
+                    <div
+                      key={f.path}
+                      style={{ padding: '5px 10px', cursor: 'pointer', fontSize: 13, background: filePath === f.path ? 'var(--surface-hover)' : '' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-hover)'}
+                      onMouseLeave={e => e.currentTarget.style.background = filePath === f.path ? 'var(--surface-hover)' : ''}
+                      onClick={() => !busy && !result && setFilePath(f.path)}
+                    >
+                      {f.name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -350,6 +371,20 @@ function PDumpLoadModal({ onClose }) {
               placeholder="Leave blank to use name from dump"
               value={charName}
               onChange={e => setCharName(e.target.value)}
+              disabled={busy || !!result}
+            />
+          </div>
+
+          {/* Optional GUID */}
+          <div style={{ marginBottom: 14 }}>
+            <label className="form-label">New GUID <span className="td-muted" style={{ textTransform: 'none', fontWeight: 400 }}>(optional — leave blank to auto-assign)</span></label>
+            <input
+              className="input"
+              type="number"
+              min="1"
+              placeholder="Leave blank to auto-assign a GUID"
+              value={charGuid}
+              onChange={e => setCharGuid(e.target.value)}
               disabled={busy || !!result}
             />
           </div>
