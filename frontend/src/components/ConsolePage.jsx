@@ -108,7 +108,7 @@ function ConsolePanel({ title, serverName, socket, canSendCommands }) {
     setCommand('');
     setSending(true);
     try {
-      const result = await api.sendCommand(cmd);
+      const result = await api.sendCommand(cmd, serverName);
       if (!result.success) {
         setLines((prev) => [...prev, `[Dashboard] Error: ${result.error}\n`]);
       }
@@ -184,18 +184,25 @@ function ConsolePanel({ title, serverName, socket, canSendCommands }) {
   );
 }
 
-export default function ConsolePage({ socket, auth }) {
+export default function ConsolePage({ socket, auth, worldservers = [] }) {
   const canSendCommands = auth.gmlevel >= 2;
+  const wsIds = worldservers.length > 0
+    ? worldservers
+    : [{ id: 'worldserver', name: 'World Server' }];
+
   return (
     <div className="page console-page">
       <h2 className="page-title">Console</h2>
       <div className="console-grid">
-        <ConsolePanel
-          title="World Server"
-          serverName="worldserver"
-          socket={socket}
-          canSendCommands={canSendCommands}
-        />
+        {wsIds.map((ws) => (
+          <ConsolePanel
+            key={ws.id}
+            title={ws.name}
+            serverName={ws.id}
+            socket={socket}
+            canSendCommands={canSendCommands}
+          />
+        ))}
         <ConsolePanel
           title="Auth Server"
           serverName="authserver"

@@ -200,6 +200,7 @@ export default function Layout() {
     worldserver: { running: false },
     authserver: { running: false },
   });
+  const [worldservers, setWorldservers] = useState([{ id: 'worldserver', name: 'World Server' }]);
   const [playerCount, setPlayerCount]   = useState(null);
   const [ticketCount, setTicketCount]   = useState(null);
   const [toasts, setToasts] = useState([]);
@@ -214,24 +215,44 @@ export default function Layout() {
 
   useEffect(() => {
     api.getServerStatus()
-      .then(setServerStatus)
+      .then((status) => {
+        setServerStatus((prev) => ({ ...prev, ...status }));
+      })
+      .catch(() => {});
+
+    api.getServerList()
+      .then((list) => {
+        if (Array.isArray(list) && list.length > 0) {
+          setWorldservers(list);
+          // Ensure serverStatus has entries for all worldservers
+          setServerStatus((prev) => {
+            const next = { ...prev };
+            for (const ws of list) {
+              if (!next[ws.id]) next[ws.id] = { running: false };
+            }
+            return next;
+          });
+        }
+      })
       .catch(() => {});
 
     const s = connectSocket(auth.token);
     setSocket(s);
 
     s.on('server-status', ({ server, running }) => {
-      setServerStatus((prev) => ({ ...prev, [server]: { running } }));
+      setServerStatus((prev) => ({ ...prev, [server]: { ...prev[server], running } }));
     });
 
     return () => disconnectSocket();
   }, [auth.token]);
 
   // Keep ref in sync so the polling closure always sees the current running state
+  // Check if ANY worldserver is running (not just 'worldserver')
+  const anyWorldRunning = worldservers.some((ws) => serverStatus[ws.id]?.running);
   useEffect(() => {
-    worldRunningRef.current = serverStatus.worldserver.running;
-    if (!serverStatus.worldserver.running) setPlayerCount(0);
-  }, [serverStatus.worldserver.running]);
+    worldRunningRef.current = anyWorldRunning;
+    if (!anyWorldRunning) setPlayerCount(0);
+  }, [anyWorldRunning]);
 
   // Poll player count every 30s — skip DB call and force 0 when world is offline
   useEffect(() => {
@@ -373,8 +394,10 @@ export default function Layout() {
 
         <div className="sidebar-footer">
           <div className="server-status-row">
-            <StatusDot label="World" running={serverStatus.worldserver.running} />
-            <StatusDot label="Auth" running={serverStatus.authserver.running} />
+            {worldservers.map((ws) => (
+              <StatusDot key={ws.id} label={ws.name} running={serverStatus[ws.id]?.running} />
+            ))}
+            <StatusDot label="Auth" running={serverStatus.authserver?.running} />
             <NotificationBell onNavigate={(id) => { setPage(id); setSidebarOpen(false); }} />
           </div>
           <div className="user-row">
@@ -389,7 +412,7 @@ export default function Layout() {
 
       <main className="main-content">
         {page === 'home'          && <HomePage socket={socket} />}
-        {page === 'console'       && <ConsolePage socket={socket} auth={auth} />}
+        {page === 'console'       && <ConsolePage socket={socket} auth={auth} worldservers={worldservers} />}
         {page === 'players'       && <PlayersPage auth={auth} serverStatus={serverStatus} onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
         {page === 'tickets'       && <TicketsPage onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
         {page === 'bans'          && <BansPage />}
@@ -401,7 +424,7 @@ export default function Layout() {
         {page === 'bugreports'    && <BugReportsPage />}
         {page === 'lagreports'    && <LagReportsPage />}
         {page === 'mailserver'    && <MailServerPage />}
-        {page === 'servers'       && <ServersPage serverStatus={serverStatus} setServerStatus={setServerStatus} />}
+        {page === 'servers'       && <ServersPage serverStatus={serverStatus} setServerStatus={setServerStatus} worldservers={worldservers} />}
         {page === 'dbquery'       && <DBQueryPage />}
         {page === 'config'        && <ConfigPage />}
         {page === 'channels'      && <ChannelsPage />}

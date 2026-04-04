@@ -323,15 +323,18 @@ function pollResources() {
       alertLogger.log('threshold', 'warning', 'Memory threshold breached', `Memory usage reached ${memory}% (threshold: ${t.memory}%).`, { resource: 'memory', value: memory, threshold: t.memory });
     }
 
-    // Latency threshold check
-    const latStats = latencyMonitor.getStats();
-    if (latStats) {
+    // Latency threshold check — check all worldservers
+    const allLatStats = latencyMonitor.getAllStats();
+    for (const [serverId, latStats] of Object.entries(allLatStats)) {
+      if (!latStats) continue;
+      const wsEntry = wsConfig.getById(serverId);
+      const label = wsEntry ? wsEntry.name : serverId;
       if (t.latencyCritical && latStats.mean >= t.latencyCritical) {
         discord.sendLatencyAlert('critical', latStats.mean, t.latencyCritical).catch(() => {});
-        alertLogger.log('latency', 'critical', 'Latency critical threshold breached', `Mean latency is ${latStats.mean} ms (threshold: ${t.latencyCritical} ms).`, { mean: latStats.mean, p95: latStats.p95, p99: latStats.p99, max: latStats.max, threshold: t.latencyCritical });
+        alertLogger.log('latency', 'critical', `${label} latency critical threshold breached`, `Mean latency is ${latStats.mean} ms (threshold: ${t.latencyCritical} ms).`, { server: serverId, mean: latStats.mean, p95: latStats.p95, p99: latStats.p99, max: latStats.max, threshold: t.latencyCritical });
       } else if (t.latencyWarn && latStats.mean >= t.latencyWarn) {
         discord.sendLatencyAlert('warning', latStats.mean, t.latencyWarn).catch(() => {});
-        alertLogger.log('latency', 'warning', 'Latency warning threshold breached', `Mean latency is ${latStats.mean} ms (threshold: ${t.latencyWarn} ms).`, { mean: latStats.mean, p95: latStats.p95, p99: latStats.p99, max: latStats.max, threshold: t.latencyWarn });
+        alertLogger.log('latency', 'warning', `${label} latency warning threshold breached`, `Mean latency is ${latStats.mean} ms (threshold: ${t.latencyWarn} ms).`, { server: serverId, mean: latStats.mean, p95: latStats.p95, p99: latStats.p99, max: latStats.max, threshold: t.latencyWarn });
       }
     }
 
