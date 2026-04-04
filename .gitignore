@@ -7,6 +7,7 @@ pdump/
 
 # compiled output
 /dist
+/frontend/dist
 /tmp
 /out-tsc
 /app-builds
