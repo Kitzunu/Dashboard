@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" sizes="32x32" href="img/icon.png">
     <title>AzerothCore Dashboard</title>
-    <!-- WoWHead tooltip widget (WotLK 3.3.5) -->
+    <!-- WoWHead tooltip widget (WotLK 3.3.5) – loaded async so it never blocks page render on mobile -->
     <script>const whTooltips = { colorLinks: true, iconSize: 'medium', hide: { sellprice: 0 } };</script>
-    <script src="https://wow.zamimg.com/widgets/power.js"></script>
+    <script src="https://wow.zamimg.com/widgets/power.js" async></script>
   </head>
   <body>
     <div id="root"></div>

@@ -17,7 +17,14 @@ export default function Login() {
       const data = await api.login(username, password);
       login(data);
     } catch (err) {
-      setError(err.message);
+      // Safari/WebKit reports "Load failed" and Chrome reports "Failed to fetch"
+      // when CORS or network issues prevent the request from completing.
+      const msg = err.message;
+      if (msg === 'Load failed' || msg === 'Failed to fetch' || msg === 'NetworkError when attempting to fetch resource.') {
+        setError('Unable to reach the server. If connecting remotely, ensure the backend FRONTEND_URL and ALLOWED_IPS settings include this device.');
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
