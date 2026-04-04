@@ -16,9 +16,103 @@ function winRate(wins, games) {
   return `${((wins / games) * 100).toFixed(1)}%`;
 }
 
+// ── Edit team modal ───────────────────────────────────────────────────────────
+
+function EditTeamModal({ team, onSave, onClose }) {
+  const [rating, setRating]         = useState(team.rating);
+  const [captainGuid, setCaptainGuid] = useState(team.captainGuid);
+  const [saving, setSaving]         = useState(false);
+
+  const valid = rating >= 0 && captainGuid > 0;
+
+  const handleSave = async () => {
+    if (!valid) return;
+    setSaving(true);
+    try {
+      const data = {};
+      if (parseInt(rating, 10) !== team.rating) data.rating = parseInt(rating, 10);
+      if (parseInt(captainGuid, 10) !== team.captainGuid) data.captainGuid = parseInt(captainGuid, 10);
+      if (Object.keys(data).length === 0) { onClose(); return; }
+      await onSave(data);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose} onKeyDown={(e) => e.key === 'Escape' && onClose()}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>Edit Team: {team.name}</h3>
+
+        <div className="form-group">
+          <label>Team Rating</label>
+          <input
+            type="number"
+            min={0}
+            value={rating}
+            onChange={(e) => setRating(e.target.value)}
+            autoFocus
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Captain</label>
+          <select value={captainGuid} onChange={(e) => setCaptainGuid(parseInt(e.target.value, 10))}>
+            {team.members.map((m) => (
+              <option key={m.guid} value={m.guid}>{m.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="modal-actions">
+          <button className="btn btn-primary" onClick={handleSave} disabled={!valid || saving}>
+            {saving ? 'Saving…' : 'Save'}
+          </button>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Delete team modal ─────────────────────────────────────────────────────────
+
+function DeleteTeamModal({ team, onConfirm, onClose }) {
+  const [busy, setBusy] = useState(false);
+
+  const handleConfirm = async () => {
+    setBusy(true);
+    try {
+      await onConfirm();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>Delete arena team?</h3>
+        <p className="modal-detail td-muted">
+          <strong>{team.name}</strong> ({bracketLabel(team.type)}) — Rating: {team.rating}
+        </p>
+        <p className="td-muted" style={{ fontSize: 13 }}>
+          This will permanently remove the team and all its members. This cannot be undone.
+        </p>
+        <div className="modal-actions">
+          <button className="btn btn-danger" onClick={handleConfirm} disabled={busy}>
+            {busy ? 'Deleting…' : 'Confirm Delete'}
+          </button>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Members tab ───────────────────────────────────────────────────────────────
 
-function MembersTab({ members, onViewCharacter }) {
+function MembersTab({ members, team, auth, onViewCharacter, onRemoveMember }) {
   if (members.length === 0) return <div className="empty-state">No members.</div>;
   return (
     <div className="table-wrap">
@@ -31,6 +125,7 @@ function MembersTab({ members, onViewCharacter }) {
             <th style={{ textAlign: 'center' }}>Rating</th>
             <th style={{ textAlign: 'center' }}>Season</th>
             <th style={{ textAlign: 'center' }}>Week</th>
+            {auth.gmlevel >= 2 && <th style={{ width: 80 }}>Actions</th>}
           </tr>
         </thead>
         <tbody>
@@ -40,6 +135,9 @@ function MembersTab({ members, onViewCharacter }) {
                 {onViewCharacter
                   ? <button className="btn-link" onClick={() => onViewCharacter(m.guid)}>{m.name}</button>
                   : m.name}
+                {m.guid === team.captainGuid && (
+                  <span className="badge badge-neutral" style={{ marginLeft: 6, fontSize: 10 }}>Captain</span>
+                )}
               </td>
               <td className="td-muted">{FALLBACK_CLASSES[m.class] ?? m.class}</td>
               <td style={{ textAlign: 'center' }}>{m.level}</td>
@@ -53,6 +151,18 @@ function MembersTab({ members, onViewCharacter }) {
               <td style={{ textAlign: 'center' }} className="td-muted">
                 {m.weekWins}W / {m.weekGames - m.weekWins}L
               </td>
+              {auth.gmlevel >= 2 && (
+                <td>
+                  {m.guid !== team.captainGuid && (
+                    <button
+                      className="btn btn-danger btn-xs"
+                      onClick={() => onRemoveMember(m.guid, m.name)}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -89,11 +199,54 @@ function StatsTab({ team }) {
   );
 }
 
+// ── Match History tab ─────────────────────────────────────────────────────────
+
+function MatchHistoryTab({ arenaTeamId }) {
+  const [matches, setMatches]   = useState([]);
+  const [loading, setLoading]   = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    api.getArenaMatches(arenaTeamId)
+      .then((data) => setMatches(data))
+      .catch((err) => toast(err.message, 'error'))
+      .finally(() => setLoading(false));
+  }, [arenaTeamId]);
+
+  if (loading) return <div className="empty-state">Loading match data…</div>;
+  if (matches.length === 0) return <div className="empty-state">No match history available.</div>;
+
+  return (
+    <div className="table-wrap">
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Class</th>
+            <th style={{ textAlign: 'center' }}>MMR</th>
+            <th style={{ textAlign: 'center' }}>Max MMR</th>
+          </tr>
+        </thead>
+        <tbody>
+          {matches.map((m) => (
+            <tr key={m.guid}>
+              <td className="td-name">{m.charName}</td>
+              <td className="td-muted">{FALLBACK_CLASSES[m.class] ?? m.class}</td>
+              <td style={{ textAlign: 'center', fontWeight: 600 }}>{m.matchMakerRating}</td>
+              <td style={{ textAlign: 'center' }} className="td-muted">{m.maxMMR}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-const TABS = ['Members', 'Stats'];
+const TABS = ['Members', 'Stats', 'Match History'];
 
-export default function ArenaPage({ onViewCharacter }) {
+export default function ArenaPage({ auth, onViewCharacter }) {
   const [teams, setTeams]               = useState([]);
   const [loading, setLoading]           = useState(true);
   const [search, setSearch]             = useState('');
@@ -101,6 +254,8 @@ export default function ArenaPage({ onViewCharacter }) {
   const [selected, setSelected]         = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [activeTab, setActiveTab]       = useState('Members');
+  const [editTarget, setEditTarget]     = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -126,6 +281,42 @@ export default function ArenaPage({ onViewCharacter }) {
       toast(err.message, 'error');
     } finally {
       setDetailLoading(false);
+    }
+  };
+
+  const handleEditTeam = async (data) => {
+    try {
+      await api.updateArenaTeam(selected.arenaTeamId, data);
+      toast('Arena team updated', 'success');
+      setEditTarget(null);
+      await openDetail(selected.arenaTeamId);
+      await load();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  };
+
+  const handleDeleteTeam = async () => {
+    try {
+      await api.deleteArenaTeam(deleteTarget.arenaTeamId);
+      toast(`Arena team "${deleteTarget.name}" deleted`, 'success');
+      setDeleteTarget(null);
+      setSelected(null);
+      await load();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  };
+
+  const handleRemoveMember = async (guid, name) => {
+    if (!confirm(`Remove ${name} from this arena team?`)) return;
+    try {
+      await api.removeArenaMember(selected.arenaTeamId, guid);
+      toast(`${name} removed from team`, 'success');
+      await openDetail(selected.arenaTeamId);
+      await load();
+    } catch (err) {
+      toast(err.message, 'error');
     }
   };
 
@@ -236,6 +427,16 @@ export default function ArenaPage({ onViewCharacter }) {
                     )}
                   </div>
                 </div>
+                {auth.gmlevel >= 3 && (
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button className="btn btn-secondary btn-sm" onClick={() => setEditTarget(selected)}>
+                      Edit
+                    </button>
+                    <button className="btn btn-danger btn-sm" onClick={() => setDeleteTarget(selected)}>
+                      Delete
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Season summary */}
@@ -276,12 +477,31 @@ export default function ArenaPage({ onViewCharacter }) {
                 ))}
               </div>
 
-              {activeTab === 'Members' && <MembersTab members={selected.members} onViewCharacter={onViewCharacter} />}
-              {activeTab === 'Stats'   && <StatsTab   team={selected} />}
+              {activeTab === 'Members'       && <MembersTab members={selected.members} team={selected} auth={auth} onViewCharacter={onViewCharacter} onRemoveMember={handleRemoveMember} />}
+              {activeTab === 'Stats'         && <StatsTab   team={selected} />}
+              {activeTab === 'Match History' && <MatchHistoryTab arenaTeamId={selected.arenaTeamId} />}
             </>
           )}
         </div>
       </div>
+
+      {/* Edit team modal */}
+      {editTarget && (
+        <EditTeamModal
+          team={editTarget}
+          onSave={handleEditTeam}
+          onClose={() => setEditTarget(null)}
+        />
+      )}
+
+      {/* Delete team modal */}
+      {deleteTarget && (
+        <DeleteTeamModal
+          team={deleteTarget}
+          onConfirm={handleDeleteTeam}
+          onClose={() => setDeleteTarget(null)}
+        />
+      )}
     </div>
   );
 }

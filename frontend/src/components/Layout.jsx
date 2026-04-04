@@ -393,7 +393,7 @@ export default function Layout() {
         {page === 'settings'      && <SettingsPage />}
         {page === 'scheduled'     && <ScheduledTasksPage />}
         {page === 'guilds'        && <GuildsPage onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
-        {page === 'arena'         && <ArenaPage onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
+        {page === 'arena'         && <ArenaPage auth={auth} onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
         {page === 'characters'    && <CharacterPage initialGuid={charNavGuid} />}
         {page === 'namefilters'      && <NameFiltersPage />}
         {page === 'calendar'         && <CalendarPage auth={auth} />}
