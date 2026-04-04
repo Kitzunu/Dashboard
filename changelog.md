@@ -1,4 +1,13 @@
 # Changelog
+
+## 9a5e365 — Refactor Table of Contents in README
+
+**Author**: Kitzunu | **Date**: 2026-04-04 14:18:21 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/9a5e3656e8a3f386be92147a54ebf5b82f8cdacf
+
+Reorganize Table of Contents for better readability
+
+<!-- entry-separator -->
+
 ## d2d1d109 — Alerts: checkbox batch delete + filter-scoped Clear All (#44)
 
 **Author**: Copilot | **Date**: 2026-04-04 13:35:25 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/d2d1d1095c046f47cb61dc78dafd82739acfde86
