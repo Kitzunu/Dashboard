@@ -372,10 +372,10 @@ export default function Layout() {
         </nav>
 
         <div className="sidebar-footer">
-          <NotificationBell onNavigate={(id) => { setPage(id); setSidebarOpen(false); }} />
           <div className="server-status-row">
             <StatusDot label="World" running={serverStatus.worldserver.running} />
             <StatusDot label="Auth" running={serverStatus.authserver.running} />
+            <NotificationBell onNavigate={(id) => { setPage(id); setSidebarOpen(false); }} />
           </div>
           <div className="user-row">
             <div>

@@ -93,8 +93,16 @@ router.delete('/:id', requireGMLevel(3), async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     if (!id) return res.status(400).json({ error: 'Invalid ID' });
+    // Look up session details before revoking
+    const [[session]] = await dashPool.query(
+      'SELECT username, ip FROM active_sessions WHERE id = ?',
+      [id]
+    );
     await revokeSession(id);
-    audit(req, 'session.revoke', `session_id=${id}`);
+    const details = session
+      ? `session_id=${id} username=${session.username} ip=${session.ip}`
+      : `session_id=${id}`;
+    audit(req, 'session.revoke', details);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

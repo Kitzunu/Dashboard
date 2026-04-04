@@ -80,9 +80,9 @@ export default function HealthCheckPage() {
               <th>Pool</th>
               <th>Status</th>
               <th>Latency</th>
-              <th>Free</th>
-              <th>Active</th>
-              <th>Total</th>
+              <th title="Idle connections available in the pool">Free</th>
+              <th title="Connections currently executing queries">Active</th>
+              <th title="Total connections in the pool (Free + Active)">Total</th>
             </tr>
           </thead>
           <tbody>
