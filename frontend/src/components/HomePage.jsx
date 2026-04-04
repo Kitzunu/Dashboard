@@ -357,113 +357,6 @@ function LatencyPanel({ latency }) {
   );
 }
 
-// ── Threshold settings ────────────────────────────────────────────────────────
-function ThresholdSettings({ thresholds, onSaved }) {
-  const [open, setOpen]         = useState(false);
-  const [cpu, setCpu]           = useState(thresholds.cpu);
-  const [mem, setMem]           = useState(thresholds.memory);
-  const [graphMin, setGraphMin] = useState(thresholds.graphMinutes ?? 60);
-  const [latWarn, setLatWarn]   = useState(thresholds.latencyWarn ?? 100);
-  const [latCrit, setLatCrit]   = useState(thresholds.latencyCritical ?? 500);
-  const [busy, setBusy]         = useState(false);
-
-  useEffect(() => {
-    setCpu(thresholds.cpu);
-    setMem(thresholds.memory);
-    setGraphMin(thresholds.graphMinutes ?? 60);
-    setLatWarn(thresholds.latencyWarn ?? 100);
-    setLatCrit(thresholds.latencyCritical ?? 500);
-  }, [thresholds]);
-
-  const isDirty = cpu !== thresholds.cpu
-    || mem !== thresholds.memory
-    || graphMin !== (thresholds.graphMinutes ?? 60)
-    || latWarn !== (thresholds.latencyWarn ?? 100)
-    || latCrit !== (thresholds.latencyCritical ?? 500);
-
-  const handleSave = async () => {
-    if (latWarn >= latCrit) {
-      toast('Latency warning must be less than critical threshold', 'error');
-      return;
-    }
-    setBusy(true);
-    try {
-      const saved = await api.saveThresholds({ cpu, memory: mem, graphMinutes: graphMin, latencyWarn: latWarn, latencyCritical: latCrit });
-      toast('Alert thresholds saved');
-      onSaved(saved);
-      setOpen(false);
-    } catch (err) {
-      toast(err.message, 'error');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <div className="threshold-settings">
-      <button className="btn btn-ghost btn-xs threshold-toggle" onClick={() => setOpen((o) => !o)}>
-        ⚙ Alert Thresholds <span className={`action-multiselect-chevron${open ? ' open' : ''}`}>›</span>
-      </button>
-
-      {open && (
-        <div className="threshold-panel">
-          <div className="threshold-row">
-            <label>CPU warning at</label>
-            <div className="threshold-input-wrap">
-              <input type="number" min="1" max="100" value={cpu}
-                onChange={(e) => setCpu(Math.min(100, Math.max(1, parseInt(e.target.value, 10) || 1)))} />
-              <span className="td-muted">%</span>
-            </div>
-          </div>
-          <div className="threshold-row">
-            <label>Memory warning at</label>
-            <div className="threshold-input-wrap">
-              <input type="number" min="1" max="100" value={mem}
-                onChange={(e) => setMem(Math.min(100, Math.max(1, parseInt(e.target.value, 10) || 1)))} />
-              <span className="td-muted">%</span>
-            </div>
-          </div>
-          <div className="threshold-divider" />
-          <div className="threshold-row">
-            <label>Latency warning at</label>
-            <div className="threshold-input-wrap">
-              <input type="number" min="1" value={latWarn}
-                onChange={(e) => setLatWarn(Math.max(1, parseInt(e.target.value, 10) || 1))} />
-              <span className="td-muted">ms</span>
-            </div>
-          </div>
-          <div className="threshold-row">
-            <label>Latency critical at</label>
-            <div className="threshold-input-wrap">
-              <input type="number" min="1" value={latCrit}
-                onChange={(e) => setLatCrit(Math.max(1, parseInt(e.target.value, 10) || 1))} />
-              <span className="td-muted">ms</span>
-            </div>
-          </div>
-          <div className="threshold-divider" />
-          <div className="threshold-row">
-            <label>Graph history</label>
-            <div className="threshold-input-wrap">
-              <input type="number" min="1" max="60" value={graphMin}
-                onChange={(e) => setGraphMin(Math.min(60, Math.max(1, parseInt(e.target.value, 10) || 1)))} />
-              <span className="td-muted">min</span>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-            <button className="btn btn-primary btn-xs" onClick={handleSave}
-              disabled={!isDirty || busy}>
-              {busy ? 'Saving…' : 'Save'}
-            </button>
-            <button className="btn btn-ghost btn-xs" onClick={() => setOpen(false)}>
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function HomePage({ socket }) {
   const [overview, setOverview]     = useState(null);
@@ -610,7 +503,6 @@ export default function HomePage({ socket }) {
             onToggleNotif={handleToggleNotif}
             onToggleSound={handleToggleSound}
           />
-          <ThresholdSettings thresholds={thresholds} onSaved={setThresholds} />
         </div>
       </div>
 

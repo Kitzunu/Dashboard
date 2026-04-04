@@ -6,6 +6,11 @@ const { getAuditPool } = require('./audit');
 
 const DEFAULTS = {
   'config.bak_enabled':                 'true',
+  'threshold.cpu':                      '80',
+  'threshold.memory':                   '85',
+  'threshold.graphMinutes':             '60',
+  'threshold.latencyWarn':              '100',
+  'threshold.latencyCritical':          '500',
   'discord.enabled':                    'true',
   'discord.webhook_username':           'AzerothCore Dashboard',
   'discord.webhook_avatar_url':         'https://raw.githubusercontent.com/Kitzunu/Dashboard/master/frontend/img/icon.png',
