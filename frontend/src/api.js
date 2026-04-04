@@ -1,6 +1,6 @@
 const DEFAULT_HOST = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
 const DEFAULT_PROTOCOL = typeof window !== 'undefined' ? window.location.protocol : 'http:';
-const BASE_URL = import.meta.env.VITE_API_URL || `${DEFAULT_PROTOCOL}//${DEFAULT_HOST}:3001`;
+export const BASE_URL = import.meta.env.VITE_API_URL || `${DEFAULT_PROTOCOL}//${DEFAULT_HOST}:3001`;
 
 function getToken() {
   try {

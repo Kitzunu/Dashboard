@@ -83,10 +83,11 @@ function dynamicOrigin(origin, callback) {
   if (!origin) return callback(null, true);
   const allowed = getFrontendOrigins();
   if (allowed.includes(origin)) return callback(null, true);
-  // When FRONTEND_URL is not explicitly configured, also accept origins from
-  // private/LAN addresses so mobile devices on the same network can connect
-  // without extra configuration.
-  if (!process.env.FRONTEND_URL && isPrivateOrigin(origin)) return callback(null, true);
+  // Always accept origins from private/LAN addresses so mobile devices on the
+  // same network can connect.  CORS is a browser-level mechanism; actual access
+  // control is handled by authentication and the IP allowlist middleware.
+  if (isPrivateOrigin(origin)) return callback(null, true);
+  console.warn(`[CORS] Rejected origin: ${origin}  (allowed: ${allowed.join(', ')})`);
   callback(null, false);
 }
 

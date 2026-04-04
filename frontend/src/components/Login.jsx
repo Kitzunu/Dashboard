@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../App.jsx';
-import { api } from '../api.js';
+import { api, BASE_URL } from '../api.js';
 
 export default function Login() {
   const { login } = useAuth();
@@ -17,13 +17,14 @@ export default function Login() {
       const data = await api.login(username, password);
       login(data);
     } catch (err) {
-      // Safari/WebKit reports "Load failed" and Chrome reports "Failed to fetch"
-      // when CORS or network issues prevent the request from completing.
-      const msg = err.message;
-      if (msg === 'Load failed' || msg === 'Failed to fetch' || msg === 'NetworkError when attempting to fetch resource.') {
-        setError('Unable to reach the server. If connecting remotely, ensure the backend FRONTEND_URL and ALLOWED_IPS settings include this device.');
+      // fetch() throws TypeError for all network / CORS failures regardless of
+      // browser (Safari: "Load failed", Chrome: "Failed to fetch", Firefox:
+      // "NetworkError …").  Server-side errors arrive as plain Error instances
+      // thrown by our request() wrapper, so this check is reliable.
+      if (err instanceof TypeError) {
+        setError(`Unable to reach the server at ${BASE_URL}. Check that the backend is running and reachable from this device.`);
       } else {
-        setError(msg);
+        setError(err.message);
       }
     } finally {
       setLoading(false);
