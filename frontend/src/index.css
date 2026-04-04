@@ -750,7 +750,7 @@ input:focus, textarea:focus, select:focus { border-color: var(--gold-dim); }
   margin-bottom: 8px;
 }
 
-.db-select { padding: 7px 10px; flex-shrink: 0; }
+.db-select { padding: 7px 10px; flex-shrink: 0; width: auto; }
 
 .query-textarea {
   width: 100%;
