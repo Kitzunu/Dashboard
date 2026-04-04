@@ -41,13 +41,16 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
       - [Guilds](#guilds)
       - [Arena Teams](#arena-teams)
       - [Channels](#channels)
+      - [Calendar](#calendar)
       - [Servers](#servers)
       - [DB Query](#db-query)
       - [Config](#config)
       - [Lag Reports](#lag-reports)
       - [Bug Reports](#bug-reports)
+      - [Spam Reports](#spam-reports)
       - [Settings *(Administrator only)*](#settings-administrator-only)
       - [Audit Log *(Administrator only)*](#audit-log-administrator-only)
+      - [Changelog](#changelog)
       - [Characters](#characters)
       - [Name Filters](#name-filters)
       - [Dashboard Management *(Administrator only)*](#dashboard-management-administrator-only)
@@ -76,6 +79,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 - **Announce** — Broadcast server-wide messages (chat announce or on-screen notify) with quick-fill templates and session history
 - **Send Mail** — Send in-game mail, items (up to 12), or money (gold/silver/copper) to any character
 - **Channels** — Browse all active chat channels; view banned players and channel config (rights, speak delay, messages); lock icon for password-protected channels; unban players (GM 2+); delete channel (Administrator)
+- **Calendar** — Month-view calendar with custom events and notes, WoW game holidays, in-game player-created events, and weekly raid reset schedule; create, edit, and delete custom events (GM 2+); toggle event type visibility; day detail panel
 - **Name Filters** — View, add, and remove entries in the `profanity_name` and `reserved_name` tables; tabbed interface with live filter and per-entry remove (GM 2+)
 
 **Players**
@@ -88,12 +92,14 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 **Reports**
 - **Lag Reports** — Browse player-submitted lag events; filter by type and minimum latency; aggregate stats with top reporters and top maps; dismiss or clear all
 - **Bug Reports** — Browse FeedbackUI bug reports, suggestions, and feedback; separated into Open/Closed tabs with type filter; assignee and comment fields; close/reopen per report
+- **Spam Reports** — Browse in-game spam reports (mail, chat, calendar types); filter by type, search by spammer name; sortable columns; detail modal; delete individual reports (GM 2+) or clear all (Administrator)
 
 **Dashboard**
-- **Alerts** — Persistent log of all system alerts stored in the `acore_dashboard` database: latency warning/critical threshold breaches, CPU/memory threshold breaches, server crash/online transitions, and agent disconnects — each with severity badge, type, description, metadata (values and thresholds), and timestamp; filter by severity and type, view detail modal with raw metadata, delete individual entries or clear all *(visible to GM level 1+; clear requires Administrator)*
+- **Alerts** — Persistent log of all system alerts stored in the `acore_dashboard` database: latency warning/critical threshold breaches, CPU/memory threshold breaches, server crash/online/stop transitions, and agent disconnects — each with severity badge, type, description, metadata (values and thresholds), and timestamp; filter by severity and type, view detail modal with raw metadata, checkbox batch delete, filter-scoped clear all *(visible to GM level 1+; delete/clear requires Administrator)*
 - **Audit Log** — Immutable record of all critical actions taken through the dashboard: logins (including failed attempts with reason), logouts, server start/stop/restart, config saves (with changed key→value diff), MOTD changes, bans/unbans, account changes, console commands, DB queries, announcements, mail sends, and more — with user, IP, timestamp, and success/failure status *(Administrator only)*
-- **Settings** — Dashboard-wide configuration stored in the `acore_dashboard` database; settings changes are audit-logged; Discord alert toggles per event type. Also includes an **Environment (.env)** section for editing whitelisted `.env` keys directly from the UI (requires backend restart to apply) *(Administrator only)*
+- **Settings** — Dashboard-wide configuration stored in the `acore_dashboard` database; settings changes are audit-logged; alert thresholds (CPU, memory, latency warning/critical, graph window); Discord alert toggles per event type. Also includes an **Environment (.env)** section for editing whitelisted `.env` keys directly from the UI (requires backend restart to apply) *(Administrator only)*
 - **Dashboard Management** — Restart the backend, server agent, or frontend from the UI; each action requires confirmation; agent restart includes a clear warning that game servers will be temporarily unmanaged *(Administrator only)*
+- **Changelog** — Paginated table of all dashboard commits with hash, subject, author, and date; click any entry to view the full commit body and link to GitHub
 
 **Other**
 - **IP Allowlist** — Backend access restricted to a configurable list of IPs (default: localhost only)
@@ -255,12 +261,13 @@ The export produces a file named `<CharacterName>_<GUID>_<timestamp>.sql`. When 
 # DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/your-webhook-id/your-webhook-token
 ```
 
-Four alert types are supported, each with an independent toggle in **Settings → Discord Alerts**:
+Six alert types are supported, each with an independent toggle in **Settings → Discord Alerts**:
 
 | Alert              | Trigger                                                                | Cooldown           |
 | ------------------ | ---------------------------------------------------------------------- | ------------------ |
 | Server offline     | worldserver or authserver transitions from running → offline           | 5 min per server   |
 | Server online      | worldserver or authserver transitions from offline → running           | 5 min per server   |
+| Server stop        | worldserver or authserver is manually stopped from the dashboard       | 5 min per server   |
 | Resource threshold | CPU or memory usage exceeds the configured threshold                   | 5 min per resource |
 | Agent disconnect   | Server agent loses its SSE connection to the dashboard                 | 5 min              |
 | Latency threshold  | Mean TCP latency to worldserver exceeds the warn or critical threshold | 5 min per level    |
@@ -306,8 +313,8 @@ The dashboard uses AzerothCore's `account_access` GM levels for role-based acces
 
 | Level | Role          | Access                                                                                                                                                                                                                                                                                                                                                                       |
 | ----- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1     | Moderator     | Overview, Console, Players (view), Tickets (view), Lag Reports, Bug Reports, Spam Reports (view), Channels (view), Guilds (view), Arena Teams (view), Characters (view)                                                                                                                                                                                                      |
-| 2     | Game Master   | + Kick/ban players, manage bans, mutes, announcements, send mail, accounts (view/lock/ban/mute), autobroadcast (add/edit), mail server (view), dismiss reports, delete spam reports, unban channel players, name filters (view/add/remove), export/import character dumps, remove arena team members                                                                         |
+| 1     | Moderator     | Overview, Console, Players (view), Tickets (view), Lag Reports, Bug Reports, Spam Reports (view), Channels (view), Calendar (view), Guilds (view), Arena Teams (view), Characters (view), Changelog                                                                                                                                                                          |
+| 2     | Game Master   | + Kick/ban players, manage bans, mutes, announcements, send mail, accounts (view/lock/ban/mute), autobroadcast (add/edit), mail server (view), dismiss reports, delete spam reports, unban channel players, name filters (view/add/remove), export/import character dumps, remove arena team members, create/edit/delete calendar events                                     |
 | 3     | Administrator | + Start/stop servers, scheduled restart, MOTD, DB Query, Config editor, scheduled tasks, autobroadcast (delete), accounts (GM level/email/password/flags/create/delete), mail server (create/edit/delete), alert thresholds, clear all lag/spam reports, delete channels, Audit Log, Settings (including .env editor), Dashboard Management (restart backend/agent/frontend), create/edit/delete arena teams |
 
 To grant GM level 3 (Administrator):
@@ -358,6 +365,7 @@ Every action that makes a change is recorded with the acting user, their IP addr
 | Name Filters    | Add profanity name, remove profanity name, add reserved name, remove reserved name                                                                                                |
 | Character Dumps | Export dump (`pdump.write` — character name, GUID, output path or download), import dump (`pdump.load` — character name, GUID, target account, source; failure logged with error) |
 | Arena Teams     | Create team (name, type, captain), update team (rating, captain), delete team, remove member                                                                                      |
+| Calendar        | Create event, update event, delete event                                                                                                                                          |
 | Scheduled Tasks | Create, update, delete, run now                                                                                                                                                   |
 | Settings        | All setting changes (key=value pairs)                                                                                                                                             |
 | Environment     | `.env` key changes with before→after values                                                                                                                                       |
@@ -387,7 +395,7 @@ Both the backend and the server agent are wrapped by lightweight runner scripts 
 - Live server status cards (PID, uptime timer) for worldserver and authserver; Dashboard card showing backend and server agent connectivity
 - Player Online, Open Tickets, and Active Bans stat cards
 - System Memory and CPU usage bars; turn amber then red when alert thresholds are exceeded
-- Configurable alert thresholds (⚙ button, Administrator only); saved to `backend/thresholds.json`
+- Configurable alert thresholds in **Settings → Alert Thresholds** (Administrator only); persisted to the `acore_dashboard` database
 - **Alerts** dropdown — independently toggle popup notifications and alert sounds; sounds use the Web Audio API (no external files); popup notifications require browser permission; both settings persist in `localStorage`
 - Worldserver TCP latency panel — mean, median, P95, P99, and max over a rolling 60-minute window
 - Player count sparkline over the last hour (up to 120 data points sampled every 30 s)
@@ -477,6 +485,19 @@ Both the backend and the server agent are wrapped by lightweight runner scripts 
 - **Delete Channel** removes the channel and all associated bans from the database (Administrator)
 - Note: in-game member roles (Owner, Moderator, Muted) are runtime-only and not persisted to the database
 
+### Calendar
+- Month-view grid with Monday–Sunday columns; today highlighted; previous/next month navigation and "Today" button
+- Five event types, each colour-coded and togglable via legend buttons:
+  - **Custom Events** (blue) — user-created events with title, optional description, and start/end times
+  - **Notes** (gold) — user-created notes
+  - **Game Holidays** (green) — WoW game events from the `game_event` table (holiday events only)
+  - **In-Game Calendar** (purple) — player-created events from the `calendar_events` table
+  - **Raid Resets** (red) — weekly lockout resets for all WotLK 3.3.5a raids (weekly on Wednesday 07:00 UTC)
+- Click any day to open a side panel with the day's events; double-click to create a new event (GM 2+)
+- **Create / Edit / Delete** custom events and notes (GM 2+); game holidays, in-game events, and raid resets are read-only
+- Each day cell shows up to 3 events with a "+N more" overflow indicator
+- Custom event actions are audit-logged
+
 ### Servers
 - Start and stop worldserver and authserver
 - **Exit** — immediate clean shutdown via `server exit`
@@ -518,6 +539,14 @@ Both the backend and the server agent are wrapped by lightweight runner scripts 
 - **Close / Reopen** toggle in the modal footer (GM 2+)
 - **Dismiss** removes the report from the database (GM 2+)
 
+### Spam Reports
+- Paginated table of in-game spam reports with three type filters: **Mail**, **Chat**, and **Calendar**
+- **Search** by spammer name or description
+- **Sortable columns** — ID, type, reported player, details, time
+- Detail modal with full report fields (mail ID, channel, message text, event description, time since message)
+- **Delete** individual reports (GM 2+)
+- **Clear All** matching current filters with confirmation (Administrator)
+
 ### Settings *(Administrator only)*
 - Sections with labelled toggle/input controls, each with a description
 - Changes are only sent on **Save Changes** (dirty-tracking — no unnecessary writes)
@@ -527,6 +556,11 @@ Both the backend and the server agent are wrapped by lightweight runner scripts 
 
 | Setting                                     | Default               | Description                                                                              |
 | ------------------------------------------- | --------------------- | ---------------------------------------------------------------------------------------- |
+| Alert Thresholds → CPU warning at           | 80%                   | CPU usage percentage that triggers a warning                                             |
+| Alert Thresholds → Memory warning at        | 85%                   | Memory usage percentage that triggers a warning                                          |
+| Alert Thresholds → Latency warning at       | 100 ms                | Mean TCP latency that triggers a warning                                                 |
+| Alert Thresholds → Latency critical at      | 500 ms                | Mean TCP latency that triggers a critical alert                                          |
+| Alert Thresholds → Graph history            | 60 min                | Number of minutes shown on the Overview resource graphs                                  |
 | Config Editor → Create .bak backup on save  | On                    | Creates a `.bak` copy of each config file before overwriting                             |
 | Discord Alerts → Enable Discord alerts      | On                    | Master switch — when off, no messages are sent                                           |
 | Discord Alerts → Display name               | AzerothCore Dashboard | Name shown on Discord messages (overrides webhook default)                               |
@@ -535,6 +569,8 @@ Both the backend and the server agent are wrapped by lightweight runner scripts 
 | Discord Alerts → Server offline message     | *see below*           | Editable message body; supports `{server}`                                               |
 | Discord Alerts → Server online alert        | On                    | Posts to Discord when worldserver or authserver comes back online                        |
 | Discord Alerts → Server online message      | *see below*           | Editable message body; supports `{server}`                                               |
+| Discord Alerts → Server stop alert          | On                    | Posts to Discord when worldserver or authserver is manually stopped                      |
+| Discord Alerts → Server stop message        | *see below*           | Editable message body; supports `{server}`                                               |
 | Discord Alerts → Resource threshold alert   | On                    | Posts to Discord when CPU or memory exceeds the configured threshold (5-minute cooldown) |
 | Discord Alerts → Resource threshold message | *see below*           | Editable message body; supports `{resource}`, `{pct}`, `{threshold}`                     |
 | Discord Alerts → Agent disconnect alert     | On                    | Posts to Discord when the server agent loses its connection                              |
@@ -569,6 +605,11 @@ All sections are collapsible. A gold "unsaved changes" badge appears on any coll
 - Colour-coded action badges by category: account changes (gold), bans (red), server ops (amber), console commands (red), config saves (amber), announcements/mail (green), channels (blue), reports (neutral)
 - Config saves show a per-key diff: `WorldServerPort: "8085" → "8086"` so you can see exactly what changed
 - Stored in the separate `acore_dashboard` database — unaffected by AzerothCore upgrades
+
+### Changelog
+- Paginated table of all dashboard commits with commit hash (linked to GitHub), subject, author, and date
+- Click any row to open a detail modal showing the full commit body and external link to GitHub
+- Entries are parsed from the `changelog.md` file, updated automatically by CI on each merge
 
 ### Characters
 
@@ -623,39 +664,44 @@ Dashboard/
 │   │   └── ipAllowlist.js         # IP allowlist enforcement
 │   ├── routes/
 │   │   ├── accounts.js            # Account management
+│   │   ├── alertsRoutes.js        # System alerts list, batch delete, filter-scoped clear
 │   │   ├── announcements.js       # Announce / notify broadcasts
+│   │   ├── arena.js               # Arena team CRUD (list, detail, create, edit, delete, remove member)
 │   │   ├── auditLogRoutes.js      # Audit Log read endpoint (Administrator)
 │   │   ├── auth.js                # SRP6 login + rate limiting + logout
 │   │   ├── autobroadcast.js       # Autobroadcast CRUD
 │   │   ├── bans.js                # Ban management
-│   │   ├── mutes.js               # Mute management
 │   │   ├── bugreports.js          # Bug report browser
+│   │   ├── calendar.js            # Calendar event CRUD and game event / raid reset queries
+│   │   ├── changelog.js           # Changelog parser (reads changelog.md)
 │   │   ├── channels.js            # Chat channel browser and management
+│   │   ├── characters.js          # Character search and detail (inventory, bank, reputation, currency)
 │   │   ├── config.js              # Config file read/write with diff logging
 │   │   ├── console.js             # GM command execution
+│   │   ├── dashboardManage.js     # Dashboard process restart endpoints (backend, agent, frontend)
 │   │   ├── db.js                  # Arbitrary SQL query endpoint
 │   │   ├── dbc.js                 # Map/area name lookup endpoints
+│   │   ├── envSettings.js         # .env file read/write for whitelisted keys (Administrator)
+│   │   ├── guilds.js              # Guild list and detail (members, ranks, event log)
 │   │   ├── lagreports.js          # Lag report browser
 │   │   ├── mail.js                # Send in-game mail/items/money
 │   │   ├── mailserver.js          # Mail server template CRUD
+│   │   ├── mutes.js               # Mute management
+│   │   ├── namefilters.js         # profanity_name and reserved_name CRUD
 │   │   ├── overview.js            # Dashboard summary endpoint
+│   │   ├── pdump.js               # Character dump export (write) and import (load) with full GUID remapping
 │   │   ├── players.js             # Online players, kick, ban
+│   │   ├── scheduledTasks.js      # Scheduled task CRUD and run-now trigger
 │   │   ├── servers.js             # Server start/stop/status/logs
 │   │   ├── servertools.js         # Scheduled restart, MOTD
-│   │   ├── characters.js          # Character search and detail (inventory, bank, reputation, currency)
-│   │   ├── pdump.js               # Character dump export (write) and import (load) with full GUID remapping
-│   │   ├── guilds.js              # Guild list and detail (members, ranks, event log)
-│   │   ├── dashboardManage.js     # Dashboard process restart endpoints (backend, agent, frontend)
-│   │   ├── envSettings.js         # .env file read/write for whitelisted keys (Administrator)
-│   │   ├── namefilters.js         # profanity_name and reserved_name CRUD
-│   │   ├── scheduledTasks.js      # Scheduled task CRUD and run-now trigger
 │   │   ├── settingsRoutes.js      # Dashboard settings read/write and Discord webhook test
 │   │   ├── spamreports.js         # Spam report browser
-│   │   ├── thresholds.js          # CPU/memory alert thresholds
+│   │   ├── thresholds.js          # Alert threshold read/write
 │   │   └── tickets.js             # GM ticket CRUD
 │   ├── audit.js                   # Audit log helper (fire-and-forget write to acore_dashboard)
 │   ├── alertLogger.js             # Writes system alerts to the dashboard DB alerts table
-│   ├── discord.js                 # Discord webhook sender (server offline/online, thresholds, latency, agent disconnect)
+│   ├── dashboardSettings.js       # Dashboard settings persistence (acore_dashboard.settings)
+│   ├── discord.js                 # Discord webhook sender (server offline/online/stop, thresholds, latency, agent disconnect)
 │   ├── db.js                      # MySQL connection pools (auth, world, characters, dashboard)
 │   ├── dbc.js                     # WotLK DBC binary parser
 │   ├── latencyMonitor.js          # TCP latency sampling + rolling stats
@@ -663,28 +709,32 @@ Dashboard/
 │   ├── resourceHistory.js         # Rolling CPU and memory history buffer
 │   ├── run.js                     # Backend runner — restarts server.js on exit code 42
 │   ├── runAgent.js                # Agent runner — restarts serverAgent.js on exit code 42
+│   ├── scheduler.js               # Scheduled task runner (checks every minute)
 │   ├── serverAgent.js             # Standalone server agent — owns game server processes
 │   ├── serverBridge.js            # SSE bridge: forwards server agent events to frontend Socket.IO
 │   ├── processManager.js          # Agent HTTP client (async proxy to serverAgent)
-│   ├── thresholds.js              # Threshold JSON persistence
-│   ├── thresholds.json            # Persisted alert threshold values
+│   ├── thresholds.js              # Alert threshold persistence (reads/writes via dashboardSettings)
 │   └── server.js                  # Express + Socket.IO entry point
 ├── frontend/
 │   └── src/
 │       ├── components/
 │       │   ├── AccountsPage.jsx
+│       │   ├── AlertsPage.jsx
 │       │   ├── AnnouncePage.jsx
+│       │   ├── ArenaPage.jsx
 │       │   ├── AuditLogPage.jsx
-│       │   ├── DashboardManagePage.jsx
 │       │   ├── AutobroadcastPage.jsx
 │       │   ├── BansPage.jsx
 │       │   ├── BugReportsPage.jsx
+│       │   ├── CalendarPage.jsx
+│       │   ├── ChangelogPage.jsx
 │       │   ├── ChannelsPage.jsx
 │       │   ├── CharacterPage.jsx
-│       │   ├── GuildsPage.jsx
 │       │   ├── ConfigPage.jsx
 │       │   ├── ConsolePage.jsx
 │       │   ├── DBQueryPage.jsx
+│       │   ├── DashboardManagePage.jsx
+│       │   ├── GuildsPage.jsx
 │       │   ├── HomePage.jsx
 │       │   ├── LagReportsPage.jsx
 │       │   ├── Layout.jsx
@@ -693,15 +743,16 @@ Dashboard/
 │       │   ├── MailServerPage.jsx
 │       │   ├── MutesPage.jsx
 │       │   ├── NameFiltersPage.jsx
-│       │   ├── ScheduledTasksPage.jsx
 │       │   ├── PlayersPage.jsx
+│       │   ├── ScheduledTasksPage.jsx
 │       │   ├── ServersPage.jsx
-│       │   ├── SpamReportsPage.jsx
 │       │   ├── SettingsPage.jsx
+│       │   ├── SpamReportsPage.jsx
 │       │   └── TicketsPage.jsx
 │       ├── ansi.js                # ANSI SGR colour parser
 │       ├── api.js                 # Fetch wrapper with JWT auth and 401 handling
 │       ├── App.jsx                # Auth context and page routing
+│       ├── constants.js           # Shared constants (races, classes, GM labels)
 │       ├── socket.js              # Socket.IO client
 │       └── toast.js               # Global toast notification helper
 ├── sql/
