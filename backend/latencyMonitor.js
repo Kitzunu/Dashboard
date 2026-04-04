@@ -68,13 +68,17 @@ function computeStats(samples) {
 
 // ── Public API ─────────────────────────────────────────────────────────────────
 async function sample() {
-  for (const ws of wsConfig.load()) {
-    const ms = await measureTcp(ws.host, ws.port);
+  const servers = wsConfig.load();
+  const results = await Promise.all(
+    servers.map((ws) => measureTcp(ws.host, ws.port).then((ms) => ({ id: ws.id, ms })))
+  );
+
+  for (const { id, ms } of results) {
     if (ms === null) continue;   // server offline / unreachable — skip
 
-    if (!samplesMap[ws.id]) samplesMap[ws.id] = [];
-    samplesMap[ws.id].push({ ts: Date.now(), ms });
-    if (samplesMap[ws.id].length > MAX_SAMPLES) samplesMap[ws.id].shift();
+    if (!samplesMap[id]) samplesMap[id] = [];
+    samplesMap[id].push({ ts: Date.now(), ms });
+    if (samplesMap[id].length > MAX_SAMPLES) samplesMap[id].shift();
   }
 }
 
@@ -83,7 +87,8 @@ async function sample() {
  * (default) worldserver when no id is given.  Returns null if no data yet.
  */
 function getStats(serverId) {
-  const id = serverId || wsConfig.getIds()[0] || 'worldserver';
+  const id = serverId || wsConfig.getIds()[0];
+  if (!id) return null;
   return computeStats(samplesMap[id]);
 }
 

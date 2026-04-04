@@ -318,7 +318,7 @@ function latencyColor(ms) {
 }
 
 function LatencyPanel({ latency, label }) {
-  const title = label ? `${label} Latency` : 'World Server Latency';
+  const title = label ? `${label} Latency` : 'Server Latency';
   if (!latency) {
     return (
       <div className="latency-panel">
@@ -551,7 +551,7 @@ export default function HomePage({ socket }) {
 
       {/* Server latency */}
       {worldservers.map((ws) => (
-        <LatencyPanel key={ws.id} latency={serverLatency[ws.id] ?? null} label={worldservers.length > 1 ? ws.name : undefined} />
+        <LatencyPanel key={ws.id} latency={serverLatency[ws.id] ?? null} label={ws.name} />
       ))}
 
       {/* Sparkline */}

@@ -30,16 +30,21 @@ function load() {
     const parsed = JSON.parse(raw);
 
     if (Array.isArray(parsed) && parsed.length > 0) {
-      _configs = parsed.map((ws, i) => ({
-        id:          ws.id   || (i === 0 ? 'worldserver' : `worldserver-${i + 1}`),
-        name:        ws.name || `World Server ${i + 1}`,
-        path:        ws.path || '',
-        dir:         ws.dir  || '',
-        host:        ws.host || '127.0.0.1',
-        port:        parseInt(ws.port, 10) || 8085,
-        characterDb: ws.characterDb || process.env.CHARACTERS_DB || 'acore_characters',
-        worldDb:     ws.worldDb     || process.env.WORLD_DB      || 'acore_world',
-      }));
+      _configs = parsed.map((ws, i) => {
+        if (!ws.id) {
+          console.warn(`[worldservers] Entry at index ${i} has no "id" — auto-assigned. Set an explicit "id" to avoid issues.`);
+        }
+        return {
+          id:          ws.id   || (i === 0 ? 'worldserver' : `worldserver-${i + 1}`),
+          name:        ws.name || `World Server ${i + 1}`,
+          path:        ws.path || '',
+          dir:         ws.dir  || '',
+          host:        ws.host || '127.0.0.1',
+          port:        parseInt(ws.port, 10) || 8085,
+          characterDb: ws.characterDb || process.env.CHARACTERS_DB || 'acore_characters',
+          worldDb:     ws.worldDb     || process.env.WORLD_DB      || 'acore_world',
+        };
+      });
       return _configs;
     }
   } catch {

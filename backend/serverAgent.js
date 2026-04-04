@@ -166,7 +166,8 @@ function setAutoRestart(serverName, enabled) {
 
 function sendCommand(command, serverName) {
   // Default to first configured worldserver for backward compatibility
-  const target = serverName || wsConfig.getIds()[0] || 'worldserver';
+  const target = serverName || wsConfig.getIds()[0];
+  if (!target) return { success: false, error: 'No worldserver configured' };
   const proc = processes[target];
   if (!proc) return { success: false, error: `${target} is not running` };
   try {
