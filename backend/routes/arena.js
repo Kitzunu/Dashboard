@@ -16,7 +16,9 @@ router.get('/', requireGMLevel(1), async (req, res) => {
       FROM arena_team at
       LEFT JOIN characters  c   ON at.captainGuid = c.guid
       LEFT JOIN arena_team_member atm ON at.arenaTeamId = atm.arenaTeamId
-      GROUP BY at.arenaTeamId
+      GROUP BY at.arenaTeamId, at.name, at.type, at.captainGuid,
+               c.name, at.rating, at.seasonGames, at.seasonWins,
+               at.weekGames, at.weekWins, at.rank
       ORDER BY at.rating DESC
     `);
     res.json(teams);
