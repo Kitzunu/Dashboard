@@ -268,4 +268,53 @@ export const api = {
   unbanAccount:   (id)   => request('DELETE', `/api/bans/accounts/${id}`),
   unbanCharacter: (guid) => request('DELETE', `/api/bans/characters/${guid}`),
   unbanIp:        (ip)   => request('DELETE', `/api/bans/ips/${encodeURIComponent(ip)}`),
+
+  // Backup Management
+  getBackups:       ()         => request('GET', '/api/backups'),
+  deleteBackup:     (filename) => request('DELETE', `/api/backups/${encodeURIComponent(filename)}`),
+  downloadBackup: async (filename) => {
+    const token = getToken();
+    const res = await fetch(`${BASE_URL}/api/backups/${encodeURIComponent(filename)}`, {
+      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    });
+    if (!res.ok) {
+      if (res.status === 401) window.dispatchEvent(new Event('auth-expired'));
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || res.statusText);
+    }
+    const blob = await res.blob();
+    return { blob, filename };
+  },
+
+  // Health Check
+  getHealthCheck: () => request('GET', '/api/healthcheck'),
+
+  // Batch Operations
+  batchBan:     (targets, duration, reason) => request('POST', '/api/batch/ban', { targets, duration, reason }),
+  batchKick:    (names, reason)             => request('POST', '/api/batch/kick', { names, reason }),
+  batchMail:    (data)                      => request('POST', '/api/batch/mail', data),
+  batchGMLevel: (accountIds, gmlevel)       => request('POST', '/api/batch/gmlevel', { accountIds, gmlevel }),
+
+  // Character Transfer
+  transferCharacter: (characterGuid, targetAccountId) =>
+    request('POST', '/api/character-transfer/transfer', { characterGuid, targetAccountId }),
+  validateTransfer:  (guid) => request('GET', `/api/character-transfer/validate/${guid}`),
+
+  // Notifications
+  getNotifications:     ()           => request('GET', '/api/notifications'),
+  getUnreadCount:       ()           => request('GET', '/api/notifications/unread-count'),
+  markNotificationsRead:(lastSeenId) => request('POST', '/api/notifications/mark-read', { lastSeenId }),
+
+  // Analytics
+  getAnalytics:       (type, from, to, resolution) => {
+    const params = new URLSearchParams({ type, from, to });
+    if (resolution) params.set('resolution', resolution);
+    return request('GET', `/api/analytics?${params}`);
+  },
+  getAnalyticsSummary: () => request('GET', '/api/analytics/summary'),
+
+  // Sessions
+  getSessions:     ()              => request('GET', '/api/sessions'),
+  revokeSession:   (id)            => request('DELETE', `/api/sessions/${id}`),
+  revokeAllSessions: (exceptTokenHash) => request('DELETE', '/api/sessions', { exceptTokenHash }),
 };
