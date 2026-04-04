@@ -64,3 +64,19 @@ CREATE TABLE IF NOT EXISTS `scheduled_tasks` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   COMMENT='Dashboard scheduled tasks';
+
+CREATE TABLE IF NOT EXISTS `calendar_events` (
+  `id`          INT UNSIGNED    NOT NULL AUTO_INCREMENT,
+  `title`       VARCHAR(255)    NOT NULL,
+  `description` TEXT            DEFAULT NULL,
+  `start`       DATETIME        NOT NULL,
+  `end`         DATETIME        NOT NULL,
+  `type`        ENUM('custom','note') NOT NULL DEFAULT 'custom',
+  `created_by`  VARCHAR(64)     NOT NULL DEFAULT '',
+  `created_at`  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_start` (`start`),
+  KEY `idx_end`   (`end`),
+  KEY `idx_type`  (`type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Dashboard calendar custom events';

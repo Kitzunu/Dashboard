@@ -42,6 +42,7 @@ const dashboardManageRoutes  = require('./routes/dashboardManage');
 const alertsRoutes           = require('./routes/alertsRoutes');
 const pdumpRoutes            = require('./routes/pdump');
 const changelogRoutes        = require('./routes/changelog');
+const calendarRoutes         = require('./routes/calendar');
 const alertLogger            = require('./alertLogger');
 const scheduler              = require('./scheduler');
 const { startRetentionJob } = require('./audit');
@@ -118,6 +119,7 @@ app.use('/api/dashboard',      authenticateToken, dashboardManageRoutes);
 app.use('/api/alerts',         authenticateToken, alertsRoutes);
 app.use('/api/pdump',          authenticateToken, pdumpRoutes);
 app.use('/api/changelog',      authenticateToken, changelogRoutes);
+app.use('/api/calendar',       authenticateToken, calendarRoutes);
 
 // Authenticate socket connections with JWT
 io.use((socket, next) => {

@@ -29,6 +29,7 @@ import NameFiltersPage from './NameFiltersPage.jsx';
 import DashboardManagePage from './DashboardManagePage.jsx';
 import AlertsPage from './AlertsPage.jsx';
 import ChangelogPage from './ChangelogPage.jsx';
+import CalendarPage from './CalendarPage.jsx';
 import { GM_LABELS } from '../constants.js';
 
 const NAV_GROUPS = [
@@ -54,6 +55,7 @@ const NAV_GROUPS = [
       { id: 'announce',     label: 'Announce',     minLevel: 2 },
       { id: 'mail',         label: 'Send Mail',    minLevel: 2 },
       { id: 'channels',     label: 'Channels',     minLevel: 1 },
+      { id: 'calendar',     label: 'Calendar',     minLevel: 1 },
       { id: 'namefilters',  label: 'Name Filters', minLevel: 2 },
     ],
   },
@@ -391,6 +393,7 @@ export default function Layout() {
         {page === 'guilds'        && <GuildsPage onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
         {page === 'characters'    && <CharacterPage initialGuid={charNavGuid} />}
         {page === 'namefilters'      && <NameFiltersPage />}
+        {page === 'calendar'         && <CalendarPage auth={auth} />}
         {page === 'dashboard-manage' && <DashboardManagePage />}
       </main>
 
