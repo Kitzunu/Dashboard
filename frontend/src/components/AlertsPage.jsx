@@ -117,6 +117,8 @@ export default function AlertsPage() {
   const [loading, setLoading]   = useState(true);
   const [selectedRow, setSelectedRow] = useState(null);
   const [confirmClear, setConfirmClear] = useState(false);
+  const [confirmDeleteSelected, setConfirmDeleteSelected] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
 
   const fetchAlerts = useCallback(async (p, sev, typ) => {
     setLoading(true);
@@ -133,6 +135,7 @@ export default function AlertsPage() {
   }, []);
 
   useEffect(() => {
+    setSelectedIds(new Set());
     fetchAlerts(page, severityTab, typeFilter);
   }, [page, severityTab, typeFilter, fetchAlerts]);
 
@@ -143,6 +146,7 @@ export default function AlertsPage() {
     try {
       await api.deleteAlert(id);
       setSelectedRow(null);
+      setSelectedIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
       toast('Alert deleted.', 'success');
       fetchAlerts(page, severityTab, typeFilter);
     } catch (e) {
@@ -150,17 +154,58 @@ export default function AlertsPage() {
     }
   };
 
+  const handleDeleteSelected = async () => {
+    const ids = [...selectedIds];
+    if (!ids.length) return;
+    try {
+      await api.deleteAlerts(ids);
+      setSelectedIds(new Set());
+      setConfirmDeleteSelected(false);
+      toast(`${ids.length} alert${ids.length !== 1 ? 's' : ''} deleted.`, 'success');
+      fetchAlerts(page, severityTab, typeFilter);
+    } catch (e) {
+      toast(e.message, 'error');
+    }
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedIds(new Set(rows.map((r) => r.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleSelectRow = (e, id) => {
+    e.stopPropagation();
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   const handleClearAll = async () => {
     try {
-      await api.clearAlerts();
+      await api.clearAlerts({ severity: severityTab, type: typeFilter });
       setConfirmClear(false);
       setPage(1);
-      toast('All alerts cleared.', 'success');
+      toast('Alerts cleared.', 'success');
       fetchAlerts(1, severityTab, typeFilter);
     } catch (e) {
       toast(e.message, 'error');
     }
   };
+
+  const allSelected = rows.length > 0 && rows.every((r) => selectedIds.has(r.id));
+  const someSelected = rows.some((r) => selectedIds.has(r.id));
+
+  const clearAllDescription = (() => {
+    const parts = [severityTab, typeFilter ? TYPE_LABELS[typeFilter] : ''].filter(Boolean);
+    if (parts.length === 0) return 'all alerts';
+    return `all ${parts.join(' ')} alerts matching the current filter`;
+  })();
 
   return (
     <div className="page">
@@ -168,6 +213,11 @@ export default function AlertsPage() {
         <h2 className="page-title">Alerts</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span className="td-muted" style={{ fontSize: 13 }}>{total} alert{total !== 1 ? 's' : ''}</span>
+          {selectedIds.size > 0 && (
+            <button className="btn btn-danger btn-sm" onClick={() => setConfirmDeleteSelected(true)}>
+              Delete Selected ({selectedIds.size})
+            </button>
+          )}
           <button className="btn btn-danger btn-sm" onClick={() => setConfirmClear(true)}>
             Clear All
           </button>
@@ -201,6 +251,15 @@ export default function AlertsPage() {
         <table className="data-table">
           <thead>
             <tr>
+              <th style={{ width: 36 }}>
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected; }}
+                  onChange={handleSelectAll}
+                  disabled={rows.length === 0}
+                />
+              </th>
               <th style={{ width: 60 }}>ID</th>
               <th style={{ width: 160 }}>Time</th>
               <th style={{ width: 90 }}>Severity</th>
@@ -211,12 +270,19 @@ export default function AlertsPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 32, color: 'var(--text-dim)' }}>Loading…</td></tr>
+              <tr><td colSpan={7} style={{ textAlign: 'center', padding: 32, color: 'var(--text-dim)' }}>Loading…</td></tr>
             ) : rows.length === 0 ? (
-              <tr><td colSpan={6} style={{ textAlign: 'center', padding: 32, color: 'var(--text-dim)' }}>No alerts found.</td></tr>
+              <tr><td colSpan={7} style={{ textAlign: 'center', padding: 32, color: 'var(--text-dim)' }}>No alerts found.</td></tr>
             ) : (
               rows.map((r) => (
                 <tr key={r.id} className="data-row" style={{ cursor: 'pointer' }} onClick={() => setSelectedRow(r)}>
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(r.id)}
+                      onChange={(e) => handleSelectRow(e, r.id)}
+                    />
+                  </td>
                   <td className="td-muted mono">{r.id}</td>
                   <td className="td-muted">{formatDate(r.created_at)}</td>
                   <td><span className={severityBadgeClass(r.severity)}>{r.severity}</span></td>
@@ -250,12 +316,31 @@ export default function AlertsPage() {
         />
       )}
 
+      {confirmDeleteSelected && (
+        <div className="modal-overlay" onClick={() => setConfirmDeleteSelected(false)}>
+          <div className="modal modal-structured" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header"><h3>Delete Selected Alerts</h3></div>
+            <div className="modal-body">
+              <p>
+                This will permanently delete <strong>{selectedIds.size} selected alert{selectedIds.size !== 1 ? 's' : ''}</strong>. This cannot be undone.
+              </p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-danger" onClick={handleDeleteSelected}>Delete</button>
+              <button className="btn btn-ghost" onClick={() => setConfirmDeleteSelected(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {confirmClear && (
         <div className="modal-overlay" onClick={() => setConfirmClear(false)}>
           <div className="modal modal-structured" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header"><h3>Clear All Alerts</h3></div>
             <div className="modal-body">
-              <p>This will permanently delete all alerts. This cannot be undone.</p>
+              <p>
+                This will permanently delete <strong>{clearAllDescription}</strong>. This cannot be undone.
+              </p>
             </div>
             <div className="modal-footer">
               <button className="btn btn-danger" onClick={handleClearAll}>Clear All</button>
