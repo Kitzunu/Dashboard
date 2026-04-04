@@ -2988,6 +2988,64 @@ code {
   font-weight: 600;
 }
 
+/* ── Arena page ──────────────────────────────────────────────── */
+.arena-summary {
+  display: flex;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.arena-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.arena-summary-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.arena-summary-value {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.arena-stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.arena-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.arena-stat-row:last-child {
+  border-bottom: none;
+}
+
+.arena-stat-label {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.arena-stat-value {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 600;
+}
+
 .channels-rights-box {
   background: var(--surface2);
   border: 1px solid var(--border);

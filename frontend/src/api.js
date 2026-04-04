@@ -180,6 +180,9 @@ export const api = {
   getGuild:      (id) => request('GET', `/api/guilds/${id}`),
   getGuildBank:  (id) => request('GET', `/api/guilds/${id}/bank`),
 
+  getArenaTeams: ()   => request('GET', '/api/arena'),
+  getArenaTeam:  (id) => request('GET', `/api/arena/${id}`),
+
   getAlerts: (page = 1, { severity = '', type = '' } = {}) => {
     const params = new URLSearchParams({ page });
     if (severity) params.set('severity', severity);

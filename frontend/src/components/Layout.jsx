@@ -24,6 +24,7 @@ import SettingsPage from './SettingsPage.jsx';
 import MutesPage from './MutesPage.jsx';
 import ScheduledTasksPage from './ScheduledTasksPage.jsx';
 import GuildsPage from './GuildsPage.jsx';
+import ArenaPage from './ArenaPage.jsx';
 import CharacterPage from './CharacterPage.jsx';
 import NameFiltersPage from './NameFiltersPage.jsx';
 import DashboardManagePage from './DashboardManagePage.jsx';
@@ -66,6 +67,7 @@ const NAV_GROUPS = [
       { id: 'accounts',   label: 'Accounts',   minLevel: 2 },
       { id: 'characters', label: 'Characters', minLevel: 1 },
       { id: 'guilds',     label: 'Guilds',     minLevel: 1 },
+      { id: 'arena',      label: 'Arena',      minLevel: 1 },
     ],
   },
   {
@@ -391,6 +393,7 @@ export default function Layout() {
         {page === 'settings'      && <SettingsPage />}
         {page === 'scheduled'     && <ScheduledTasksPage />}
         {page === 'guilds'        && <GuildsPage onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
+        {page === 'arena'         && <ArenaPage onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
         {page === 'characters'    && <CharacterPage initialGuid={charNavGuid} />}
         {page === 'namefilters'      && <NameFiltersPage />}
         {page === 'calendar'         && <CalendarPage auth={auth} />}
