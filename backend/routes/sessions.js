@@ -58,7 +58,7 @@ async function isRevoked(tokenHash) {
 async function touchSession(tokenHash) {
   try {
     await dashPool.query(
-      'UPDATE active_sessions SET last_active = NOW() WHERE token_hash = ? AND revoked = 0',
+      'UPDATE active_sessions SET last_active = UTC_TIMESTAMP() WHERE token_hash = ? AND revoked = 0',
       [tokenHash]
     );
   } catch {
