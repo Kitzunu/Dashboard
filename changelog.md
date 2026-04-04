@@ -1,5 +1,27 @@
 # Changelog
 
+## 25e3267 — Move alert thresholds to Settings tab, persist to database (#46)
+
+**Author**: Copilot | **Date**: 2026-04-04 15:01:23 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/25e3267261bfae7b967bca2c2d38cdf119490ae2
+
+Alert thresholds (CPU/memory %, latency warning/critical, graph window) were stored in a local `thresholds.json` file and edited via a widget in the Overview page header. This moves them to the Settings tab alongside Discord alert settings and migrates persistence to the dashboard database (`acore_dashboard.settings`).
+
+## Backend
+- **`dashboardSettings.js`**: Added 5 threshold keys to `DEFAULTS` (`threshold.cpu`, `threshold.memory`, `threshold.graphMinutes`, `threshold.latencyWarn`, `threshold.latencyCritical`)
+- **`thresholds.js`**: Replaced `fs`/JSON file I/O with async `dashboardSettings.getAll()` / `setMany()`; `load()` and `save()` are now async
+- **`routes/thresholds.js`**, **`routes/overview.js`**, **`server.js`**: Added `await` to all `thresholds.load()` / `thresholds.save()` call sites; made `pollResources` setTimeout callback `async`
+
+## Frontend
+- **`SettingsPage.jsx`**: Added **Alert Thresholds** collapsible section (between Config Editor and Discord Alerts) with 5 `number`-type fields. Added `number` input rendering with unit labels, per-field min/max clamping on change, and save-time validation that `latencyWarn < latencyCritical`
+- **`HomePage.jsx`**: Removed `ThresholdSettings` component (definition + usage from Overview header); thresholds continue to flow to the resource graphs via the existing socket overview payload
+
+---------
+
+Co-authored-by: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## 9a5e365 — Refactor Table of Contents in README
 
 **Author**: Kitzunu | **Date**: 2026-04-04 14:18:21 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/9a5e3656e8a3f386be92147a54ebf5b82f8cdacf
