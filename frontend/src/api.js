@@ -299,6 +299,7 @@ export const api = {
   transferCharacter: (characterGuid, targetAccountId) =>
     request('POST', '/api/character-transfer/transfer', { characterGuid, targetAccountId }),
   validateTransfer:  (guid) => request('GET', `/api/character-transfer/validate/${guid}`),
+  searchTransferAccounts: (q) => request('GET', `/api/character-transfer/search-accounts?q=${encodeURIComponent(q)}`),
 
   // Notifications
   getNotifications:     ()           => request('GET', '/api/notifications'),

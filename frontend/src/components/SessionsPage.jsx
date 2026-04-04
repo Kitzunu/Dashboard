@@ -28,6 +28,7 @@ function truncateUA(ua) {
 
 export default function SessionsPage({ auth }) {
   const [sessions, setSessions] = useState([]);
+  const [currentSessionId, setCurrentSessionId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [revokeTarget, setRevokeTarget] = useState(null);
   const [confirmRevokeAll, setConfirmRevokeAll] = useState(false);
@@ -37,6 +38,7 @@ export default function SessionsPage({ auth }) {
     try {
       const data = await api.getSessions();
       setSessions(data.sessions || []);
+      setCurrentSessionId(data.currentSessionId || null);
     } catch (e) {
       toast(e.message, 'error');
     } finally {
@@ -119,7 +121,7 @@ export default function SessionsPage({ auth }) {
                 <tr key={s.id}>
                   <td className="td-name">
                     {s.username}
-                    {s.username === auth?.username && (
+                    {s.id === currentSessionId && (
                       <span className="badge badge-green" style={{ marginLeft: 6 }}>You</span>
                     )}
                   </td>
@@ -133,7 +135,7 @@ export default function SessionsPage({ auth }) {
                   <td>
                     <button className="btn btn-danger btn-xs"
                       onClick={() => setRevokeTarget(s)}
-                      disabled={s.username === auth?.username}>
+                      disabled={s.id === currentSessionId}>
                       Revoke
                     </button>
                   </td>

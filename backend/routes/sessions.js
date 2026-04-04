@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const router = express.Router();
 const { requireGMLevel } = require('../middleware/auth');
 const { dashPool } = require('../db');
@@ -70,7 +71,19 @@ router.get('/', requireGMLevel(3), async (req, res) => {
     const [rows] = await dashPool.query(
       'SELECT id, username, ip, user_agent, gmlevel, created_at, last_active FROM active_sessions WHERE revoked = 0 ORDER BY last_active DESC'
     );
-    res.json({ sessions: rows });
+    // Compute the token hash from the current request to identify this session
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    let currentSessionId = null;
+    if (token) {
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      const [[current]] = await dashPool.query(
+        'SELECT id FROM active_sessions WHERE token_hash = ? AND revoked = 0 ORDER BY id DESC LIMIT 1',
+        [tokenHash]
+      );
+      if (current) currentSessionId = current.id;
+    }
+    res.json({ sessions: rows, currentSessionId });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

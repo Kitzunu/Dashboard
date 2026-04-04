@@ -22,8 +22,17 @@ router.get('/', requireGMLevel(1), async (req, res) => {
       return res.status(400).json({ error: 'type, from, and to are required' });
     }
 
+    // Convert ISO date strings to MySQL-friendly format
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+    if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+      return res.status(400).json({ error: 'Invalid date format for from/to' });
+    }
+    const fromStr = fromDate.toISOString().slice(0, 19).replace('T', ' ');
+    const toStr = toDate.toISOString().slice(0, 19).replace('T', ' ');
+
     let query;
-    const params = [type, from, to];
+    const params = [type, fromStr, toStr];
 
     if (resolution === 'hourly') {
       query = `SELECT AVG(value) as value,
@@ -88,9 +97,10 @@ router.get('/summary', requireGMLevel(1), async (req, res) => {
 
 async function recordSnapshot(playerCount, cpu, memory) {
   try {
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
     await dashPool.query(
-      'INSERT INTO analytics_history (type, value, recorded_at) VALUES (?, ?, NOW()), (?, ?, NOW()), (?, ?, NOW())',
-      ['player_count', playerCount, 'cpu', cpu, 'memory', memory]
+      'INSERT INTO analytics_history (type, value, recorded_at) VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?)',
+      ['player_count', playerCount, now, 'cpu', cpu, now, 'memory', memory, now]
     );
   } catch (err) {
     console.error('[analytics] Failed to record snapshot:', err.message);

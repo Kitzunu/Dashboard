@@ -85,4 +85,21 @@ router.get('/validate/:guid', requireGMLevel(3), async (req, res) => {
   }
 });
 
+// Search accounts by username for the transfer target picker
+router.get('/search-accounts', requireGMLevel(3), async (req, res) => {
+  try {
+    const q = (req.query.q || '').trim();
+    if (q.length < 2) {
+      return res.status(400).json({ error: 'Search query must be at least 2 characters' });
+    }
+    const [rows] = await authPool.query(
+      'SELECT id, username FROM account WHERE username LIKE ? ORDER BY username ASC LIMIT 20',
+      [`%${q}%`]
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
