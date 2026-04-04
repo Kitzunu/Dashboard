@@ -187,9 +187,18 @@ export const api = {
     return request('GET', `/api/alerts?${params}`);
   },
   deleteAlert:  (id) => request('DELETE', `/api/alerts/${id}`),
-  clearAlerts:  (olderThan = 0) => {
-    const params = olderThan > 0 ? `?olderThan=${olderThan}` : '';
-    return request('DELETE', `/api/alerts${params}`);
+  deleteAlerts: (ids) => {
+    const params = new URLSearchParams();
+    ids.forEach((id) => params.append('ids', id));
+    return request('DELETE', `/api/alerts?${params}`);
+  },
+  clearAlerts:  ({ severity = '', type = '', olderThan = 0 } = {}) => {
+    const params = new URLSearchParams();
+    if (olderThan > 0) params.set('olderThan', olderThan);
+    if (severity) params.set('severity', severity);
+    if (type)     params.set('type', type);
+    const qs = params.toString();
+    return request('DELETE', `/api/alerts${qs ? `?${qs}` : ''}`);
   },
 
   // pdump — fetch the configured default output directory from the server

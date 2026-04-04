@@ -35,18 +35,40 @@ router.get('/', requireGMLevel(1), async (req, res) => {
   }
 });
 
-// DELETE /api/alerts  — clear all, or pass ?olderThan=N to delete entries older than N days
+// DELETE /api/alerts  — batch delete by ?ids=1&ids=2, or clear matching ?severity=&type=&olderThan=N
 router.delete('/', requireGMLevel(3), async (req, res) => {
-  const olderThan = parseInt(req.query.olderThan, 10) || 0;
-  try {
-    if (olderThan > 0) {
-      await dashPool.query(
-        'DELETE FROM alerts WHERE created_at < DATE_SUB(NOW(), INTERVAL ? DAY)',
-        [olderThan]
-      );
-    } else {
-      await dashPool.query('DELETE FROM alerts');
+  const rawIds = req.query.ids;
+
+  if (rawIds !== undefined) {
+    const ids = (Array.isArray(rawIds) ? rawIds : [rawIds])
+      .map((v) => parseInt(v, 10))
+      .filter((v) => v > 0);
+    if (!ids.length) return res.status(400).json({ error: 'No valid IDs provided' });
+    if (ids.length > 500) return res.status(400).json({ error: 'Too many IDs (max 500)' });
+    const placeholders = ids.map(() => '?').join(',');
+    try {
+      await dashPool.query(`DELETE FROM alerts WHERE id IN (${placeholders})`, ids);
+      return res.json({ ok: true });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
     }
+  }
+
+  const olderThan = parseInt(req.query.olderThan, 10) || 0;
+  const severity  = (req.query.severity || '').trim();
+  const type      = (req.query.type     || '').trim();
+
+  const conditions = [];
+  const params     = [];
+
+  if (olderThan > 0) { conditions.push('created_at < DATE_SUB(NOW(), INTERVAL ? DAY)'); params.push(olderThan); }
+  if (severity)      { conditions.push('severity = ?'); params.push(severity); }
+  if (type)          { conditions.push('type = ?');     params.push(type); }
+
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  try {
+    await dashPool.query(`DELETE FROM alerts ${where}`, params);
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
