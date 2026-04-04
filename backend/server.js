@@ -72,7 +72,7 @@ function isPrivateOrigin(origin) {
     const { hostname } = new URL(origin);
     if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') return true;
     // IPv4 private ranges: 10.x, 172.16-31.x, 192.168.x
-    if (/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/.test(hostname)) return true;
+    if (/^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.)/.test(hostname)) return true;
     // IPv6 link-local / unique-local
     if (/^(fe80|fd[0-9a-f]{2}):/i.test(hostname)) return true;
   } catch {}

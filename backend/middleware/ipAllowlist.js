@@ -33,7 +33,7 @@ function isPrivateIP(ip) {
   const clean = ip.replace(/^::ffff:/, '');
   if (clean === '127.0.0.1' || clean === '::1') return true;
   // 10.x.x.x, 172.16-31.x.x, 192.168.x.x
-  if (/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/.test(clean)) return true;
+  if (/^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.)/.test(clean)) return true;
   // IPv6 link-local / unique-local
   if (/^(fe80|fd[0-9a-f]{2}):/i.test(clean)) return true;
   return false;
