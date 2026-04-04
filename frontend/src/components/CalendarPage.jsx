@@ -68,6 +68,7 @@ function expandGameEvent(ev, from, to) {
   const msFromStart = from.getTime() - startTime.getTime();
   let eventStart;
   if (msFromStart > 0) {
+    // Subtract 1 to avoid skipping an occurrence that may partially overlap the window start
     const skipCount = Math.max(0, Math.floor(msFromStart / occurMs) - 1);
     eventStart = new Date(startTime.getTime() + skipCount * occurMs);
   } else {
