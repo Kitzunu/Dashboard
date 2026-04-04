@@ -3075,11 +3075,12 @@ code {
 .cal-grid-wrap {
   flex: 1;
   min-width: 0;
+  overflow-x: auto;
 }
 
 .cal-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
@@ -3105,6 +3106,7 @@ code {
   border-bottom: 1px solid var(--border);
   cursor: pointer;
   transition: background 0.12s;
+  overflow: hidden;
 }
 
 .cal-cell:nth-child(7n) { border-right: none; }
