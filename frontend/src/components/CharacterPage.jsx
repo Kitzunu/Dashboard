@@ -132,21 +132,21 @@ function PDumpModal({ guid, name, onClose }) {
           <span>Export Character Dump</span>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
-        <div style={{ padding: '0 24px 8px' }}>
+        <div style={{ padding: '16px 24px 8px' }}>
           <p className="td-muted" style={{ marginBottom: 12 }}>
             Generating a pdump for <strong style={{ color: 'var(--text)' }}>{name}</strong>.
             The output is compatible with the AzerothCore <code>.pdump load</code> command.
           </p>
 
-          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <div className="tab-row" style={{ marginBottom: 16 }}>
             <button
-              className={`btn ${mode === 'download' ? '' : 'btn-secondary'}`}
+              className={`tab-btn${mode === 'download' ? ' active' : ''}`}
               onClick={() => { setMode('download'); setResult(null); }}
             >
               Download to browser
             </button>
             <button
-              className={`btn ${mode === 'server' ? '' : 'btn-secondary'}`}
+              className={`tab-btn${mode === 'server' ? ' active' : ''}`}
               onClick={() => { setMode('server'); setResult(null); }}
             >
               Save on server
@@ -274,14 +274,14 @@ function PDumpLoadModal({ onClose }) {
           <span>Import Character Dump</span>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
-        <div style={{ padding: '0 24px 8px' }}>
+        <div style={{ padding: '16px 24px 8px' }}>
 
           {/* Source mode */}
-          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-            <button className={`btn ${mode === 'upload' ? '' : 'btn-secondary'}`} onClick={() => { setMode('upload'); setResult(null); }}>
+          <div className="tab-row" style={{ marginBottom: 16 }}>
+            <button className={`tab-btn${mode === 'upload' ? ' active' : ''}`} onClick={() => { setMode('upload'); setResult(null); }}>
               Upload file
             </button>
-            <button className={`btn ${mode === 'server' ? '' : 'btn-secondary'}`} onClick={() => { setMode('server'); setResult(null); }}>
+            <button className={`tab-btn${mode === 'server' ? ' active' : ''}`} onClick={() => { setMode('server'); setResult(null); }}>
               Server path
             </button>
           </div>
@@ -305,13 +305,13 @@ function PDumpLoadModal({ onClose }) {
                 disabled={busy || !!result}
               />
               {serverFiles.length > 0 && (
-                <div style={{ border: '1px solid var(--border)', borderRadius: 4, marginTop: 6, maxHeight: 150, overflowY: 'auto' }}>
+                <div style={{ border: '1px solid var(--border)', borderRadius: 4, marginTop: 6, maxHeight: 150, overflowY: 'auto', background: 'var(--surface)' }}>
                   {serverFiles.map(f => (
                     <div
                       key={f.path}
-                      style={{ padding: '5px 10px', cursor: 'pointer', fontSize: 13, background: filePath === f.path ? 'var(--surface-hover)' : '' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-hover)'}
-                      onMouseLeave={e => e.currentTarget.style.background = filePath === f.path ? 'var(--surface-hover)' : ''}
+                      style={{ padding: '5px 10px', cursor: 'pointer', fontSize: 13, background: filePath === f.path ? 'var(--surface2)' : '' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--surface2)'}
+                      onMouseLeave={e => e.currentTarget.style.background = filePath === f.path ? 'var(--surface2)' : ''}
                       onClick={() => !busy && !result && setFilePath(f.path)}
                     >
                       {f.name}
