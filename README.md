@@ -39,6 +39,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
       - [Autobroadcast](#autobroadcast)
       - [Send Mail](#send-mail)
       - [Guilds](#guilds)
+      - [Arena Teams](#arena-teams)
       - [Channels](#channels)
       - [Servers](#servers)
       - [DB Query](#db-query)
@@ -82,6 +83,7 @@ A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/)
 - **Accounts** — Search by username, email, or IP; view full account detail and characters; set GM level, expansion, email, lock/unlock, reset password, mute/unmute characters, create accounts, and delete accounts
 - **Characters** — Search all characters by name; detail panel with eight tabs: Overview (money, honor/arena points, played time, currency), Stats (base stats, health/power, combat stats, resistances), Equipment (all 19 slots with WoWHead tooltips), Bags (backpack + 4 bag slots), Bank (main bank + 7 bank bag slots), Auras (active buffs/debuffs with duration), Reputation (all factions with standing label, progress bar, and at-war indicator), and Achievements (grouped by category with completion date). **Export Dump** — generate a `.pdump`-compatible SQL dump for any character (download to browser or save to a server path). **Import Dump** — load a dump file into any account with full GUID remapping compatible with the AzerothCore `.pdump load` command
 - **Guilds** — Browse all guilds with leader, member count, and bank balance; detail panel with member roster (class, level, rank), rank list with bank gold per day, and event log (invites, joins, promotions, demotions, kicks, leaves); tabard colour preview
+- **Arena Teams** — Browse all arena teams sorted by rating with captain, bracket type (2v2/3v3/5v5), and member count; search by name or captain; filter by bracket; detail panel with season/weekly stats, member roster with personal ratings, and match history (per-player MMR); create teams (GM 3+), edit rating/captain (GM 3+), delete teams (GM 3+), remove members (GM 2+)
 
 **Reports**
 - **Lag Reports** — Browse player-submitted lag events; filter by type and minimum latency; aggregate stats with top reporters and top maps; dismiss or clear all
@@ -304,9 +306,9 @@ The dashboard uses AzerothCore's `account_access` GM levels for role-based acces
 
 | Level | Role          | Access                                                                                                                                                                                                                                                                                                                                                                       |
 | ----- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1     | Moderator     | Overview, Console, Players (view), Tickets (view), Lag Reports, Bug Reports, Spam Reports (view), Channels (view), Guilds (view), Characters (view)                                                                                                                                                                                                                          |
-| 2     | Game Master   | + Kick/ban players, manage bans, mutes, announcements, send mail, accounts (view/lock/ban/mute), autobroadcast (add/edit), mail server (view), dismiss reports, delete spam reports, unban channel players, name filters (view/add/remove), export/import character dumps                                                                                                    |
-| 3     | Administrator | + Start/stop servers, scheduled restart, MOTD, DB Query, Config editor, scheduled tasks, autobroadcast (delete), accounts (GM level/email/password/flags/create/delete), mail server (create/edit/delete), alert thresholds, clear all lag/spam reports, delete channels, Audit Log, Settings (including .env editor), Dashboard Management (restart backend/agent/frontend) |
+| 1     | Moderator     | Overview, Console, Players (view), Tickets (view), Lag Reports, Bug Reports, Spam Reports (view), Channels (view), Guilds (view), Arena Teams (view), Characters (view)                                                                                                                                                                                                      |
+| 2     | Game Master   | + Kick/ban players, manage bans, mutes, announcements, send mail, accounts (view/lock/ban/mute), autobroadcast (add/edit), mail server (view), dismiss reports, delete spam reports, unban channel players, name filters (view/add/remove), export/import character dumps, remove arena team members                                                                         |
+| 3     | Administrator | + Start/stop servers, scheduled restart, MOTD, DB Query, Config editor, scheduled tasks, autobroadcast (delete), accounts (GM level/email/password/flags/create/delete), mail server (create/edit/delete), alert thresholds, clear all lag/spam reports, delete channels, Audit Log, Settings (including .env editor), Dashboard Management (restart backend/agent/frontend), create/edit/delete arena teams |
 
 To grant GM level 3 (Administrator):
 
@@ -355,6 +357,7 @@ Every action that makes a change is recorded with the acting user, their IP addr
 | Spam Reports    | Delete individual report, clear all                                                                                                                                               |
 | Name Filters    | Add profanity name, remove profanity name, add reserved name, remove reserved name                                                                                                |
 | Character Dumps | Export dump (`pdump.write` — character name, GUID, output path or download), import dump (`pdump.load` — character name, GUID, target account, source; failure logged with error) |
+| Arena Teams     | Create team (name, type, captain), update team (rating, captain), delete team, remove member                                                                                      |
 | Scheduled Tasks | Create, update, delete, run now                                                                                                                                                   |
 | Settings        | All setting changes (key=value pairs)                                                                                                                                             |
 | Environment     | `.env` key changes with before→after values                                                                                                                                       |
@@ -449,6 +452,20 @@ Both the backend and the server agent are wrapped by lightweight runner scripts 
   - **Members** tab — character name, class, level, and rank; personal note shown
   - **Ranks** tab — rank name and bank gold withdrawal limit per day
   - **Event Log** tab — last 100 entries: invites, joins, promotions, demotions, kicks, and leaves with timestamps and player names
+
+### Arena Teams
+- Arena team list sorted by rating with team name, bracket type (2v2/3v3/5v5), captain name, rating, and member count
+- Search by team name or captain name; filter by bracket type
+- Click any team to open the detail panel showing:
+  - Header with captain name, bracket, rating, and rank
+  - Season and weekly performance summary (wins/losses/win %)
+  - **Members** tab — roster with class, level, personal rating, season stats (wins/losses/win %), and weekly stats; captain badge shown
+  - **Stats** tab — full team statistics: rating, rank, season games/wins/losses/win %, week games/wins/losses/win %
+  - **Match History** tab — per-player matchmaker rating (MMR) and max MMR
+- **Create Team** (GM 3+) — create a new arena team with custom name, bracket type, and captain selected via character search
+- **Edit Team** (GM 3+) — update team rating and reassign captain to any current member
+- **Delete Team** (GM 3+) — permanently remove a team and all its members
+- **Remove Member** (GM 2+) — remove individual members (captain must transfer captainship first)
 
 ### Channels
 - Lists all custom chat channels with name, faction (Alliance / Horde / Both), active ban count, password lock indicator, and last used timestamp
