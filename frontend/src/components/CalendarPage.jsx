@@ -61,7 +61,7 @@ function expandGameEvent(ev, from, to) {
 
   if (!occurMs || !lengthMs) return occurrences;
   // Zero end_time means event is always active
-  const isUnbounded = endTime.getTime() <= 0 || ev.end_time === '0000-00-00 00:00:00';
+  const isUnbounded = isNaN(endTime.getTime()) || endTime.getTime() <= 0;
 
   // Jump ahead: calculate how many full occurrences fit before the window starts,
   // then begin iteration from just before the window.
