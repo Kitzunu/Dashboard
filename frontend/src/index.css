@@ -3475,11 +3475,7 @@ code {
 
 /* ── Character Transfer ─────────────────────────────────────── */
 .char-transfer-search-section {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 .char-transfer-search-section .form-group {
   margin: 0;

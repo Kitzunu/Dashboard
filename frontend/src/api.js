@@ -271,6 +271,8 @@ export const api = {
 
   // Backup Management
   getBackups:       ()         => request('GET', '/api/backups'),
+  createBackup:     (databases) => request('POST', '/api/backups/create', { databases }),
+  restoreBackup:    (filename) => request('POST', '/api/backups/restore', { filename }),
   deleteBackup:     (filename) => request('DELETE', `/api/backups/${encodeURIComponent(filename)}`),
   downloadBackup: async (filename) => {
     const token = getToken();
