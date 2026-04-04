@@ -177,6 +177,10 @@ router.get('/raid-resets', requireGMLevel(1), async (req, res) => {
   const resetDay = 3; // Wednesday
   const resetHour = 7; // 07:00 UTC
 
+  function hasPassedResetTime(date, hour) {
+    return date.getUTCHours() > hour || (date.getUTCHours() === hour && date.getUTCMinutes() > 0);
+  }
+
   // Compute next 4 weekly resets from now
   const now = new Date();
   const resets = [];
@@ -184,10 +188,9 @@ router.get('/raid-resets', requireGMLevel(1), async (req, res) => {
     const d = new Date(now);
     const currentDay = d.getUTCDay();
     let daysUntilReset = (resetDay - currentDay + 7) % 7;
-    if (daysUntilReset === 0 && (d.getUTCHours() > resetHour || (d.getUTCHours() === resetHour && d.getUTCMinutes() > 0))) {
+    if (i === 0 && daysUntilReset === 0 && hasPassedResetTime(d, resetHour)) {
       daysUntilReset = 7;
     }
-    if (daysUntilReset === 0 && i > 0) daysUntilReset = 7;
     d.setUTCDate(d.getUTCDate() + daysUntilReset + (i * 7));
     d.setUTCHours(resetHour, 0, 0, 0);
     resets.push(d.toISOString());

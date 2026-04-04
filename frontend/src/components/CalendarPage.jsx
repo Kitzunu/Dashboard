@@ -48,6 +48,9 @@ function getMonthGrid(year, month) {
   return cells;
 }
 
+const MAX_OCCURRENCE_ITERATIONS = 200;
+const DEFAULT_EVENT_DURATION_SECONDS = 3600;
+
 // Compute game event occurrences in a window
 function expandGameEvent(ev, from, to) {
   const occurrences = [];
@@ -63,15 +66,15 @@ function expandGameEvent(ev, from, to) {
   // Walk occurrences
   let eventStart = new Date(startTime);
   const limit = isUnbounded ? new Date(to.getTime() + 365 * 24 * 60 * 60 * 1000) : endTime;
-  let safety = 0;
+  let iterationCount = 0;
 
-  while (eventStart <= limit && safety < 200) {
-    safety++;
+  while (eventStart <= limit && iterationCount < MAX_OCCURRENCE_ITERATIONS) {
+    iterationCount++;
     const eventEnd = new Date(eventStart.getTime() + lengthMs);
     // Check if this occurrence overlaps with our window
     if (eventEnd >= from && eventStart <= to) {
       occurrences.push({
-        id: `game-${ev.eventEntry}-${safety}`,
+        id: `game-${ev.eventEntry}-${iterationCount}`,
         title: ev.description || `Game Event #${ev.eventEntry}`,
         start: new Date(Math.max(eventStart.getTime(), from.getTime())),
         end:   new Date(Math.min(eventEnd.getTime(), to.getTime())),
@@ -368,7 +371,7 @@ export default function CalendarPage({ auth }) {
           title: ev.title || 'Untitled Event',
           description: ev.description,
           start: new Date(ev.eventtime * 1000),
-          end: new Date((ev.eventtime + 3600) * 1000), // Default 1h duration
+          end: new Date((ev.eventtime + DEFAULT_EVENT_DURATION_SECONDS) * 1000),
           source: 'ingame',
           creator_name: ev.creator_name,
         });
