@@ -1,5 +1,43 @@
 # Changelog
 
+## 9ca7832 — Fix LAN/mobile access, add mobile responsive UI (#51)
+
+**Author**: Copilot | **Date**: 2026-04-04 22:32:34 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/9ca78327d6cea357805066cb37f55bc1c294d603
+
+CORS and IP allowlist blocked LAN/mobile devices when `FRONTEND_URL` or `ALLOWED_IPS` were configured. The UI had no mobile support.
+
+### Backend — Network access
+- **CORS**: Always accept private/LAN origins (`10.x`, `172.16-31.x`, `192.168.x`, `localhost`) regardless of `FRONTEND_URL` — CORS is browser-level; auth + IP allowlist handle real access control
+- **IP allowlist**: When `ALLOWED_IPS` is unset, accept all private/LAN IPs (was localhost-only)
+- Log rejected CORS origins to `console.warn`
+
+```js
+// Before — private origin fallback disabled when env var is set
+if (!process.env.FRONTEND_URL && isPrivateOrigin(origin)) return callback(null, true);
+
+// After — always allow private/LAN origins
+if (isPrivateOrigin(origin)) return callback(null, true);
+```
+
+### Frontend — Mobile responsive
+- Hamburger toggle + slide-out sidebar overlay at ≤768px, tighter layout at ≤480px
+- Protocol-aware `BASE_URL` (`window.location.protocol` instead of hardcoded `http:`)
+- WoWHead tooltip script loaded `async` to unblock mobile render
+- Login error: `err instanceof TypeError` instead of browser-specific string matching; message includes target API URL
+
+### Docs
+- Updated `configuration.md`: LAN/Remote Access section reflects zero-config LAN defaults
+- Updated `features.md`: added Mobile Responsive, CORS, updated IP Allowlist description
+- Updated `notes.md`: login diagnostics, responsive design, protocol-aware API URL
+- Updated `pages.md`: added Layout section documenting sidebar behavior and breakpoints
+
+---------
+
+Co-authored-by: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## 6523bbc — Add arena team interface (#48)
 
 **Author**: Copilot | **Date**: 2026-04-04 16:37:11 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/6523bbc2d59ab2cb25be4dac7bd049ff862b2f77
