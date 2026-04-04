@@ -253,6 +253,8 @@ input[type="search"],
 input:not([type]),
 textarea,
 select {
+  width: 100%;
+  box-sizing: border-box;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -543,6 +545,12 @@ input:focus, textarea:focus, select:focus { border-color: var(--gold-dim); }
 }
 .modal-wide { width: 700px; max-width: 95vw; }
 
+/* Use on any .modal that has a .modal-header / .modal-footer so they render flush */
+.modal-structured { padding: 0; gap: 0; }
+
+/* General body region inside a structured modal */
+.modal-body { padding: 20px 24px; flex: 1; overflow-y: auto; }
+
 .modal h3 { font-size: 16px; color: var(--text); }
 
 /* ── Idle warning modal ──────────────────────────────────────── */
@@ -742,7 +750,7 @@ input:focus, textarea:focus, select:focus { border-color: var(--gold-dim); }
   margin-bottom: 8px;
 }
 
-.db-select { padding: 7px 10px; flex-shrink: 0; }
+.db-select { padding: 7px 10px; flex-shrink: 0; width: auto; }
 
 .query-textarea {
   width: 100%;
@@ -1948,6 +1956,8 @@ code {
 }
 
 .form-label {
+  display: block;
+  margin-bottom: 4px;
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
