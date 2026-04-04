@@ -139,7 +139,7 @@ function TopListsPanel({ stats }) {
 function ClearAllModal({ count, onConfirm, onClose, busy }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" style={{ maxWidth: 400 }} onClick={(e) => e.stopPropagation()}>
+      <div className="modal modal-structured" style={{ maxWidth: 400 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3 className="modal-title">Clear All Lag Reports</h3>
           <button className="modal-close" onClick={onClose}>✕</button>

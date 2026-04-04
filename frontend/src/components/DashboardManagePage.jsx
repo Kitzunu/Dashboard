@@ -5,7 +5,7 @@ import { toast } from '../toast.js';
 function ConfirmModal({ title, body, warning, confirmLabel, confirmClass = 'btn-danger', onConfirm, onClose }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal modal-structured" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>{title}</h3>
         </div>

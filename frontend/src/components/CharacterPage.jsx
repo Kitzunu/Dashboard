@@ -127,7 +127,7 @@ function PDumpModal({ guid, name, onClose }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" style={{ maxWidth: 460 }} onClick={e => e.stopPropagation()}>
+      <div className="modal modal-structured" style={{ maxWidth: 460 }} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <span>Export Character Dump</span>
           <button className="modal-close" onClick={onClose}>×</button>
@@ -248,10 +248,11 @@ function PDumpLoadModal({ onClose }) {
     setBusy(true);
     setResult(null);
     try {
+      const guidStr = charGuid.trim();
       const body = {
         accountId: selectedAccount.id,
         characterName: charName.trim(),
-        characterGuid: charGuid.trim() ? parseInt(charGuid.trim(), 10) : 0,
+        characterGuid: guidStr ? parseInt(guidStr, 10) : 0,
       };
       if (mode === 'upload') body.content  = fileContent;
       else                   body.filePath = filePath.trim();
@@ -268,7 +269,7 @@ function PDumpLoadModal({ onClose }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
+      <div className="modal modal-structured" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <span>Import Character Dump</span>
           <button className="modal-close" onClick={onClose}>×</button>
@@ -382,6 +383,7 @@ function PDumpLoadModal({ onClose }) {
               className="input"
               type="number"
               min="1"
+              step="1"
               placeholder="Leave blank to auto-assign a GUID"
               value={charGuid}
               onChange={e => setCharGuid(e.target.value)}

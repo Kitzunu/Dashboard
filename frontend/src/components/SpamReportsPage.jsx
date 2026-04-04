@@ -78,7 +78,7 @@ function SortTh({ col, label, sortCol, sortDir, onSort, style }) {
 function ConfirmModal({ title, message, confirmLabel = 'Confirm', danger = false, onConfirm, onClose }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" style={{ width: 400, maxWidth: '90vw' }} onClick={(e) => e.stopPropagation()}>
+      <div className="modal modal-structured" style={{ width: 400, maxWidth: '90vw' }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3 className="modal-title">{title}</h3>
           <button className="modal-close" onClick={onClose}>&#x2715;</button>

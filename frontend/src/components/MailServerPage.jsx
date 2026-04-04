@@ -531,7 +531,7 @@ function TemplateModal({ templateId, onClose, onSaved, canEdit }) {
 function DeleteModal({ template, onConfirm, onClose, busy }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
+      <div className="modal modal-structured" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3 className="modal-title">Delete Template</h3>
           <button className="modal-close" onClick={onClose}>✕</button>

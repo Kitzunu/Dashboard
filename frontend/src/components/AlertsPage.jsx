@@ -252,7 +252,7 @@ export default function AlertsPage() {
 
       {confirmClear && (
         <div className="modal-overlay" onClick={() => setConfirmClear(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal modal-structured" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header"><h3>Clear All Alerts</h3></div>
             <div className="modal-body">
               <p>This will permanently delete all alerts. This cannot be undone.</p>
