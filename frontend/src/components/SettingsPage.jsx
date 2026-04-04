@@ -271,6 +271,15 @@ export default function SettingsPage() {
       Object.entries(dirty).filter(([, v]) => v).map(([k]) => [k, values[k]])
     );
     if (Object.keys(changed).length === 0) return;
+
+    // Validate latency threshold relationship
+    const latWarn = parseInt(values['threshold.latencyWarn'], 10);
+    const latCrit = parseInt(values['threshold.latencyCritical'], 10);
+    if (!isNaN(latWarn) && !isNaN(latCrit) && latWarn >= latCrit) {
+      toast('Latency warning threshold must be less than the critical threshold', 'error');
+      return;
+    }
+
     setSaving(true);
     try {
       const saved = await api.saveSettings(changed);
@@ -421,7 +430,16 @@ export default function SettingsPage() {
                               min={def.min}
                               max={def.max}
                               value={getValue(def.key, def.default)}
-                              onChange={(e) => handleChange(def.key, e.target.value)}
+                              onChange={(e) => {
+                                const num = parseInt(e.target.value, 10);
+                                if (isNaN(num)) return;
+                                const clamped = def.min != null && def.max != null
+                                  ? Math.min(def.max, Math.max(def.min, num))
+                                  : def.min != null ? Math.max(def.min, num)
+                                  : def.max != null ? Math.min(def.max, num)
+                                  : num;
+                                handleChange(def.key, String(clamped));
+                              }}
                               style={{ width: 80 }}
                             />
                             {def.unit && <span className="td-muted">{def.unit}</span>}
