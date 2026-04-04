@@ -8,6 +8,35 @@ Reorganize Table of Contents for better readability
 
 <!-- entry-separator -->
 
+## 410efd3 — Add Changelog page to Dashboard group
+
+**Author**: Copilot | **Date**: 2026-04-04 14:13:46 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/410efd34acb0c5c0ff41381041df1a7a66f9eb9c
+
+The `---` entry separator collided with the same token used in PR/merge commit bodies, causing the parser to split mid-entry and absorb all remaining entries as the first commit's body — only 1 entry rendered instead of 130+. The hash badge was a plain label with a redundant separate link column.
+
+### Separator (`changelog.md`, `changelog.js`, `changelog.yml`)
+- Replaced `---` with `<!-- entry-separator -->` — an HTML comment that cannot appear in any git commit message
+- Backend parser (`parseChangelog`) now splits on the new token
+- Workflow writes new entries using the same token
+
+### UI (`ChangelogPage.jsx`)
+- Hash badge rendered as `<a href={entry.link}>` — clicking it opens the GitHub commit URL directly
+- Removed the dedicated LINK column; `colSpan` updated to 4
+
+### Workflow (`changelog.yml`)
+- Skips any commit whose subject starts with `chore: update changelog` — prevents CI update commits from appearing as real entries
+- Added comments documenting both self-trigger guards: `paths-ignore: changelog.md` (won't fire if only the changelog changed) and `[skip ci]` in the commit message (GitHub drops the run entirely)
+
+### `changelog.md`
+- Regenerated from `origin/master` commits only — strips branch/conversation commits and all CI changelog-update commits (132 clean entries)
+
+---------
+
+Co-authored-by: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## d2d1d109 — Alerts: checkbox batch delete + filter-scoped Clear All (#44)
 
 **Author**: Copilot | **Date**: 2026-04-04 13:35:25 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/d2d1d1095c046f47cb61dc78dafd82739acfde86
