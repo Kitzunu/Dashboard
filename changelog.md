@@ -1,5 +1,53 @@
 # Changelog
 
+## 49d2414 — support advanced administrative features, including analytics, batch operations, notifications, health checks, backups, and character transfers (#52)
+
+**Author**: Copilot | **Date**: 2026-04-05 01:16:50 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/49d2414d3ef5446758774dfe710d88855cebe27c
+
+This pull request adds several new backend API routes to support advanced administrative features, including analytics, batch operations, notifications, health checks, backups, and character transfers. It also enhances authentication middleware and session management for improved security and session tracking.
+
+**New Administrative API Endpoints:**
+
+*Analytics and Monitoring*
+- Adds `analytics.js` route for querying historical analytics data (player counts, CPU, memory), including summary endpoints and automatic table creation. Also provides a utility to record live snapshots.
+- Adds `healthcheck.js` route to report database, system, and agent status, including connection pool metrics and server bridge connectivity.
+
+*Batch Operations and Character Management*
+- Adds `batchOperations.js` route for batch banning, kicking, mailing, and GM level changes, with auditing and input validation.
+- Adds `characterTransfer.js` route for transferring characters between accounts, validating eligibility, and searching for accounts.
+
+*Backups and Notifications*
+- Adds `backups.js` route to list, download, delete, create, and restore MySQL database backups securely, including audit logging and path safety checks.
+- Adds `notifications.js` route to fetch alerts, unread counts, and mark notifications as read, using per-user settings.
+
+**Authentication and Session Management Improvements:**
+
+*Session Security*
+- Updates `auth.js` and authentication middleware to hash and register JWT tokens for active session tracking, and checks for revoked sessions on each request. [[1]](diffhunk://#diff-1cc5460b83dfedf2ec3f45ec7b7b226d381d02d4f99e6b27f40f5a424643d12bR2-R28) [[2]](diffhunk://#diff-fd5e20fabfe341ac8b8b96985d144fde87abbbc11741349eda347e9ceecff9a9R7) [[3]](diffhunk://#diff-fd5e20fabfe341ac8b8b96985d144fde87abbbc11741349eda347e9ceecff9a9R106-R110)
+
+These changes significantly expand the backend's capabilities for server administrators, improve observability, and enhance security through better session management.The backups page was read-only — users could browse and delete existing backups but had no way to create new ones or restore from them without shell access.
+
+### Backend (`backend/routes/backups.js`)
+- **`POST /api/backups/create`** — runs `mysqldump` for selected databases, reusing the same args/config pattern as `scheduler.js:runBackup`. Returns `{ created, errors }`.
+- **`POST /api/backups/restore`** — pipes a backup SQL file into the `mysql` client. Target database auto-detected from filename pattern (`{db}_{timestamp}.sql`). Path traversal guarded by existing `isPathSafe()`. Configurable via `MYSQL_PATH` env var.
+
+### Frontend (`BackupsPage.jsx`, `api.js`)
+- **Create Backup** button opens a modal with database checkboxes (auth, characters, world). Reports created count and errors.
+- **Restore** button per row with confirmation modal warning about data overwrite.
+- Added `createBackup()` and `restoreBackup()` API methods.
+
+### Documentation
+- Updated all 6 docs files (`features.md`, `pages.md`, `project-structure.md`, `access-levels.md`, `configuration.md`, `audit-log.md`) to cover the new pages and features: Backups create/restore, Batch Operations, Character Transfer, Analytics, Health Check, Sessions, Notification Bell.
+
+### Minor
+- Removed card-style border/background from `.char-transfer-search-section` CSS to visually separate the search bar from the detail card below it.
+---------
+
+Co-authored-by: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## 9ca7832 — Fix LAN/mobile access, add mobile responsive UI (#51)
 
 **Author**: Copilot | **Date**: 2026-04-04 22:32:34 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/9ca78327d6cea357805066cb37f55bc1c294d603
