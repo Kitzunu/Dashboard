@@ -178,12 +178,12 @@ function PDumpModal({ guid, name, onClose }) {
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose} disabled={busy}>Cancel</button>
           {!result && (
-            <button className="btn" onClick={handleExport} disabled={busy}>
+            <button className="btn btn-primary" onClick={handleExport} disabled={busy}>
               {busy ? 'Generating…' : mode === 'download' ? 'Download' : 'Save to server'}
             </button>
           )}
           {result && (
-            <button className="btn" onClick={onClose}>Done</button>
+            <button className="btn btn-primary" onClick={onClose}>Done</button>
           )}
         </div>
       </div>
@@ -351,7 +351,7 @@ function PDumpLoadModal({ onClose }) {
                       <div
                         key={a.id}
                         style={{ padding: '6px 10px', cursor: 'pointer' }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-hover)'}
+                        onMouseEnter={e => e.currentTarget.style.background = 'var(--surface2)'}
                         onMouseLeave={e => e.currentTarget.style.background = ''}
                         onClick={() => { setSelectedAccount(a); setAccountQuery(a.username); setAccountResults([]); }}
                       >
@@ -405,7 +405,7 @@ function PDumpLoadModal({ onClose }) {
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose} disabled={busy}>Close</button>
           {!result && (
-            <button className="btn" onClick={handleLoad} disabled={busy}>
+            <button className="btn btn-primary" onClick={handleLoad} disabled={busy}>
               {busy ? 'Importing…' : 'Import'}
             </button>
           )}
