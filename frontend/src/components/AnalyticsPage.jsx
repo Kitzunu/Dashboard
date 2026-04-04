@@ -101,7 +101,8 @@ function SimpleChart({ data, label, color }) {
       const idx = Math.floor((i / (labelCount - 1 || 1)) * (data.length - 1));
       const x = padding.left + (idx / (data.length - 1 || 1)) * plotW;
       const d = new Date(data[idx].recorded_at);
-      const lbl = data.length > 48
+      const HOURLY_LABEL_THRESHOLD = 48;
+      const lbl = data.length > HOURLY_LABEL_THRESHOLD
         ? `${d.getMonth() + 1}/${d.getDate()}`
         : `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
       ctx.fillText(lbl, x, h - 8);

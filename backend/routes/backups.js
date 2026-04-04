@@ -31,13 +31,19 @@ router.get('/', requireGMLevel(3), async (req, res) => {
   }
 });
 
+function isPathSafe(filePath, basePath) {
+  const resolved = path.resolve(basePath, filePath);
+  const rel = path.relative(path.resolve(basePath), resolved);
+  return !rel.startsWith('..') && !path.isAbsolute(rel);
+}
+
 router.get('/:filename', requireGMLevel(3), async (req, res) => {
   try {
     const { filename } = req.params;
-    const filePath = path.resolve(BACKUP_PATH, filename);
-    if (!filePath.startsWith(path.resolve(BACKUP_PATH) + path.sep)) {
+    if (!isPathSafe(filename, BACKUP_PATH)) {
       return res.status(400).json({ error: 'Invalid filename' });
     }
+    const filePath = path.resolve(BACKUP_PATH, filename);
     res.download(filePath);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -47,10 +53,10 @@ router.get('/:filename', requireGMLevel(3), async (req, res) => {
 router.delete('/:filename', requireGMLevel(3), async (req, res) => {
   try {
     const { filename } = req.params;
-    const filePath = path.resolve(BACKUP_PATH, filename);
-    if (!filePath.startsWith(path.resolve(BACKUP_PATH) + path.sep)) {
+    if (!isPathSafe(filename, BACKUP_PATH)) {
       return res.status(400).json({ error: 'Invalid filename' });
     }
+    const filePath = path.resolve(BACKUP_PATH, filename);
     await fs.promises.unlink(filePath);
     audit(req, 'backup.delete', `file=${filename}`);
     res.json({ success: true });

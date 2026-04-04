@@ -292,7 +292,8 @@ function pollResources() {
     const memory = Math.round(((total - os.freemem()) / total) * 100);
     resourceHistory.record(cpu, memory);
     // Persist to historical analytics (every 5 min to avoid excessive writes)
-    if (!pollResources._lastAnalytics || Date.now() - pollResources._lastAnalytics >= 300000) {
+    const ANALYTICS_INTERVAL_MS = 300000;
+    if (!pollResources._lastAnalytics || Date.now() - pollResources._lastAnalytics >= ANALYTICS_INTERVAL_MS) {
       pollResources._lastAnalytics = Date.now();
       const latestPlayer = playerHistory.getHistory().slice(-1)[0];
       analyticsRoutes.recordSnapshot(latestPlayer ? latestPlayer.count : 0, cpu, memory);

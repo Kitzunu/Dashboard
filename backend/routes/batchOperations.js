@@ -5,6 +5,8 @@ const { authPool } = require('../db');
 const processManager = require('../processManager');
 const { audit } = require('../audit');
 
+const MAX_GM_LEVEL = 6;
+
 router.post('/ban', requireGMLevel(3), async (req, res) => {
   const { targets, duration, reason } = req.body;
   if (!Array.isArray(targets) || !targets.length) {
@@ -83,8 +85,8 @@ router.post('/gmlevel', requireGMLevel(3), async (req, res) => {
     return res.status(400).json({ error: 'accountIds array is required' });
   }
   const level = parseInt(gmlevel, 10);
-  if (isNaN(level) || level < 0 || level > 6) {
-    return res.status(400).json({ error: 'gmlevel must be 0-6' });
+  if (isNaN(level) || level < 0 || level > MAX_GM_LEVEL) {
+    return res.status(400).json({ error: `gmlevel must be 0-${MAX_GM_LEVEL}` });
   }
   const results = [];
   for (const id of accountIds) {

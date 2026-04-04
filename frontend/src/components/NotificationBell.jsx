@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api.js';
 
+const POLL_INTERVAL_MS = 30000;
+
 const TYPE_LABELS = {
   latency:          'Latency',
   threshold:        'Resource Threshold',
@@ -47,7 +49,7 @@ export default function NotificationBell({ onNavigate }) {
 
   useEffect(() => {
     fetchCount();
-    const interval = setInterval(fetchCount, 30000);
+    const interval = setInterval(fetchCount, POLL_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [fetchCount]);
 
