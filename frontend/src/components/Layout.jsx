@@ -28,6 +28,7 @@ import CharacterPage from './CharacterPage.jsx';
 import NameFiltersPage from './NameFiltersPage.jsx';
 import DashboardManagePage from './DashboardManagePage.jsx';
 import AlertsPage from './AlertsPage.jsx';
+import ChangelogPage from './ChangelogPage.jsx';
 import { GM_LABELS } from '../constants.js';
 
 const NAV_GROUPS = [
@@ -78,6 +79,7 @@ const NAV_GROUPS = [
     items: [
       { id: 'alerts',           label: 'Alerts',           minLevel: 1 },
       { id: 'audit-log',        label: 'Audit Log',        minLevel: 3 },
+      { id: 'changelog',        label: 'Changelog',        minLevel: 1 },
       { id: 'settings',         label: 'Settings',         minLevel: 3 },
       { id: 'dashboard-manage', label: 'Dashboard Manage', minLevel: 3 },
     ],
@@ -383,6 +385,7 @@ export default function Layout() {
         {page === 'spamreports'   && <SpamReportsPage />}
         {page === 'alerts'        && <AlertsPage />}
         {page === 'audit-log'     && <AuditLogPage />}
+        {page === 'changelog'     && <ChangelogPage />}
         {page === 'settings'      && <SettingsPage />}
         {page === 'scheduled'     && <ScheduledTasksPage />}
         {page === 'guilds'        && <GuildsPage onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}

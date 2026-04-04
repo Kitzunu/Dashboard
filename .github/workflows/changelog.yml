@@ -1,0 +1,70 @@
+name: Update Changelog
+
+on:
+  push:
+    branches: [ "master" ]
+    paths-ignore:
+      - 'changelog.md'
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Append commit to changelog
+        run: |
+          python3 << 'PYEOF'
+          import os
+          import subprocess
+
+          sha     = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode().strip()
+          short   = sha[:7]
+          subject = subprocess.check_output(['git', 'log', '-1', '--format=%s']).decode().strip()
+          body    = subprocess.check_output(['git', 'log', '-1', '--format=%b']).decode().strip()
+          author  = subprocess.check_output(['git', 'log', '-1', '--format=%an']).decode().strip()
+          date    = subprocess.check_output(['git', 'log', '-1', '--format=%ci']).decode().strip()
+          repo    = os.environ['GITHUB_REPOSITORY']
+          link    = f"https://github.com/{repo}/commit/{sha}"
+
+          entry = f"## {short} \u2014 {subject}\n\n"
+          entry += f"**Author**: {author} | **Date**: {date} | **Link**: {link}\n"
+          if body:
+              entry += f"\n{body}\n"
+          entry += "\n"
+
+          existing = ""
+          if os.path.exists("changelog.md"):
+              with open("changelog.md", "r", encoding="utf-8") as f:
+                  existing = f.read()
+
+          # Preserve the '# Changelog' header at the top of the file if present.
+          # Insert new entries immediately after the header block.
+          HEADER = "# Changelog\n"
+          with open("changelog.md", "w", encoding="utf-8") as f:
+              if existing.startswith(HEADER):
+                  rest = existing[len(HEADER):].lstrip("\n")
+                  f.write(HEADER + "\n")
+                  f.write(entry)
+                  if rest:
+                      f.write("---\n\n")
+                      f.write(rest)
+              else:
+                  f.write(entry)
+                  if existing:
+                      f.write("---\n\n")
+                      f.write(existing)
+          PYEOF
+
+      - name: Commit and push changelog
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add changelog.md
+          git diff --staged --quiet || git commit -m "chore: update changelog [skip ci]"
+          git push
