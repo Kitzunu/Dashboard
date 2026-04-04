@@ -117,6 +117,7 @@ export default function AlertsPage() {
   const [loading, setLoading]   = useState(true);
   const [selectedRow, setSelectedRow] = useState(null);
   const [confirmClear, setConfirmClear] = useState(false);
+  const [confirmDeleteSelected, setConfirmDeleteSelected] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
 
   const fetchAlerts = useCallback(async (p, sev, typ) => {
@@ -155,9 +156,11 @@ export default function AlertsPage() {
 
   const handleDeleteSelected = async () => {
     const ids = [...selectedIds];
+    if (!ids.length) return;
     try {
       await api.deleteAlerts(ids);
       setSelectedIds(new Set());
+      setConfirmDeleteSelected(false);
       toast(`${ids.length} alert${ids.length !== 1 ? 's' : ''} deleted.`, 'success');
       fetchAlerts(page, severityTab, typeFilter);
     } catch (e) {
@@ -211,7 +214,7 @@ export default function AlertsPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span className="td-muted" style={{ fontSize: 13 }}>{total} alert{total !== 1 ? 's' : ''}</span>
           {selectedIds.size > 0 && (
-            <button className="btn btn-danger btn-sm" onClick={handleDeleteSelected}>
+            <button className="btn btn-danger btn-sm" onClick={() => setConfirmDeleteSelected(true)}>
               Delete Selected ({selectedIds.size})
             </button>
           )}
@@ -311,6 +314,23 @@ export default function AlertsPage() {
           onClose={() => setSelectedRow(null)}
           onDelete={handleDelete}
         />
+      )}
+
+      {confirmDeleteSelected && (
+        <div className="modal-overlay" onClick={() => setConfirmDeleteSelected(false)}>
+          <div className="modal modal-structured" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header"><h3>Delete Selected Alerts</h3></div>
+            <div className="modal-body">
+              <p>
+                This will permanently delete <strong>{selectedIds.size} selected alert{selectedIds.size !== 1 ? 's' : ''}</strong>. This cannot be undone.
+              </p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-danger" onClick={handleDeleteSelected}>Delete</button>
+              <button className="btn btn-ghost" onClick={() => setConfirmDeleteSelected(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
       )}
 
       {confirmClear && (

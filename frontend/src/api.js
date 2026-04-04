@@ -188,6 +188,7 @@ export const api = {
   },
   deleteAlert:  (id) => request('DELETE', `/api/alerts/${id}`),
   deleteAlerts: (ids) => {
+    if (!ids || !ids.length) return Promise.reject(new Error('No IDs provided'));
     const params = new URLSearchParams();
     ids.forEach((id) => params.append('ids', id));
     return request('DELETE', `/api/alerts?${params}`);
