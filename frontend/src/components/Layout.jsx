@@ -31,6 +31,13 @@ import DashboardManagePage from './DashboardManagePage.jsx';
 import AlertsPage from './AlertsPage.jsx';
 import ChangelogPage from './ChangelogPage.jsx';
 import CalendarPage from './CalendarPage.jsx';
+import BackupsPage from './BackupsPage.jsx';
+import HealthCheckPage from './HealthCheckPage.jsx';
+import BatchOperationsPage from './BatchOperationsPage.jsx';
+import CharacterTransferPage from './CharacterTransferPage.jsx';
+import NotificationBell from './NotificationBell.jsx';
+import AnalyticsPage from './AnalyticsPage.jsx';
+import SessionsPage from './SessionsPage.jsx';
 import { GM_LABELS } from '../constants.js';
 
 const NAV_GROUPS = [
@@ -44,6 +51,7 @@ const NAV_GROUPS = [
       { id: 'mailserver',    label: 'Mail Server',     minLevel: 3 },
       { id: 'dbquery',       label: 'DB Query',        minLevel: 3 },
       { id: 'scheduled',     label: 'Scheduled Tasks', minLevel: 3 },
+      { id: 'backups',       label: 'Backups',         minLevel: 3 },
       { id: 'config',        label: 'Config',          minLevel: 3 },
     ],
   },
@@ -55,6 +63,7 @@ const NAV_GROUPS = [
       { id: 'mutes',        label: 'Mutes',        minLevel: 2 },
       { id: 'announce',     label: 'Announce',     minLevel: 2 },
       { id: 'mail',         label: 'Send Mail',    minLevel: 2 },
+      { id: 'batch',        label: 'Batch Ops',    minLevel: 3 },
       { id: 'channels',     label: 'Channels',     minLevel: 1 },
       { id: 'calendar',     label: 'Calendar',     minLevel: 1 },
       { id: 'namefilters',  label: 'Name Filters', minLevel: 2 },
@@ -66,6 +75,7 @@ const NAV_GROUPS = [
       { id: 'players',    label: 'Players',    minLevel: 1 },
       { id: 'accounts',   label: 'Accounts',   minLevel: 2 },
       { id: 'characters', label: 'Characters', minLevel: 1 },
+      { id: 'char-transfer', label: 'Transfer',  minLevel: 3 },
       { id: 'guilds',     label: 'Guilds',     minLevel: 1 },
       { id: 'arena',      label: 'Arena',      minLevel: 1 },
     ],
@@ -82,7 +92,10 @@ const NAV_GROUPS = [
     group: 'Dashboard',
     items: [
       { id: 'alerts',           label: 'Alerts',           minLevel: 1 },
+      { id: 'analytics',        label: 'Analytics',        minLevel: 1 },
       { id: 'audit-log',        label: 'Audit Log',        minLevel: 3 },
+      { id: 'healthcheck',      label: 'Health Check',     minLevel: 3 },
+      { id: 'sessions',         label: 'Sessions',         minLevel: 3 },
       { id: 'changelog',        label: 'Changelog',        minLevel: 1 },
       { id: 'settings',         label: 'Settings',         minLevel: 3 },
       { id: 'dashboard-manage', label: 'Dashboard Manage', minLevel: 3 },
@@ -362,6 +375,7 @@ export default function Layout() {
           <div className="server-status-row">
             <StatusDot label="World" running={serverStatus.worldserver.running} />
             <StatusDot label="Auth" running={serverStatus.authserver.running} />
+            <NotificationBell onNavigate={(id) => { setPage(id); setSidebarOpen(false); }} />
           </div>
           <div className="user-row">
             <div>
@@ -403,6 +417,12 @@ export default function Layout() {
         {page === 'namefilters'      && <NameFiltersPage />}
         {page === 'calendar'         && <CalendarPage auth={auth} />}
         {page === 'dashboard-manage' && <DashboardManagePage />}
+        {page === 'backups'          && <BackupsPage />}
+        {page === 'healthcheck'      && <HealthCheckPage />}
+        {page === 'batch'            && <BatchOperationsPage />}
+        {page === 'char-transfer'    && <CharacterTransferPage />}
+        {page === 'analytics'        && <AnalyticsPage />}
+        {page === 'sessions'         && <SessionsPage auth={auth} />}
       </main>
 
       <ToastContainer toasts={toasts} />

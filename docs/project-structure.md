@@ -9,17 +9,21 @@ Dashboard/
 │   ├── routes/
 │   │   ├── accounts.js            # Account management
 │   │   ├── alertsRoutes.js        # System alerts list, batch delete, filter-scoped clear
+│   │   ├── analytics.js           # Historical analytics data and summary endpoints
 │   │   ├── announcements.js       # Announce / notify broadcasts
 │   │   ├── arena.js               # Arena team CRUD (list, detail, create, edit, delete, remove member)
 │   │   ├── auditLogRoutes.js      # Audit Log read endpoint (Administrator)
 │   │   ├── auth.js                # SRP6 login + rate limiting + logout
 │   │   ├── autobroadcast.js       # Autobroadcast CRUD
+│   │   ├── backups.js              # Backup browse, download, create (mysqldump), restore, delete
 │   │   ├── bans.js                # Ban management
+│   │   ├── batchOperations.js     # Batch kick, ban, mail, and GM level operations
 │   │   ├── bugreports.js          # Bug report browser
 │   │   ├── calendar.js            # Calendar event CRUD and game event / raid reset queries
 │   │   ├── changelog.js           # Changelog parser (reads changelog.md)
 │   │   ├── channels.js            # Chat channel browser and management
 │   │   ├── characters.js          # Character search and detail (inventory, bank, reputation, currency)
+│   │   ├── characterTransfer.js   # Character transfer between accounts
 │   │   ├── config.js              # Config file read/write with diff logging
 │   │   ├── console.js             # GM command execution
 │   │   ├── dashboardManage.js     # Dashboard process restart endpoints (backend, agent, frontend)
@@ -27,17 +31,20 @@ Dashboard/
 │   │   ├── dbc.js                 # Map/area name lookup endpoints
 │   │   ├── envSettings.js         # .env file read/write for whitelisted keys (Administrator)
 │   │   ├── guilds.js              # Guild list and detail (members, ranks, event log)
+│   │   ├── healthcheck.js         # System health check (DB pools, connections, system info, services)
 │   │   ├── lagreports.js          # Lag report browser
 │   │   ├── mail.js                # Send in-game mail/items/money
 │   │   ├── mailserver.js          # Mail server template CRUD
 │   │   ├── mutes.js               # Mute management
 │   │   ├── namefilters.js         # profanity_name and reserved_name CRUD
+│   │   ├── notifications.js       # Notification bell feed and unread count
 │   │   ├── overview.js            # Dashboard summary endpoint
 │   │   ├── pdump.js               # Character dump export (write) and import (load) with full GUID remapping
 │   │   ├── players.js             # Online players, kick, ban
 │   │   ├── scheduledTasks.js      # Scheduled task CRUD and run-now trigger
 │   │   ├── servers.js             # Server start/stop/status/logs
 │   │   ├── servertools.js         # Scheduled restart, MOTD
+│   │   ├── sessions.js            # Active session management (list, revoke, revoke all)
 │   │   ├── settingsRoutes.js      # Dashboard settings read/write and Discord webhook test
 │   │   ├── spamreports.js         # Spam report browser
 │   │   ├── thresholds.js          # Alert threshold read/write
@@ -64,21 +71,26 @@ Dashboard/
 │       ├── components/
 │       │   ├── AccountsPage.jsx
 │       │   ├── AlertsPage.jsx
+│       │   ├── AnalyticsPage.jsx
 │       │   ├── AnnouncePage.jsx
 │       │   ├── ArenaPage.jsx
 │       │   ├── AuditLogPage.jsx
 │       │   ├── AutobroadcastPage.jsx
+│       │   ├── BackupsPage.jsx
 │       │   ├── BansPage.jsx
+│       │   ├── BatchOperationsPage.jsx
 │       │   ├── BugReportsPage.jsx
 │       │   ├── CalendarPage.jsx
 │       │   ├── ChangelogPage.jsx
 │       │   ├── ChannelsPage.jsx
 │       │   ├── CharacterPage.jsx
+│       │   ├── CharacterTransferPage.jsx
 │       │   ├── ConfigPage.jsx
 │       │   ├── ConsolePage.jsx
 │       │   ├── DBQueryPage.jsx
 │       │   ├── DashboardManagePage.jsx
 │       │   ├── GuildsPage.jsx
+│       │   ├── HealthCheckPage.jsx
 │       │   ├── HomePage.jsx
 │       │   ├── LagReportsPage.jsx
 │       │   ├── Layout.jsx
@@ -87,9 +99,11 @@ Dashboard/
 │       │   ├── MailServerPage.jsx
 │       │   ├── MutesPage.jsx
 │       │   ├── NameFiltersPage.jsx
+│       │   ├── NotificationBell.jsx
 │       │   ├── PlayersPage.jsx
 │       │   ├── ScheduledTasksPage.jsx
 │       │   ├── ServersPage.jsx
+│       │   ├── SessionsPage.jsx
 │       │   ├── SettingsPage.jsx
 │       │   ├── SpamReportsPage.jsx
 │       │   └── TicketsPage.jsx

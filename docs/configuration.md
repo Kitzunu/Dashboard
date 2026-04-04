@@ -93,9 +93,13 @@ FRONTEND_URL=https://dashboard.example.com
 
 # Full path to mysqldump — only needed if it is not in your system PATH.
 # MYSQLDUMP_PATH=C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqldump.exe
+
+# Full path to the mysql client — only needed if it is not in your system PATH.
+# Used by the Backups page "Restore" feature to import SQL backup files.
+# MYSQL_PATH=C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe
 ```
 
-Backups are saved as `<database>_YYYY-MM-DD_HH-mm.sql` files.
+Backups are saved as `<database>_YYYY-MM-DD_HH-mm-ss.sql` files. They can be created on-demand from the Backups page or automatically via scheduled tasks.
 
 The scheduler checks every minute and fires tasks whose time and day-of-week match. If `mysqldump` is on your system `PATH` you do not need to set `MYSQLDUMP_PATH`.
 

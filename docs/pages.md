@@ -137,6 +137,33 @@
 - **Save** creates a `.bak` backup of the previous file automatically
 - **Discard** reverts all unsaved edits
 
+## Backups *(Administrator only)*
+- Table of all backup files in the `BACKUP_PATH` directory with filename, database badge, size, and creation date
+- **Create Backup** — opens a modal with checkboxes for each database (acore_auth, acore_characters, acore_world); runs `mysqldump` on the server and saves timestamped `.sql` files; reports created file count and any errors
+- **Restore** — per-file button opens a confirmation modal warning that the target database will be overwritten; target database is auto-detected from the filename; pipes the SQL file into the `mysql` client
+- **Download** — download any backup file to the browser
+- **Delete** — delete with confirmation modal
+- Filter by database via a dropdown; file count and total size summary
+- All create, restore, and delete actions are audit-logged
+
+## Batch Operations *(Administrator only)*
+- Tabbed interface with four operation types: **Batch Kick**, **Batch Ban**, **Batch Mail**, **Batch GM Level**
+- Each tab has an inline **Search Picker** — type-ahead autocomplete that searches characters or accounts (debounced, max 15 results) and appends selected entries to a textarea
+- Targets can also be entered manually in the textarea (one per line or comma-separated)
+- **Batch Kick** — kick multiple online players with an optional reason
+- **Batch Ban** — ban by character, account, or IP; duration and reason required
+- **Batch Mail** — send in-game mail to multiple recipients with subject and body
+- **Batch GM Level** — set GM level (0–3) for multiple account IDs
+- Results modal shows per-target success/failure with error messages
+
+## Character Transfer *(Administrator only)*
+- Search characters by name (minimum 2 characters); results table with GUID, name, race, class, level, and online status
+- Select an offline character to view transfer detail: character info, current account, and transfer eligibility
+- Online characters cannot be transferred (disabled Select button)
+- **Target Account** — search accounts by name with dropdown picker, or enter an account ID directly
+- Confirmation modal shows source/target details and notes that the action will be audit-logged
+- Transfer updates the character's `account` column and is audit-logged
+
 ## Lag Reports
 - Paginated table (50 per page) of player-submitted lag events
 - Filter by type (Loot / Auction House / Mail / Chat / Movement / Spells & Abilities) and minimum latency
@@ -202,7 +229,7 @@ All sections are collapsible. A gold "unsaved changes" badge appears on any coll
 | `WORLDSERVER_HOST` / `WORLDSERVER_PORT` | Host/port used for TCP latency measurement               |
 | `DBC_PATH`                              | Path to WotLK DBFilesClient folder                       |
 | `CONFIG_PATH`                           | Directory containing `.conf` files for the Config editor |
-| `BACKUP_PATH`                           | Where scheduled backup files are saved                   |
+| `BACKUP_PATH`                           | Where backup files are saved (scheduled and on-demand)   |
 | `MYSQLDUMP_PATH`                        | Path to `mysqldump` executable                           |
 | `PDUMP_OUTPUT_PATH`                     | Default directory for character dump exports             |
 | `FRONTEND_URL`                          | Comma-separated CORS origins                             |
@@ -220,6 +247,27 @@ All sections are collapsible. A gold "unsaved changes" badge appears on any coll
 - Colour-coded action badges by category: account changes (gold), bans (red), server ops (amber), console commands (red), config saves (amber), announcements/mail (green), channels (blue), reports (neutral)
 - Config saves show a per-key diff: `WorldServerPort: "8085" → "8086"` so you can see exactly what changed
 - Stored in the separate `acore_dashboard` database — unaffected by AzerothCore upgrades
+
+## Analytics
+- Historical analytics with canvas-rendered charts for three metric types: **Player Count**, **CPU Usage (%)**, and **Memory Usage (%)**
+- Tab-style metric selector and date range presets (24h, 7d, 30d)
+- Resolution selector: Raw, Hourly, or Daily aggregation
+- Summary cards showing peak players (24h, 7d, 30d) and average CPU/memory over the last 24 hours
+- Data stored in the `analytics_history` table in `acore_dashboard`, automatically populated by the backend
+- Data point count and resolution displayed below the chart title
+
+## Health Check *(Administrator only)*
+- **Database Pools** — table showing each connection pool (auth, world, characters, dashboard) with status badge, latency in milliseconds, and connection counts (free, active, total)
+- **System** — Node.js version, backend uptime, PID, platform, CPU core count, heap used/total, and RSS memory
+- **Services** — server bridge connectivity status and agent status with uptime
+- Optional auto-refresh checkbox (polls every 10 seconds)
+
+## Sessions *(Administrator only)*
+- Table of all active dashboard sessions with username, GM level, IP address, browser user-agent, login time, and last activity (relative time)
+- Current session highlighted with a "You" badge; cannot revoke your own session
+- **Revoke** — per-session button with confirmation modal; revoked users are logged out on their next request
+- **Revoke All Others** — bulk revoke all sessions except your own with confirmation modal
+- Session data stored in the `active_sessions` table in `acore_dashboard`
 
 ## Changelog
 - Paginated table of all dashboard commits with commit hash (linked to GitHub), subject, author, and date
