@@ -1,25 +1,5 @@
 # Changelog
-## c6a7576 — chore: populate changelog.md with all 133 existing commits
-
-**Author**: copilot-swe-agent[bot] | **Date**: 2026-04-04 11:51:02 +0000 | **Link**: https://github.com/Kitzunu/Dashboard/commit/c6a7576985cded40f46798822e0c1a767df3157b
-
-Agent-Logs-Url: https://github.com/Kitzunu/Dashboard/sessions/3bc8cc12-6aa0-424d-9449-3a72d88046b2
-
-Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
-
-<!-- entry-separator -->
-
-## 6ffa6ad — feat: add Changelog page to Dashboard group
-
-**Author**: copilot-swe-agent[bot] | **Date**: 2026-04-04 11:47:55 +0000 | **Link**: https://github.com/Kitzunu/Dashboard/commit/6ffa6ad69c8832e336176e6153e621a2eaa928e8
-
-Agent-Logs-Url: https://github.com/Kitzunu/Dashboard/sessions/41c1a1c7-65f2-4e57-a336-db56ff5380b2
-
-Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
-
-<!-- entry-separator -->
-
-## d2d1d10 — Alerts: checkbox batch delete + filter-scoped Clear All (#44)
+## d2d1d109 — Alerts: checkbox batch delete + filter-scoped Clear All (#44)
 
 **Author**: Copilot | **Date**: 2026-04-04 13:35:25 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/d2d1d1095c046f47cb61dc78dafd82739acfde86
 
@@ -46,7 +26,7 @@ Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
 
 <!-- entry-separator -->
 
-## 2b1a5dc — fix: inputs clipped to intrinsic width; remove frontend/dist from repo (#43)
+## 2b1a5dc3 — fix: inputs clipped to intrinsic width; remove frontend/dist from repo (#43)
 
 **Author**: Copilot | **Date**: 2026-04-04 12:51:27 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/2b1a5dc359ab6501a76a281cbccffdb2b55e96be
 
@@ -77,7 +57,7 @@ This pull request introduces a new API endpoint to list available server-side du
 
 <!-- entry-separator -->
 
-## 498c678 — Reset CONFIG_PATH and BACKUP_PATH in .env.example
+## 498c678a — Reset CONFIG_PATH and BACKUP_PATH in .env.example
 
 **Author**: Kitzunu | **Date**: 2026-04-04 11:56:29 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/498c678ae354dc6770b81e78c4b31977418f5811
 
@@ -85,7 +65,7 @@ Clear CONFIG_PATH and BACKUP_PATH for default settings.
 
 <!-- entry-separator -->
 
-## 40ff27c — Revise README TOC, sections, and tables
+## 40ff27cf — Revise README TOC, sections, and tables
 
 **Author**: Kitzunu | **Date**: 2026-04-04 01:32:43 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/40ff27cf66b996b660b1942beb368a569594d51a
 
@@ -93,7 +73,7 @@ Reorganize and clean up README.md: add a top-level "AzerothCore Dashboard" headi
 
 <!-- entry-separator -->
 
-## 9688a14 — Add character pdump export/import support
+## 9688a147 — Add character pdump export/import support
 
 **Author**: Kitzunu | **Date**: 2026-04-04 01:21:02 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/9688a1473cf4a66951a9f60be893ec45110464d6
 
@@ -108,7 +88,7 @@ This change enables admins to export .pdump-compatible SQL dumps and import them
 
 <!-- entry-separator -->
 
-## 85dfaba — Fix SecondsSinceMessage column casing
+## 85dfaba5 — Fix SecondsSinceMessage column casing
 
 **Author**: Kitzunu | **Date**: 2026-04-03 20:52:19 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/85dfaba593a581bc9d4f244449a37cbe68d45fdf
 
@@ -116,7 +96,7 @@ Query and mapping updated to use the correct column name 'SecondsSinceMessage' (
 
 <!-- entry-separator -->
 
-## 797b03c — Update character inventory SQL preset
+## 797b03c1 — Update character inventory SQL preset
 
 **Author**: Kitzunu | **Date**: 2026-04-03 18:24:57 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/797b03c1774c475d72df16b630876df9c3ef649c
 
@@ -124,7 +104,7 @@ Refine the 'Character inventory' preset SQL: rename the selected alias to charac
 
 <!-- entry-separator -->
 
-## cb308c8 — Add backend health endpoint and gate frontend start
+## cb308c8f — Add backend health endpoint and gate frontend start
 
 **Author**: Kitzunu | **Date**: 2026-04-03 18:15:43 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/cb308c8fbf83e6d7cf72b19fd5b127940a025802
 
@@ -132,7 +112,7 @@ Expose a /api/health endpoint and adjust CORS handling so missing origins are de
 
 <!-- entry-separator -->
 
-## 1c18419 — Fetch and use DBC races/classes in CharacterPage
+## 1c18419e — Fetch and use DBC races/classes in CharacterPage
 
 **Author**: Kitzunu | **Date**: 2026-04-03 18:14:07 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/1c18419e77d275e3656a4b9ed0e486a271795668
 
@@ -140,7 +120,7 @@ Replace static FALLBACK_RACES/FALLBACK_CLASSES lookups with component state popu
 
 <!-- entry-separator -->
 
-## e6711bc — Load races and classes from API in CharacterPage
+## e6711bc6 — Load races and classes from API in CharacterPage
 
 **Author**: Kitzunu | **Date**: 2026-04-03 18:04:51 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/e6711bc6341ac4b49af29e694f4291a67cf2a3af
 
@@ -148,7 +128,7 @@ OverviewTab now initializes local races/classes state from FALLBACK_* and fetche
 
 <!-- entry-separator -->
 
-## f101129 — Support onViewCharacter to view characters
+## f101129e — Support onViewCharacter to view characters
 
 **Author**: Kitzunu | **Date**: 2026-04-03 17:43:51 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/f101129e25ad60106ffebb3ea9813c90387abbad
 
@@ -158,7 +138,7 @@ Add an onViewCharacter callback prop and wire it through layout and relevant pag
 
 <!-- entry-separator -->
 
-## 46f8b1d — Clarify restart instruction for env changes
+## 46f8b1d1 — Clarify restart instruction for env changes
 
 **Author**: Kitzunu | **Date**: 2026-04-03 17:34:52 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/46f8b1d194a085584abe5eedff84e39e9bf148a0
 
@@ -166,7 +146,7 @@ Make the restart requirement explicit for .env edits by updating the toast notif
 
 <!-- entry-separator -->
 
-## 8eb2335 — Add manual server-stop Discord alert
+## 8eb23358 — Add manual server-stop Discord alert
 
 **Author**: Kitzunu | **Date**: 2026-04-03 17:29:58 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/8eb233584180e5af6df2d73e59719b8aaea40341
 
@@ -174,7 +154,7 @@ Introduce a new Discord alert for manually stopped game servers. Added default s
 
 <!-- entry-separator -->
 
-## 1c7a55c — Support comma-separated frontend CORS origins (#38)
+## 1c7a55c5 — Support comma-separated frontend CORS origins (#38)
 
 **Author**: Kitzunu | **Date**: 2026-04-03 17:19:45 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/1c7a55c50281b66a4dbe2e93e2932eab23d5e4e9
 
@@ -188,7 +168,7 @@ Rework CORS origin handling and IP allowlist so changes to environment vars (e.g
 
 <!-- entry-separator -->
 
-## f1e1d9c — Track intentional server stops and adjust alerts
+## f1e1d9c0 — Track intentional server stops and adjust alerts
 
 **Author**: Kitzunu | **Date**: 2026-04-03 17:08:50 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/f1e1d9c08cfd9f69b23efaa42bcf270194ed89fc
 
@@ -196,7 +176,7 @@ Add intentional-stop tracking to distinguish manual shutdowns from crashes. Intr
 
 <!-- entry-separator -->
 
-## e5d9043 — Reset opposing alert state on alert send
+## e5d90435 — Reset opposing alert state on alert send
 
 **Author**: Kitzunu | **Date**: 2026-04-03 17:04:41 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/e5d9043540c93293d23382fa52d94034a80c62ae
 
@@ -204,7 +184,7 @@ Clear the opposing lastSent key when sending crash/online alerts to avoid blocki
 
 <!-- entry-separator -->
 
-## 6d92047 — Add useEffect to CharacterPage imports
+## 6d920473 — Add useEffect to CharacterPage imports
 
 **Author**: Kitzunu | **Date**: 2026-04-03 17:02:15 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/6d9204738346ea7040149ae7c875aa8a3c7b0eb6
 
@@ -212,7 +192,7 @@ Include useEffect in the React import in frontend/src/components/CharacterPage.j
 
 <!-- entry-separator -->
 
-## ca91b3b — Add character nav from Players to Character page
+## ca91b3b5 — Add character nav from Players to Character page
 
 **Author**: Kitzunu | **Date**: 2026-04-03 14:21:37 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/ca91b3b5e1ce520122c854d8f8228904a031b6d8
 
@@ -220,7 +200,7 @@ Enable navigating from the Players list directly to a character detail. Layout: 
 
 <!-- entry-separator -->
 
-## 58680ae — Add alerts system: DB, API, UI, logging
+## 58680ae9 — Add alerts system: DB, API, UI, logging
 
 **Author**: Kitzunu | **Date**: 2026-04-03 14:08:09 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/58680ae98ed94f4f7b25ec9ceac40f6c8e1fd65f
 
@@ -228,7 +208,7 @@ Introduce a new system alert feature across backend and frontend: create alerts 
 
 <!-- entry-separator -->
 
-## fc8e76a — Make sidebar nav groups draggable and relabel
+## fc8e76ac — Make sidebar nav groups draggable and relabel
 
 **Author**: Kitzunu | **Date**: 2026-04-03 13:18:40 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/fc8e76ac7861239ab19c316bc153bf45a514618f
 
@@ -236,7 +216,7 @@ Add draggable, persistable sidebar group ordering with drag handles and visual s
 
 <!-- entry-separator -->
 
-## b20d200 — Document .env editor and dashboard management
+## b20d2002 — Document .env editor and dashboard management
 
 **Author**: Kitzunu | **Date**: 2026-04-03 13:02:47 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/b20d2002195d2a8bd9b0f0c87ed8408e08a1a762
 
@@ -244,7 +224,7 @@ Update README to document new Dashboard Management features and editable .env ke
 
 <!-- entry-separator -->
 
-## 1dc2ec7 — Add dashboard process management & agent runner
+## 1dc2ec7e — Add dashboard process management & agent runner
 
 **Author**: Kitzunu | **Date**: 2026-04-03 12:58:40 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/1dc2ec7e45a536075395fd2a7dca50660805e91d
 
@@ -262,7 +242,7 @@ This change centralizes process control in the dashboard UI, allows safe agent r
 
 <!-- entry-separator -->
 
-## 9ed61ad — Add .env editor, restart runner & UI
+## 9ed61ad6 — Add .env editor, restart runner & UI
 
 **Author**: Kitzunu | **Date**: 2026-04-03 12:48:12 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/9ed61ad6cade0e01b014e535cbded9465456d7e4
 
@@ -272,7 +252,7 @@ Introduce a safe, whitelisted .env editor and restart workflow across backend an
 
 <!-- entry-separator -->
 
-## 3667675 — Coerce truthy checks to boolean in UI badges
+## 3667675a — Coerce truthy checks to boolean in UI badges
 
 **Author**: Kitzunu | **Date**: 2026-04-03 12:26:04 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/3667675a8b4a92699bebe9582165d2813b1901ac
 
@@ -282,7 +262,7 @@ Use explicit boolean coercion (!!) for conditional JSX rendering of online/locke
 
 <!-- entry-separator -->
 
-## 73d7e40 — Add alerts dropdown with sound toggle
+## 73d7e40c — Add alerts dropdown with sound toggle
 
 **Author**: Kitzunu | **Date**: 2026-04-03 12:18:22 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/73d7e40c9e4c9c7a5b3b4b39b8b65a3e4acb80ca
 
@@ -290,7 +270,7 @@ Replace the old NotificationBell with a new AlertsDropdown that combines popup n
 
 <!-- entry-separator -->
 
-## 81f2ee0 — Add removal confirmation modal for name filters
+## 81f2ee0d — Add removal confirmation modal for name filters
 
 **Author**: Kitzunu | **Date**: 2026-04-03 02:52:32 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/81f2ee0d4984fb162fc720240726a0d502d6a844
 
@@ -298,7 +278,7 @@ Introduce a RemoveModal component to confirm removing names from profanity/reser
 
 <!-- entry-separator -->
 
-## db310f6 — Document Name Filters feature; small CSS tweak
+## db310f66 — Document Name Filters feature; small CSS tweak
 
 **Author**: Kitzunu | **Date**: 2026-04-03 02:46:05 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/db310f66c291cb08d8637e37394137dbc0e6542c
 
@@ -306,7 +286,7 @@ Add documentation for the new Name Filters feature (profanity_name and reserved_
 
 <!-- entry-separator -->
 
-## 4e87703 — Add name filters API and management UI
+## 4e87703f — Add name filters API and management UI
 
 **Author**: Kitzunu | **Date**: 2026-04-03 02:42:45 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/4e87703fa29821f90fdad3e57c643c6dcb04850c
 
@@ -314,7 +294,7 @@ Introduce name filters feature: add backend route /api/namefilters with GET/POST
 
 <!-- entry-separator -->
 
-## f6e651f — Parse MySQL DATETIME and robust date formatting
+## f6e651f5 — Parse MySQL DATETIME and robust date formatting
 
 **Author**: Kitzunu | **Date**: 2026-04-03 02:37:32 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/f6e651f555fbb7187ea00b47021117d0f5be9be6
 
@@ -322,7 +302,7 @@ Add parseDate helper to normalize timestamp inputs (numeric Unix seconds or MySQ
 
 <!-- entry-separator -->
 
-## eaae4a1 — Add character search/detail API & UI
+## eaae4a1d — Add character search/detail API & UI
 
 **Author**: Kitzunu | **Date**: 2026-04-03 02:36:12 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/eaae4a1dc45b545a7fff96f177c7656d4ef6bc71
 
@@ -330,7 +310,7 @@ Implements a new Characters feature end-to-end. Adds a backend route (backend/ro
 
 <!-- entry-separator -->
 
-## b36f95c — Add guild bank event & money logs + UI
+## b36f95ce — Add guild bank event & money logs + UI
 
 **Author**: Kitzunu | **Date**: 2026-04-03 01:19:09 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/b36f95ce77f5894506325177b95079b9b0db5b48
 
@@ -338,13 +318,13 @@ Backend: query guild_bank_eventlog for item events (tabs <100) and money events 
 
 <!-- entry-separator -->
 
-## aac6f6c — Merge branch 'master' of https://github.com/Kitzunu/Dashboard
+## aac6f6c9 — Merge branch 'master' of https://github.com/Kitzunu/Dashboard
 
 **Author**: Kitzunu | **Date**: 2026-04-03 01:13:13 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/aac6f6c9ae76224db1bbf7c3cbf8f9af1e09098b
 
 <!-- entry-separator -->
 
-## 469c888 — Add WoWHead tooltips to guild bank items
+## 469c8882 — Add WoWHead tooltips to guild bank items
 
 **Author**: Kitzunu | **Date**: 2026-04-03 01:13:09 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/469c88826a6d56301f61e9b5628223d4fad2c95a
 
@@ -352,7 +332,7 @@ Include the WoWHead widget in index.html and annotate bank item names with data-
 
 <!-- entry-separator -->
 
-## ddaa5bf — Add guild bank endpoint and UI
+## ddaa5bf9 — Add guild bank endpoint and UI
 
 **Author**: Kitzunu | **Date**: 2026-04-03 01:02:37 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/ddaa5bf9aeb8f9f846ae958014e3d07f314e945b
 
@@ -360,7 +340,7 @@ Backend: add GET /api/guilds/:id/bank to return guild bank tabs and items; queri
 
 <!-- entry-separator -->
 
-## ea87303 — Use window hostname for API/socket URLs (#35)
+## ea87303b — Use window hostname for API/socket URLs (#35)
 
 **Author**: Kitzunu | **Date**: 2026-04-03 00:36:15 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/ea87303b4047a5a809ac00a98a330379db4090f0
 
@@ -368,7 +348,7 @@ Detect the frontend host at runtime and build BASE_URL using window.location.hos
 
 <!-- entry-separator -->
 
-## b31e4f8 — Add guilds management page and API
+## b31e4f86 — Add guilds management page and API
 
 **Author**: Kitzunu | **Date**: 2026-04-02 19:04:04 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/b31e4f865548e9da18a5be4c18ae33b939cf6222
 
@@ -378,13 +358,13 @@ Introduce a new Guilds feature: adds backend routes (/api/guilds, /api/guilds/:i
 
 <!-- entry-separator -->
 
-## 612013d — Update README.md
+## 612013d8 — Update README.md
 
 **Author**: Kitzunu | **Date**: 2026-04-02 18:37:54 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/612013d8639f4f22a81078374e7fec43c48a099f
 
 <!-- entry-separator -->
 
-## 4e424f3 — Update README: dashboard files & Discord notes
+## 4e424f33 — Update README: dashboard files & Discord notes
 
 **Author**: Kitzunu | **Date**: 2026-04-02 18:35:26 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/4e424f335fb2c82f1fb7e70483ae9c61f2722c7e
 
@@ -392,7 +372,7 @@ Sync README with recent code changes: add scheduledTasks.js and settingsRoutes.j
 
 <!-- entry-separator -->
 
-## 6ade1b9 — Use hosted icon URL for Discord avatar
+## 6ade1b9e — Use hosted icon URL for Discord avatar
 
 **Author**: Kitzunu | **Date**: 2026-04-02 18:28:30 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/6ade1b9e5d3582181e8859f609b26aab6506d170
 
@@ -400,7 +380,7 @@ Replace local dashboard icon fallback with a static hosted image URL for Discord
 
 <!-- entry-separator -->
 
-## 725af17 — Add Discord 'server online' alert and init sync
+## 725af173 — Add Discord 'server online' alert and init sync
 
 **Author**: Kitzunu | **Date**: 2026-04-02 18:21:21 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/725af173c4bae4c4053b95684ddf56112cb2ce4c
 
@@ -408,7 +388,7 @@ Introduce a new "server online" Discord alert: add settings and default messages
 
 <!-- entry-separator -->
 
-## 85c17f8 — Add Discord webhook alerting
+## 85c17f82 — Add Discord webhook alerting
 
 **Author**: Kitzunu | **Date**: 2026-04-02 18:13:17 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/85c17f828c04b19dbc05e187d12944e8e321569d
 
@@ -416,7 +396,7 @@ Introduce Discord webhook-based alerts across the dashboard. Adds a new backend/
 
 <!-- entry-separator -->
 
-## ed4363f — Emit overview via socket and harden queries
+## ed4363f6 — Emit overview via socket and harden queries
 
 **Author**: Kitzunu | **Date**: 2026-04-02 17:41:50 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/ed4363f6262146f1ec8d111b5753e91c10e59ca8
 
@@ -424,7 +404,7 @@ Make overview data resilient and real-time: backend overview route now wraps eac
 
 <!-- entry-separator -->
 
-## eedb5a0 — Show audit detail modal on row click
+## eedb5a04 — Show audit detail modal on row click
 
 **Author**: Kitzunu | **Date**: 2026-04-02 17:17:00 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/eedb5a049bbc86cc7e17558b5c78c5b1d3f0b54d
 
@@ -432,7 +412,7 @@ Add AuditDetailModal component and wiring to open it when an audit table row is 
 
 <!-- entry-separator -->
 
-## 7903383 — Add scheduled tasks (backup & restart)
+## 79033835 — Add scheduled tasks (backup & restart)
 
 **Author**: Kitzunu | **Date**: 2026-04-02 17:09:54 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/79033835377638dc0fe65cc20740ef21dc31eeb4
 
@@ -440,7 +420,7 @@ Introduce a scheduled tasks system to automate database backups and server resta
 
 <!-- entry-separator -->
 
-## 8e51fa5 — Validate config keys when computing diffs
+## 8e51fa55 — Validate config keys when computing diffs
 
 **Author**: Kitzunu | **Date**: 2026-04-02 16:28:44 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/8e51fa5582a0ce43922da47c5334363cd3a3cd28
 
@@ -448,7 +428,7 @@ Replace the loose regex-based parsing with a stricter key validator and a small 
 
 <!-- entry-separator -->
 
-## 06aaff2 — Add mutes management (API + UI)
+## 06aaff2d — Add mutes management (API + UI)
 
 **Author**: Kitzunu | **Date**: 2026-04-02 16:19:25 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/06aaff2d1b2e572f72cea4bfe1db6ae3ca30cf84
 
@@ -458,7 +438,7 @@ Introduce account mutes management: add a new backend route (backend/routes/mute
 
 <!-- entry-separator -->
 
-## 37de053 — Add account flags admin UI and API
+## 37de053a — Add account flags admin UI and API
 
 **Author**: Kitzunu | **Date**: 2026-04-02 16:15:17 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/37de053ae382d376af7ee493a3013b33e28981f4
 
@@ -468,7 +448,7 @@ Expose and manage account Flags: include Flags in account GET, add PATCH /api/ac
 
 <!-- entry-separator -->
 
-## 53c25d8 — Bump express to ^5.2.1
+## 53c25d88 — Bump express to ^5.2.1
 
 **Author**: Kitzunu | **Date**: 2026-04-02 15:26:10 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/53c25d8845cee96b77e957832d232426e7cf2b46
 
@@ -476,7 +456,7 @@ Upgrade Express dependency from ^4.19.2 to ^5.2.1 in backend/package.json and re
 
 <!-- entry-separator -->
 
-## 8d60bda — Silence dotenv logs and bump dotenv to v17
+## 8d60bda8 — Silence dotenv logs and bump dotenv to v17
 
 **Author**: Kitzunu | **Date**: 2026-04-02 15:23:31 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/8d60bda8b4148e51e911e5f8ed10b0f223ce17c0
 
@@ -484,7 +464,7 @@ Add quiet: true to dotenv.config calls in backend/audit.js, backend/db.js, and b
 
 <!-- entry-separator -->
 
-## a40f4b1 — Bump react and react-dom to 19.2.4
+## a40f4b1a — Bump react and react-dom to 19.2.4
 
 **Author**: Kitzunu | **Date**: 2026-04-02 15:05:36 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/a40f4b1a65cad8dc5999938aa3408fd4d3eedd3c
 
@@ -492,7 +472,7 @@ Upgrade frontend React dependencies to ^19.2.4 in package.json and update packag
 
 <!-- entry-separator -->
 
-## b1310ce — Upgrade @vitejs/plugin-react to ^6.0.1
+## b1310ce7 — Upgrade @vitejs/plugin-react to ^6.0.1
 
 **Author**: Kitzunu | **Date**: 2026-04-02 15:03:57 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/b1310ce7fd146f8340c17c3b75e37734bbde0af3
 
@@ -500,7 +480,7 @@ Bump devDependency @vitejs/plugin-react from ^4.3.1 to ^6.0.1 and regenerate fro
 
 <!-- entry-separator -->
 
-## 46c6fc9 — Bump concurrently to ^9.2.1
+## 46c6fc90 — Bump concurrently to ^9.2.1
 
 **Author**: Kitzunu | **Date**: 2026-04-02 15:00:51 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/46c6fc9091bc09cda0b5bebd730c8ecf4034a14d
 
@@ -508,7 +488,7 @@ Upgrade devDependency 'concurrently' from ^8.2.2 to ^9.2.1 in package.json and u
 
 <!-- entry-separator -->
 
-## b948139 — Bump express-rate-limit to 8.3.2 in lockfile
+## b948139b — Bump express-rate-limit to 8.3.2 in lockfile
 
 **Author**: Kitzunu | **Date**: 2026-04-02 14:58:19 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/b948139bf765e7a0005cc54c18de8504d6cb81e2
 
@@ -516,7 +496,7 @@ Update backend/package-lock.json to use express-rate-limit@8.3.2 — updates ver
 
 <!-- entry-separator -->
 
-## acfafd0 — Bump lodash to 4.18.1
+## acfafd03 — Bump lodash to 4.18.1
 
 **Author**: Kitzunu | **Date**: 2026-04-02 14:41:23 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/acfafd0309fc48b537af6f2ef1a25315d0753fc8
 
@@ -525,7 +505,7 @@ CVE-2026-2950
 
 <!-- entry-separator -->
 
-## 594ab12 — Add mute toggle for browser alert notifications
+## 594ab12d — Add mute toggle for browser alert notifications
 
 **Author**: Kitzunu | **Date**: 2026-04-02 13:14:37 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/594ab12d1613c21772e6b8d51fd709dbc7624725
 
@@ -533,7 +513,7 @@ Make browser alert notifications user-controllable. NotificationBell now accepts
 
 <!-- entry-separator -->
 
-## 7ce7ee6 — Add standalone server agent and bridge
+## 7ce7ee6c — Add standalone server agent and bridge
 
 **Author**: Kitzunu | **Date**: 2026-04-02 13:09:35 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/7ce7ee6c6eda734d1f23760c255f0df2124e2323
 
@@ -541,7 +521,7 @@ Decouple game server lifecycle from the dashboard by introducing a standalone se
 
 <!-- entry-separator -->
 
-## 217468d — Remove expansions 3-6 from EXPANSION_LABELS
+## 217468db — Remove expansions 3-6 from EXPANSION_LABELS
 
 **Author**: Kitzunu | **Date**: 2026-04-02 12:45:43 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/217468dbc1408da690cf60917e116310d1ce2374
 
@@ -551,7 +531,7 @@ Prune EXPANSION_LABELS to include only Classic, The Burning Crusade, and Wrath o
 
 <!-- entry-separator -->
 
-## 8247d2d — Support recursive CONFIG_PATH and subdir configs
+## 8247d2d9 — Support recursive CONFIG_PATH and subdir configs
 
 **Author**: Kitzunu | **Date**: 2026-04-02 12:41:10 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/8247d2d908a80a1cbb6c86ffcf843afef6f6e64e
 
@@ -561,7 +541,7 @@ Load .conf files recursively from CONFIG_PATH (including subdirectories) and exp
 
 <!-- entry-separator -->
 
-## ebe9d12 — DB query UI: presets, editor, pagination
+## ebe9d12b — DB query UI: presets, editor, pagination
 
 **Author**: Kitzunu | **Date**: 2026-04-02 12:24:31 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/ebe9d12b2c70440c11f11adf52da9c1e89675fdd
 
@@ -571,7 +551,7 @@ Enhance DB Query UI and README: add free-form SQL editor with Ctrl+Enter run, pr
 
 <!-- entry-separator -->
 
-## b57dec7 — Restrict GM level dropdown for high-level accounts
+## b57dec7f — Restrict GM level dropdown for high-level accounts
 
 **Author**: Kitzunu | **Date**: 2026-04-02 12:10:16 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/b57dec7fcddae7caf881868621ca6ffdce78b66b
 
@@ -581,7 +561,7 @@ Update AccountsPage.jsx to only render the GM Level <select> when the user canAd
 
 <!-- entry-separator -->
 
-## cd44b66 — Extract shared constants into constants.js
+## cd44b66e — Extract shared constants into constants.js
 
 **Author**: Kitzunu | **Date**: 2026-04-02 12:08:03 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/cd44b66e476c85790d0f009810add07f4748eff5
 
@@ -589,7 +569,7 @@ Move FALLBACK_RACES, FALLBACK_CLASSES, and GM_LABELS into a new frontend/src/con
 
 <!-- entry-separator -->
 
-## 031458c — Add DBC race & class name support
+## 031458cd — Add DBC race & class name support
 
 **Author**: Kitzunu | **Date**: 2026-04-02 12:03:49 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/031458cd224c720d2276fb31b1004078a9f75b05
 
@@ -599,7 +579,7 @@ Load ChrRaces.dbc and ChrClasses.dbc and expose race/class lookups to the app. B
 
 <!-- entry-separator -->
 
-## 5ea0292 — Add dashboard settings subsystem and UI
+## 5ea0292e — Add dashboard settings subsystem and UI
 
 **Author**: Kitzunu | **Date**: 2026-04-01 18:54:35 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/5ea0292ee58b0655e49a08f6c52cef1dd41b4895
 
@@ -607,7 +587,7 @@ Introduce a dashboard-wide settings feature stored in acore_dashboard.settings. 
 
 <!-- entry-separator -->
 
-## c6fdc6d — Increase JSON limit to 10MB; extend graphMinutes
+## c6fdc6d4 — Increase JSON limit to 10MB; extend graphMinutes
 
 **Author**: Kitzunu | **Date**: 2026-04-01 18:47:36 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/c6fdc6d428ccff8933626edebe2bdcd2f05d9282
 
@@ -615,7 +595,7 @@ Raise Express JSON body parser limit to 10MB in backend/server.js to allow large
 
 <!-- entry-separator -->
 
-## 3563d6c — Add resource history and rolling graphs
+## 3563d6cf — Add resource history and rolling graphs
 
 **Author**: Kitzunu | **Date**: 2026-04-01 18:41:30 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/3563d6cffd6e739c7bb5c4b36c9480777971dec8
 
@@ -625,7 +605,7 @@ Collect and display CPU/memory usage history and add configurable graphing. Back
 
 <!-- entry-separator -->
 
-## a4ab7c8 — Pass 'manual' to logout and adjust threshold panel
+## a4ab7c87 — Pass 'manual' to logout and adjust threshold panel
 
 **Author**: Kitzunu | **Date**: 2026-04-01 18:28:37 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/a4ab7c870947f4a6acefcf35433e3f70b630c6b1
 
@@ -635,7 +615,7 @@ Call logout with a 'manual' argument when the user clicks the Logout button so t
 
 <!-- entry-separator -->
 
-## 2e460c9 — Send logout reason to server and log it
+## 2e460c99 — Send logout reason to server and log it
 
 **Author**: Kitzunu | **Date**: 2026-04-01 18:11:37 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/2e460c999dbed6fe1d61621fef3d9c686de9a2b5
 
@@ -645,7 +625,7 @@ Pass a logout reason from the frontend to the backend for improved audit logging
 
 <!-- entry-separator -->
 
-## 5f4b2b5 — Add configurable session idle timeout
+## 5f4b2b5e — Add configurable session idle timeout
 
 **Author**: Kitzunu | **Date**: 2026-03-31 23:46:49 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/5f4b2b5ed3b9091127c3e01c6ff65cece420cafd
 
@@ -653,7 +633,7 @@ Introduce an IDLE_TIMEOUT_MINUTES setting and implement client/server handling f
 
 <!-- entry-separator -->
 
-## 0094461 — Add audit logging and Audit Log UI
+## 00944617 — Add audit logging and Audit Log UI
 
 **Author**: Kitzunu | **Date**: 2026-03-31 23:24:56 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/009446172b18657cc75c7ec4029ba5d2b146de1b
 
@@ -663,7 +643,7 @@ Frontend: add api.getAuditLog, call logout endpoint on logout, and add the Audit
 
 <!-- entry-separator -->
 
-## 4745480 — Add Spam Reports feature
+## 47454808 — Add Spam Reports feature
 
 **Author**: Kitzunu | **Date**: 2026-03-31 22:30:34 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/474548084ceaf274e426c48441be70c93489b284
 
@@ -675,7 +655,7 @@ Frontend: add API methods (getSpamReports, deleteSpamReport, clearSpamReports) a
 
 <!-- entry-separator -->
 
-## ad9cda5 — Add Channels management UI and API
+## ad9cda5a — Add Channels management UI and API
 
 **Author**: Kitzunu | **Date**: 2026-03-31 17:30:54 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/ad9cda5aefea732b6438ac97bbf4a39fb180c554
 
@@ -685,7 +665,7 @@ Implements a new Channels feature allowing browsing and management of in-game ch
 
 <!-- entry-separator -->
 
-## b3ad655 — Bug reports: add state, search, assignee & UI
+## b3ad6552 — Bug reports: add state, search, assignee & UI
 
 **Author**: Kitzunu | **Date**: 2026-03-30 23:15:30 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/b3ad6552697ffd858d7f610c2f07b2c2b6ceec73
 
@@ -697,7 +677,7 @@ Frontend: update api client to accept state/search and add updateBugReport (PATC
 
 <!-- entry-separator -->
 
-## f7960e1 — Add pagination to account search
+## f7960e11 — Add pagination to account search
 
 **Author**: Kitzunu | **Date**: 2026-03-30 22:51:56 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/f7960e113c17fab3c4da7d6bb825ee133e241929
 
@@ -705,7 +685,7 @@ Implement pagination for the accounts list (50 per page). Backend: add PAGE_SIZE
 
 <!-- entry-separator -->
 
-## c65b965 — Show 0 players when worldserver is down
+## c65b9652 — Show 0 players when worldserver is down
 
 **Author**: Kitzunu | **Date**: 2026-03-30 22:41:51 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/c65b9652a66d0674aca24f78e652ce5900a12f6b
 
@@ -713,7 +693,7 @@ Implement pagination for the accounts list (50 per page). Backend: add PAGE_SIZE
 
 <!-- entry-separator -->
 
-## a3168d8 — Improve server startup log messages
+## a3168d82 — Improve server startup log messages
 
 **Author**: Kitzunu | **Date**: 2026-03-30 22:38:51 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/a3168d82a7120fc57becaac402810a35ed9fe9be
 
@@ -721,7 +701,7 @@ Implement pagination for the accounts list (50 per page). Backend: add PAGE_SIZE
 
 <!-- entry-separator -->
 
-## 7dfbc55 — Allow staging items/conditions for new templates
+## 7dfbc551 — Allow staging items/conditions for new templates
 
 **Author**: Kitzunu | **Date**: 2026-03-30 22:35:38 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/7dfbc551989899e40c4feb2b50d9baddff077ef9
 
@@ -729,7 +709,7 @@ Enable adding and removing Mail Server items and conditions while creating a new
 
 <!-- entry-separator -->
 
-## 203f7bd — Introduce grouped sidebar navigation
+## 203f7bd7 — Introduce grouped sidebar navigation
 
 **Author**: Kitzunu | **Date**: 2026-03-30 22:30:46 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/203f7bd7c1a6edcaab63959a7d9ef675620be600
 
@@ -737,7 +717,7 @@ Enable adding and removing Mail Server items and conditions while creating a new
 
 <!-- entry-separator -->
 
-## 2f2d7ec — Update README: expanded features, config, and structure
+## 2f2d7ecf — Update README: expanded features, config, and structure
 
 **Author**: Kitzunu | **Date**: 2026-03-30 22:17:47 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/2f2d7ecf536d0d32fb430c9bc4d856d4a3c25b36
 
@@ -745,7 +725,7 @@ Rework README to reflect new features, reorganize setup and configuration, and d
 
 <!-- entry-separator -->
 
-## 88d14c4 — Support CONFIG_PATH and async config lookup
+## 88d14c4e — Support CONFIG_PATH and async config lookup
 
 **Author**: Kitzunu | **Date**: 2026-03-30 22:09:24 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/88d14c4e9f36302028b8d6b31399eee9fc09e33a
 
@@ -753,7 +733,7 @@ Rework README to reflect new features, reorganize setup and configuration, and d
 
 <!-- entry-separator -->
 
-## 902be6e — Revert "Default Vite backend URL to 0.0.0.0 rather than localhost. (#3)"
+## 902be6e7 — Revert "Default Vite backend URL to 0.0.0.0 rather than localhost. (#3)"
 
 **Author**: Kitzunu | **Date**: 2026-03-30 21:59:29 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/902be6e76765bdeba9385733f3d0bc677dc11ba5
 
@@ -761,7 +741,7 @@ This reverts commit 5ba2c8123347112e7ae2938236d58d610b793304.
 
 <!-- entry-separator -->
 
-## fae9fb7 — Remove .server prefix from announcement commands
+## fae9fb7f — Remove .server prefix from announcement commands
 
 **Author**: Kitzunu | **Date**: 2026-03-30 20:28:15 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/fae9fb7f134a7fa57e92d7cb8b64c973f7a90b5c
 
@@ -769,7 +749,7 @@ This reverts commit 5ba2c8123347112e7ae2938236d58d610b793304.
 
 <!-- entry-separator -->
 
-## e933eb1 — Add data and framework to show more content for bug report view. (#22)
+## e933eb13 — Add data and framework to show more content for bug report view. (#22)
 
 **Author**: Benjamin Jackson | **Date**: 2026-03-30 20:25:08 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/e933eb137e1d8d284e2257c6a881f12bf6596acb
 
@@ -777,7 +757,7 @@ Init.
 
 <!-- entry-separator -->
 
-## 5ba2c81 — Default Vite backend URL to 0.0.0.0 rather than localhost. (#3)
+## 5ba2c812 — Default Vite backend URL to 0.0.0.0 rather than localhost. (#3)
 
 **Author**: Benjamin Jackson | **Date**: 2026-03-30 20:23:18 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/5ba2c8123347112e7ae2938236d58d610b793304
 
@@ -787,7 +767,7 @@ Init.
 
 <!-- entry-separator -->
 
-## 5f570a2 — Add explicit backend listening address. (#2)
+## 5f570a22 — Add explicit backend listening address. (#2)
 
 **Author**: Benjamin Jackson | **Date**: 2026-03-30 20:22:05 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/5f570a22f3426279d1d2e0476b0d6a0e83322df6
 
@@ -797,7 +777,7 @@ Init.
 
 <!-- entry-separator -->
 
-## 4da8622 — Add explicit address to vite configuration. (#1)
+## 4da86224 — Add explicit address to vite configuration. (#1)
 
 **Author**: Benjamin Jackson | **Date**: 2026-03-30 20:20:51 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/4da86224f2bc5af1ca3f8d39ec906ab6c9073c7e
 
@@ -809,7 +789,7 @@ Init.
 
 <!-- entry-separator -->
 
-## ff4b5cf — Bump esbuild and vite in /frontend (#17)
+## ff4b5cf0 — Bump esbuild and vite in /frontend (#17)
 
 **Author**: dependabot[bot] | **Date**: 2026-03-30 20:19:06 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/ff4b5cf07bcc8331d34f81d36eb43f464ca970df
 
@@ -838,13 +818,13 @@ Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.c
 
 <!-- entry-separator -->
 
-## 716622f — Init. (#14)
+## 716622f6 — Init. (#14)
 
 **Author**: Benjamin Jackson | **Date**: 2026-03-29 23:41:26 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/716622f6e5a05a458d1158c57ed810ff95e6a140
 
 <!-- entry-separator -->
 
-## 40ef0d3 — Add worldserver latency monitor and UI
+## 40ef0d32 — Add worldserver latency monitor and UI
 
 **Author**: Kitzunu | **Date**: 2026-03-29 22:42:41 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/40ef0d322d7f20b6aa0c6c2c9e647e83959b893c
 
@@ -852,7 +832,7 @@ Introduce a TCP-based latency monitor for the worldserver and surface stats in t
 
 <!-- entry-separator -->
 
-## 2a584a7 — Clarify README .env examples and add DBC_PATH
+## 2a584a7d — Clarify README .env examples and add DBC_PATH
 
 **Author**: Kitzunu | **Date**: 2026-03-29 21:54:13 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/2a584a7d5f522c6020e025d72eac37328eb59a59
 
@@ -860,7 +840,7 @@ Update README .env example to clarify AzerothCore executable/config paths and ad
 
 <!-- entry-separator -->
 
-## ce978fe — Batch console lines, memoize AnsiLine
+## ce978feb — Batch console lines, memoize AnsiLine
 
 **Author**: Kitzunu | **Date**: 2026-03-29 21:49:56 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/ce978febc90eef6062397da5527fb672e032b046
 
@@ -868,7 +848,7 @@ Memoize AnsiLine to avoid re-renders unless text changes. Buffer incoming consol
 
 <!-- entry-separator -->
 
-## cac9a66 — Resolve player zone names via DBC
+## cac9a666 — Resolve player zone names via DBC
 
 **Author**: Kitzunu | **Date**: 2026-03-29 21:46:42 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/cac9a6660ed3d780b3253b7f1543db346e8c4a88
 
@@ -876,7 +856,7 @@ Lookup area names on the backend using the dbc module and include a zoneName fie
 
 <!-- entry-separator -->
 
-## 0902aa9 — Add DBC lookup support and UI integration
+## 0902aa9a — Add DBC lookup support and UI integration
 
 **Author**: Kitzunu | **Date**: 2026-03-29 21:44:23 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/0902aa9a19477553a7811558a529358dcb1c0f54
 
@@ -884,7 +864,7 @@ Add optional WotLK (3.3.5a) DBC support to resolve map/area IDs to human-readabl
 
 <!-- entry-separator -->
 
-## d8c3141 — Update inputs and modal/form layout styles
+## d8c3141a — Update inputs and modal/form layout styles
 
 **Author**: Kitzunu | **Date**: 2026-03-29 21:16:06 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/d8c3141ac4fa8116204f466fbc1f37bb904fcbf2
 
@@ -892,7 +872,7 @@ Expand input selectors (number, email, search, unnamed inputs) and switch input 
 
 <!-- entry-separator -->
 
-## d46834c — Add Mail Server templates UI and API
+## d46834cf — Add Mail Server templates UI and API
 
 **Author**: Kitzunu | **Date**: 2026-03-29 21:11:23 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/d46834cf463b81bd86a10528e2d9a697757da244
 
@@ -900,7 +880,7 @@ Implements a Mail Server templates feature: adds backend API routes (backend/rou
 
 <!-- entry-separator -->
 
-## 1ea128b — Add browser alert notifications; bump thresholds
+## 1ea128b2 — Add browser alert notifications; bump thresholds
 
 **Author**: Kitzunu | **Date**: 2026-03-29 21:00:34 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/1ea128b2b99fc5cfb24ab6828fef68e4fe61459d
 
@@ -908,7 +888,7 @@ Introduce browser alert notifications and a notification bell in the Overview he
 
 <!-- entry-separator -->
 
-## e73c92f — Add Lag Reports feature (frontend + backend)
+## e73c92f6 — Add Lag Reports feature (frontend + backend)
 
 **Author**: Kitzunu | **Date**: 2026-03-29 20:55:01 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/e73c92f6cf78f2f72137da3aef15e91f98b878ca
 
@@ -916,7 +896,7 @@ Add full Lag Reports support: new backend route (backend/routes/lagreports.js) w
 
 <!-- entry-separator -->
 
-## bd5763b — Add Bug Reports UI, API, and backend
+## bd5763bb — Add Bug Reports UI, API, and backend
 
 **Author**: Kitzunu | **Date**: 2026-03-29 20:43:06 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/bd5763bbbee1fe14cf68bfb0d3338b5a0fabdddf
 
@@ -924,7 +904,7 @@ Introduce a full Bug Reports feature: backend route (backend/routes/bugreports.j
 
 <!-- entry-separator -->
 
-## 95b4c87 — Add resource alerts and threshold settings
+## 95b4c87d — Add resource alerts and threshold settings
 
 **Author**: Kitzunu | **Date**: 2026-03-29 20:31:32 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/95b4c87dcf916a22b93e1e57e85dbcd6db48852b
 
@@ -932,7 +912,7 @@ Introduce configurable CPU and memory alert thresholds persisted to backend/thre
 
 <!-- entry-separator -->
 
-## ddc2504 — Clarify 'text' mail type hint
+## ddc2504e — Clarify 'text' mail type hint
 
 **Author**: Kitzunu | **Date**: 2026-03-29 13:38:34 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/ddc2504ea617308a8a8f1684b86c7692d6e33117
 
@@ -940,7 +920,7 @@ Update the helper text in MailPage.jsx for the 'text' mail type to indicate it u
 
 <!-- entry-separator -->
 
-## 3b9dc1e — Accounts: expansion, email, ban, mute, delete
+## 3b9dc1ef — Accounts: expansion, email, ban, mute, delete
 
 **Author**: Kitzunu | **Date**: 2026-03-29 11:33:43 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/3b9dc1efe80f86c4cddd87184f6212cc0aebf30b
 
@@ -948,7 +928,7 @@ Add several account management features and UI for GM tools. Backend: include ac
 
 <!-- entry-separator -->
 
-## 579f11b — Add Mail and Server Tools UI and API
+## 579f11b7 — Add Mail and Server Tools UI and API
 
 **Author**: Kitzunu | **Date**: 2026-03-29 11:19:48 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/579f11b77ad10278966128ba9a00efa5ad5a4246
 
@@ -956,7 +936,7 @@ Introduce in-dashboard tools for sending in-game mail/items/money and managing s
 
 <!-- entry-separator -->
 
-## 8b56b5e — Add IP allowlist middleware
+## 8b56b5e0 — Add IP allowlist middleware
 
 **Author**: Kitzunu | **Date**: 2026-03-29 10:47:30 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/8b56b5e010da255810764d7144cef648275c77f6
 
@@ -964,7 +944,7 @@ Introduce backend/middleware/ipAllowlist.js to restrict access by IP using an AL
 
 <!-- entry-separator -->
 
-## 6802300 — Remove GitHub Pages workflow and update templates
+## 6802300e — Remove GitHub Pages workflow and update templates
 
 **Author**: Kitzunu | **Date**: 2026-03-29 01:22:43 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/6802300ee1f53d51cda0b6772c0c1f47a7c4b544
 
@@ -972,13 +952,13 @@ Delete the .github/workflows/static.yml workflow that built and deployed the fro
 
 <!-- entry-separator -->
 
-## 05018b7 — Update working directory for frontend build steps
+## 05018b7e — Update working directory for frontend build steps
 
 **Author**: Kitzunu | **Date**: 2026-03-29 01:13:54 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/05018b7ee4d553ce84877fc2926a252ff32303fa
 
 <!-- entry-separator -->
 
-## 03a7e23 — Enhance deployment workflow for static content
+## 03a7e237 — Enhance deployment workflow for static content
 
 **Author**: Kitzunu | **Date**: 2026-03-29 01:11:48 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/03a7e23769b53a81cbeef89160b894903e506883
 
@@ -986,7 +966,7 @@ Updated the GitHub Actions workflow to include Node.js setup, install dependenci
 
 <!-- entry-separator -->
 
-## bd59a10 — Update artifact upload path in static.yml
+## bd59a105 — Update artifact upload path in static.yml
 
 **Author**: Kitzunu | **Date**: 2026-03-29 01:08:56 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/bd59a105f77c7115e3a9fc10f32e236b3da2069e
 
@@ -994,7 +974,7 @@ Change artifact upload path to './frontend' for GitHub Pages deployment.
 
 <!-- entry-separator -->
 
-## bc2a5dc — Add GitHub Actions workflow for GitHub Pages deployment
+## bc2a5dc7 — Add GitHub Actions workflow for GitHub Pages deployment
 
 **Author**: Kitzunu | **Date**: 2026-03-29 01:06:37 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/bc2a5dc79603ebfbab7f73966464fec8cf72da1e
 
@@ -1002,7 +982,7 @@ This workflow automates the deployment of static content to GitHub Pages on push
 
 <!-- entry-separator -->
 
-## 568309d — Use authPool for autobroadcast routes
+## 568309dc — Use authPool for autobroadcast routes
 
 **Author**: Kitzunu | **Date**: 2026-03-29 00:59:53 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/568309dc78ea3add0d4cd70349060a3889828c4e
 
@@ -1010,7 +990,7 @@ Replace worldPool with authPool in backend/routes/autobroadcast.js so all CRUD q
 
 <!-- entry-separator -->
 
-## 49963a9 — Add overview, announcements & account tools
+## 49963a9e — Add overview, announcements & account tools
 
 **Author**: Kitzunu | **Date**: 2026-03-29 00:47:37 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/49963a9e9f2522733de5431782227ca737443121
 
@@ -1018,7 +998,7 @@ Introduce backend and frontend support for an Overview dashboard, Announcements,
 
 <!-- entry-separator -->
 
-## c72cc88 — Add in-browser config editor and API
+## c72cc885 — Add in-browser config editor and API
 
 **Author**: Kitzunu | **Date**: 2026-03-29 00:35:17 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/c72cc885ca23a0922e892cfa615c417c49112574
 
@@ -1026,7 +1006,7 @@ Introduce a new config editor feature for administrators: adds a backend route (
 
 <!-- entry-separator -->
 
-## 8ac5114 — Expand README with features, pages, and architecture
+## 8ac51146 — Expand README with features, pages, and architecture
 
 **Author**: Kitzunu | **Date**: 2026-03-29 00:21:16 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/8ac511463a496e457a0d32f7c786a492a89bb4a3
 
@@ -1034,7 +1014,7 @@ Significantly enrich README: document new dashboard features (ANSI-colored conso
 
 <!-- entry-separator -->
 
-## 757fb2b — Add GM tickets UI and API
+## 757fb2b4 — Add GM tickets UI and API
 
 **Author**: Kitzunu | **Date**: 2026-03-29 00:16:16 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/757fb2b431ac5c124e43d3ad515855b202eef8b9
 
@@ -1042,7 +1022,7 @@ Introduce full GM ticket support: add backend /api/tickets routes (count, list, 
 
 <!-- entry-separator -->
 
-## dcd552a — Support account/character/IP bans (API + UI)
+## dcd552a7 — Support account/character/IP bans (API + UI)
 
 **Author**: Kitzunu | **Date**: 2026-03-28 23:34:23 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/dcd552a778c6dc4d49ae4a88f2a46a7295d4c3c8
 
@@ -1050,7 +1030,7 @@ Expand bans functionality to cover accounts, characters, and IPs. Backend: retur
 
 <!-- entry-separator -->
 
-## 6800685 — Allow fallback JWT secret and remove enforcement
+## 6800685c — Allow fallback JWT secret and remove enforcement
 
 **Author**: Kitzunu | **Date**: 2026-03-28 23:25:37 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/6800685cdbedab7b4bbe40bf157e9fcc2956157f
 
@@ -1058,7 +1038,7 @@ Remove the startup check that enforced a non-default JWT_SECRET in backend/serve
 
 <!-- entry-separator -->
 
-## 656ff3c — Support graceful stop, autorestart & ANSI colors
+## 656ff3cf — Support graceful stop, autorestart & ANSI colors
 
 **Author**: Kitzunu | **Date**: 2026-03-28 23:18:53 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/656ff3cfdc447ad38d000763f84133ba29b5a4f6
 
@@ -1068,13 +1048,13 @@ Changes include: processManager now preserves SGR color codes, supports stop mod
 
 <!-- entry-separator -->
 
-## 22737d0 — Delete .env
+## 22737d07 — Delete .env
 
 **Author**: Kitzunu | **Date**: 2026-03-28 23:14:42 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/22737d076b4a42157fa453ea0a87a4c89d647c86
 
 <!-- entry-separator -->
 
-## b67db77 — Ignore local .env and .claude/
+## b67db774 — Ignore local .env and .claude/
 
 **Author**: Kitzunu | **Date**: 2026-03-28 23:13:25 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/b67db77416b4624d7bde05d0be93f4eed7b34826
 
@@ -1082,7 +1062,7 @@ Add .env and .claude/ to .gitignore to prevent committing local environment vari
 
 <!-- entry-separator -->
 
-## e336ee3 — Add detailed README for AzerothCore Dashboard
+## e336ee32 — Add detailed README for AzerothCore Dashboard
 
 **Author**: Kitzunu | **Date**: 2026-03-28 23:09:09 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/e336ee32216554f391d6269c9180dea72f583a7a
 
@@ -1090,7 +1070,7 @@ Replace the minimal README with a comprehensive project README for the AzerothCo
 
 <!-- entry-separator -->
 
-## 8c3ddcd — Add bans UI/backend, toasts, player count
+## 8c3ddcd3 — Add bans UI/backend, toasts, player count
 
 **Author**: Kitzunu | **Date**: 2026-03-28 23:07:01 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/8c3ddcd3bd49f49443c270edb46e14cdcd8d5eed
 
@@ -1098,7 +1078,7 @@ Introduce account ban management and UI feedback: add a new backend route (route
 
 <!-- entry-separator -->
 
-## feddd71 — Use brand image instead of emoji icons
+## feddd71f — Use brand image instead of emoji icons
 
 **Author**: Kitzunu | **Date**: 2026-03-28 22:12:32 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/feddd71f2c8e55a58db7acf9e58675ec59ef8667
 
@@ -1106,7 +1086,7 @@ Replace the emoji-based brand icons with an actual image (../../img/icon.png) in
 
 <!-- entry-separator -->
 
-## 79094cf — Add brand icon and favicon
+## 79094cf8 — Add brand icon and favicon
 
 **Author**: Kitzunu | **Date**: 2026-03-28 21:54:11 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/79094cf865c9cd984d208abf2bb29900ba3b5491
 
@@ -1114,19 +1094,19 @@ Add frontend/img/icon.png and use it as the site favicon and brand graphic. inde
 
 <!-- entry-separator -->
 
-## 73fe5b3 — Update GitHub Actions to use latest checkout and setup-node
+## 73fe5b30 — Update GitHub Actions to use latest checkout and setup-node
 
 **Author**: Kitzunu | **Date**: 2026-03-28 20:36:49 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/73fe5b30e8d7b5865647c19948a5e9046b93aadb
 
 <!-- entry-separator -->
 
-## fc7703e — Update node.js.yml
+## fc7703ee — Update node.js.yml
 
 **Author**: Kitzunu | **Date**: 2026-03-28 20:34:07 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/fc7703eeca4a6d927a5ec959c77c0575ddca99bc
 
 <!-- entry-separator -->
 
-## 87b6774 — Add Node.js CI workflow for testing
+## 87b67741 — Add Node.js CI workflow for testing
 
 **Author**: Kitzunu | **Date**: 2026-03-28 20:21:21 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/87b6774104cb374dad71b1a83c1da5b96e2a0dd8
 
@@ -1134,7 +1114,7 @@ This workflow installs dependencies, builds the code, and runs tests across mult
 
 <!-- entry-separator -->
 
-## a7274a3 — Persist console history & autoscroll; add filter
+## a7274a3b — Persist console history & autoscroll; add filter
 
 **Author**: Kitzunu | **Date**: 2026-03-28 20:06:07 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/a7274a3b1af2d16c9f51b865b73505d672a45db7
 
@@ -1142,13 +1122,13 @@ ConsolePanel: persist command history (sessionStorage per-server, capped to 50 e
 
 <!-- entry-separator -->
 
-## c6c3e8e — Merge branch 'master' of https://github.com/Kitzunu/Dashboard
+## c6c3e8e9 — Merge branch 'master' of https://github.com/Kitzunu/Dashboard
 
 **Author**: Kitzunu | **Date**: 2026-03-28 20:02:09 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/c6c3e8e953746c0dd2740813c6886d22ff6999a1
 
 <!-- entry-separator -->
 
-## 8b45334 — Graceful shutdown for worldserver
+## 8b45334a — Graceful shutdown for worldserver
 
 **Author**: Kitzunu | **Date**: 2026-03-28 20:01:23 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/8b45334ac850cc92adb99aba75ca76dd2225fa50
 
@@ -1156,7 +1136,7 @@ Attempt a graceful shutdown for the 'worldserver' process by writing "server shu
 
 <!-- entry-separator -->
 
-## d6cbc7d — Clean up .gitignore by removing obsolete entries
+## d6cbc7d5 — Clean up .gitignore by removing obsolete entries
 
 **Author**: Kitzunu | **Date**: 2026-03-28 19:56:19 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/d6cbc7d5e223bac1b54cdd34387d68d1aa474ac7
 
@@ -1164,24 +1144,24 @@ Remove a number of outdated or redundant ignore patterns from .gitignore (misc c
 
 <!-- entry-separator -->
 
-## da0bcbe — Delete backend/node_modules directory
+## da0bcbe4 — Delete backend/node_modules directory
 
 **Author**: Kitzunu | **Date**: 2026-03-28 19:55:18 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/da0bcbe405d804729441561afbcd9ea0f757bc9d
 
 <!-- entry-separator -->
 
-## 4b28b55 — Delete frontend/node_modules directory
+## 4b28b55f — Delete frontend/node_modules directory
 
 **Author**: Kitzunu | **Date**: 2026-03-28 19:55:08 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/4b28b55f20bc1bef5a9ee24fc0018038fdb56ade
 
 <!-- entry-separator -->
 
-## 9f2c6e9 — Delete node_modules directory
+## 9f2c6e9c — Delete node_modules directory
 
 **Author**: Kitzunu | **Date**: 2026-03-28 19:54:58 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/9f2c6e9ca7ef5fda46faedcb3b9807a90bd6757b
 
 <!-- entry-separator -->
 
-## f2bd2fc — Initial commit
+## f2bd2fcf — Initial commit
 
 **Author**: Kitzunu | **Date**: 2026-03-28 19:51:37 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/f2bd2fcf9c96f07fdfceafa7574d7aba1098b5a6
