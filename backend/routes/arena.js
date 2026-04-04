@@ -130,11 +130,14 @@ router.patch('/:id', requireGMLevel(3), async (req, res) => {
   params.push(arenaTeamId);
 
   try {
+    const details = [];
+    if (rating !== undefined) details.push(`rating=${parseInt(rating, 10)}`);
+    if (captainGuid !== undefined) details.push(`captainGuid=${parseInt(captainGuid, 10)}`);
     await charPool.query(
       `UPDATE arena_team SET ${updates.join(', ')} WHERE arenaTeamId = ?`,
       params
     );
-    audit(req, 'arena.update', `arenaTeamId=${arenaTeamId} ${updates.join(' ')}`);
+    audit(req, 'arena.update', `arenaTeamId=${arenaTeamId} ${details.join(' ')}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
