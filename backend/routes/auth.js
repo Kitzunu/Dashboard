@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const { authPool } = require('../db');
 const { logAudit, getIP } = require('../audit');
+const { registerSession } = require('./sessions');
 
 const router = express.Router();
 
@@ -102,6 +103,11 @@ router.post('/login', loginLimiter, async (req, res) => {
 
     const idleTimeoutMinutes = parseInt(process.env.IDLE_TIMEOUT_MINUTES, 10) || 0;
     logAudit(account.username, getIP(req), 'login', `GM level ${account.gmlevel}`);
+
+    // Track session for active session management
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    registerSession(account.username, tokenHash, getIP(req), req.headers['user-agent'], account.gmlevel);
+
     res.json({ token, username: account.username, gmlevel: account.gmlevel, idleTimeoutMinutes });
   } catch (err) {
     console.error('Login error:', err);

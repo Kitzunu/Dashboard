@@ -80,3 +80,30 @@ CREATE TABLE IF NOT EXISTS `calendar_events` (
   KEY `idx_type`  (`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   COMMENT='Dashboard calendar custom events';
+
+CREATE TABLE IF NOT EXISTS `analytics_history` (
+  `id`          INT UNSIGNED    NOT NULL AUTO_INCREMENT,
+  `type`        VARCHAR(32)     NOT NULL,
+  `value`       FLOAT           NOT NULL DEFAULT 0,
+  `recorded_at` DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_type_recorded` (`type`, `recorded_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Historical analytics snapshots';
+
+CREATE TABLE IF NOT EXISTS `active_sessions` (
+  `id`          INT UNSIGNED    NOT NULL AUTO_INCREMENT,
+  `username`    VARCHAR(64)     NOT NULL,
+  `token_hash`  VARCHAR(64)     NOT NULL,
+  `ip`          VARCHAR(45)     NOT NULL DEFAULT '',
+  `user_agent`  VARCHAR(512)    NOT NULL DEFAULT '',
+  `gmlevel`     TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  `created_at`  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_active` DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `revoked`     TINYINT(1)      NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_username`   (`username`),
+  KEY `idx_token_hash` (`token_hash`),
+  KEY `idx_revoked`    (`revoked`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Dashboard active sessions';

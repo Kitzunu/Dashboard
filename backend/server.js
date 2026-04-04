@@ -44,6 +44,13 @@ const alertsRoutes           = require('./routes/alertsRoutes');
 const pdumpRoutes            = require('./routes/pdump');
 const changelogRoutes        = require('./routes/changelog');
 const calendarRoutes         = require('./routes/calendar');
+const backupsRoutes          = require('./routes/backups');
+const healthcheckRoutes      = require('./routes/healthcheck');
+const batchOperationsRoutes  = require('./routes/batchOperations');
+const characterTransferRoutes= require('./routes/characterTransfer');
+const notificationsRoutes    = require('./routes/notifications');
+const analyticsRoutes        = require('./routes/analytics');
+const sessionsRoutes         = require('./routes/sessions');
 const alertLogger            = require('./alertLogger');
 const scheduler              = require('./scheduler');
 const { startRetentionJob } = require('./audit');
@@ -141,6 +148,13 @@ app.use('/api/alerts',         authenticateToken, alertsRoutes);
 app.use('/api/pdump',          authenticateToken, pdumpRoutes);
 app.use('/api/changelog',      authenticateToken, changelogRoutes);
 app.use('/api/calendar',       authenticateToken, calendarRoutes);
+app.use('/api/backups',        authenticateToken, backupsRoutes);
+app.use('/api/healthcheck',    authenticateToken, healthcheckRoutes);
+app.use('/api/batch',          authenticateToken, batchOperationsRoutes);
+app.use('/api/character-transfer', authenticateToken, characterTransferRoutes);
+app.use('/api/notifications',  authenticateToken, notificationsRoutes);
+app.use('/api/analytics',      authenticateToken, analyticsRoutes);
+app.use('/api/sessions',       authenticateToken, sessionsRoutes);
 
 // Authenticate socket connections with JWT
 io.use((socket, next) => {
@@ -277,6 +291,12 @@ function pollResources() {
     const total  = os.totalmem();
     const memory = Math.round(((total - os.freemem()) / total) * 100);
     resourceHistory.record(cpu, memory);
+    // Persist to historical analytics (every 5 min to avoid excessive writes)
+    if (!pollResources._lastAnalytics || Date.now() - pollResources._lastAnalytics >= 300000) {
+      pollResources._lastAnalytics = Date.now();
+      const latestPlayer = playerHistory.getHistory().slice(-1)[0];
+      analyticsRoutes.recordSnapshot(latestPlayer ? latestPlayer.count : 0, cpu, memory);
+    }
     // Threshold breach Discord alerts + DB logging
     const t = await thresholds.load();
     if (t.cpu && cpu >= t.cpu) {
