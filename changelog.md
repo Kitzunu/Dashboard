@@ -1,5 +1,41 @@
 # Changelog
 
+## 1c570df — Add calendar interface (#47)
+
+**Author**: Copilot | **Date**: 2026-04-04 15:50:40 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/1c570dfe189e51c819a513d1b95cb6ca02bae4d6
+
+Calendar had several issues post-launch: game events showed hundreds of internal server entries (BG queues, fishing pools) instead of just holidays, the occurrence expansion loop couldn't reach 2026 from 2008-era start dates within the 200-iteration cap, Sunday events were clipped, and Saturday/Sunday columns disappeared when the detail panel opened. The datetime picker in the create/edit modal also lacked dark-theme styling.
+
+### Backend: filter to holidays only
+
+- Added `WHERE holiday > 0` to the `game_event` query — internal server events are not meaningful on a dashboard calendar
+- Fixed zero-date handling: `end_time = '0000-00-00 00:00:00'` comparison replaced with `CAST(end_time AS CHAR)` for MySQL strict-mode compatibility, added `IS NULL` guard
+- Extracted `hasPassedResetTime()` helper for raid reset calculation, fixed duplicate reset edge case
+
+### Frontend: occurrence expansion
+
+- `expandGameEvent()` now computes a skip count to jump near the viewing window instead of iterating from the event's original `start_time` (2008–2012):
+  ```js
+  const skipCount = Math.max(0, Math.floor(msFromStart / occurMs) - 1);
+  eventStart = new Date(startTime.getTime() + skipCount * occurMs);
+  ```
+- Fixed zero-date detection: `isNaN(endTime.getTime())` instead of `endTime.getTime() <= 0` (which is `false` for `NaN`)
+### CSS: grid layout and input styling
+
+- `grid-template-columns: repeat(7, 1fr)` → `repeat(7, minmax(0, 1fr))` — `1fr` is `minmax(auto, 1fr)`, so columns with long `nowrap` event text inflated unevenly, pushing Sunday off the `overflow: hidden` boundary
+- Added `overflow: hidden` on `.cal-cell` to prevent content from driving column minimum sizing
+- Added `overflow-x: auto` on `.cal-grid-wrap` as a scroll fallback when the detail panel compresses the grid
+- Added `input[type="datetime-local"]` to the global input selector for dark-theme styling
+
+* closes https://github.com/Kitzunu/Dashboard/issues/8
+
+---------
+
+Co-authored-by: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## 25e3267 — Move alert thresholds to Settings tab, persist to database (#46)
 
 **Author**: Copilot | **Date**: 2026-04-04 15:01:23 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/25e3267261bfae7b967bca2c2d38cdf119490ae2
