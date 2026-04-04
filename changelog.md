@@ -1,4 +1,14 @@
 # Changelog
+## c6a7576 — chore: populate changelog.md with all 133 existing commits
+
+**Author**: copilot-swe-agent[bot] | **Date**: 2026-04-04 11:51:02 +0000 | **Link**: https://github.com/Kitzunu/Dashboard/commit/c6a7576985cded40f46798822e0c1a767df3157b
+
+Agent-Logs-Url: https://github.com/Kitzunu/Dashboard/sessions/3bc8cc12-6aa0-424d-9449-3a72d88046b2
+
+Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## 6ffa6ad — feat: add Changelog page to Dashboard group
 
 **Author**: copilot-swe-agent[bot] | **Date**: 2026-04-04 11:47:55 +0000 | **Link**: https://github.com/Kitzunu/Dashboard/commit/6ffa6ad69c8832e336176e6153e621a2eaa928e8
@@ -7,7 +17,7 @@ Agent-Logs-Url: https://github.com/Kitzunu/Dashboard/sessions/41c1a1c7-65f2-4e57
 
 Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
 
----
+<!-- entry-separator -->
 
 ## d2d1d10 — Alerts: checkbox batch delete + filter-scoped Clear All (#44)
 
@@ -34,7 +44,7 @@ No way to delete an arbitrary subset of alerts; "Clear All" wiped every alert re
 Co-authored-by: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
 Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
 
----
+<!-- entry-separator -->
 
 ## 2b1a5dc — fix: inputs clipped to intrinsic width; remove frontend/dist from repo (#43)
 
@@ -65,7 +75,7 @@ This pull request introduces a new API endpoint to list available server-side du
 
 * Adjusted `.db-select` and other input styles for better layout consistency.
 
----
+<!-- entry-separator -->
 
 ## 498c678 — Reset CONFIG_PATH and BACKUP_PATH in .env.example
 
@@ -73,7 +83,7 @@ This pull request introduces a new API endpoint to list available server-side du
 
 Clear CONFIG_PATH and BACKUP_PATH for default settings.
 
----
+<!-- entry-separator -->
 
 ## 40ff27c — Revise README TOC, sections, and tables
 
@@ -81,7 +91,7 @@ Clear CONFIG_PATH and BACKUP_PATH for default settings.
 
 Reorganize and clean up README.md: add a top-level "AzerothCore Dashboard" heading and expanded Table of Contents with detailed Pages entries, introduce a Character Dumps section, and move scheduler/mysqldump notes out of the pdump paragraph. Reformat several Markdown tables (Discord Alerts, Access Levels, Audit Log, Settings, Environment keys) for consistent alignment and readability, add a "What is logged" subheading under Audit Log Setup, and remove duplicated/relocated lines. Overall cosmetic and structural edits to improve navigation and clarity.
 
----
+<!-- entry-separator -->
 
 ## 9688a14 — Add character pdump export/import support
 
@@ -96,7 +106,7 @@ Introduce full pdump export/import functionality.
 
 This change enables admins to export .pdump-compatible SQL dumps and import them safely from the dashboard, supporting both browser downloads and server-side storage.
 
----
+<!-- entry-separator -->
 
 ## 85dfaba — Fix SecondsSinceMessage column casing
 
@@ -104,7 +114,7 @@ This change enables admins to export .pdump-compatible SQL dumps and import them
 
 Query and mapping updated to use the correct column name 'SecondsSinceMessage' (matching DB casing) in backend/routes/spamreports.js. This fixes a mismatch that caused the secondsSinceMessage field to be undefined in API responses.
 
----
+<!-- entry-separator -->
 
 ## 797b03c — Update character inventory SQL preset
 
@@ -112,7 +122,7 @@ Query and mapping updated to use the correct column name 'SecondsSinceMessage' (
 
 Refine the 'Character inventory' preset SQL: rename the selected alias to character_name, count items using COUNT(i.item) instead of COUNT(i.guid), add GROUP BY c.guid, c.name to satisfy aggregation rules, and append a trailing semicolon for correctness.
 
----
+<!-- entry-separator -->
 
 ## cb308c8 — Add backend health endpoint and gate frontend start
 
@@ -120,7 +130,7 @@ Refine the 'Character inventory' preset SQL: rename the selected alias to charac
 
 Expose a /api/health endpoint and adjust CORS handling so missing origins are denied without throwing. Update package.json to use wait-on so the frontend waits for the backend health check before starting, and update README to document the frontend gating behavior. These changes prevent the browser/Vite from hitting the API before the backend (and CORS/routing) are fully initialized.
 
----
+<!-- entry-separator -->
 
 ## 1c18419 — Fetch and use DBC races/classes in CharacterPage
 
@@ -128,7 +138,7 @@ Expose a /api/health endpoint and adjust CORS handling so missing origins are de
 
 Replace static FALLBACK_RACES/FALLBACK_CLASSES lookups with component state populated from API DBC endpoints. Initialize races/classes state with fallbacks, fetch updated mappings on mount (api.getDBCRaces / api.getDBCClasses) and use them in the character list and detail view, falling back to raw IDs if unavailable.
 
----
+<!-- entry-separator -->
 
 ## e6711bc — Load races and classes from API in CharacterPage
 
@@ -136,7 +146,7 @@ Replace static FALLBACK_RACES/FALLBACK_CLASSES lookups with component state popu
 
 OverviewTab now initializes local races/classes state from FALLBACK_* and fetches DBC races and classes on mount via api.getDBCRaces()/api.getDBCClasses(). The rendered Race/Class labels now use the fetched maps (falling back to the raw id if absent). Network errors are ignored silently to preserve existing behavior.
 
----
+<!-- entry-separator -->
 
 ## f101129 — Support onViewCharacter to view characters
 
@@ -146,7 +156,7 @@ Add an onViewCharacter callback prop and wire it through layout and relevant pag
 
 * closes https://github.com/Kitzunu/Dashboard/issues/39
 
----
+<!-- entry-separator -->
 
 ## 46f8b1d — Clarify restart instruction for env changes
 
@@ -154,7 +164,7 @@ Add an onViewCharacter callback prop and wire it through layout and relevant pag
 
 Make the restart requirement explicit for .env edits by updating the toast notification and the Environment section subtitle to state that the backend server must be restarted for the changes to take effect. This improves clarity for users saving environment settings.
 
----
+<!-- entry-separator -->
 
 ## 8eb2335 — Add manual server-stop Discord alert
 
@@ -162,7 +172,7 @@ Make the restart requirement explicit for .env edits by updating the toast notif
 
 Introduce a new Discord alert for manually stopped game servers. Added default settings (discord.alert_server_stop and discord.message_server_stop) and UI controls in SettingsPage, implemented sendServerStop in backend/discord.js (using existing embed/sending logic), and wired it into server.js to be sent when a stop is intentional. Also removed the previous cooldown/anti-spam tracking and related checks from discord.js and updated the module exports accordingly. Small formatting/cleanup applied to related code.
 
----
+<!-- entry-separator -->
 
 ## 1c7a55c — Support comma-separated frontend CORS origins (#38)
 
@@ -176,7 +186,7 @@ Allow the FRONTEND_URL env var to contain comma-separated origins (e.g. localhos
 
 Rework CORS origin handling and IP allowlist so changes to environment vars (e.g. via the .env editor) apply immediately without restarting the server. In ipAllowlist.js the allowlist is now re-parsed on each request instead of cached globally. In server.js added getFrontendOrigins() and dynamicOrigin() to re-read FRONTEND_URL per request and supplied dynamicOrigin as the CORS callback for both Express and Socket.IO. Also updated the startup log to print the current frontend origins.
 
----
+<!-- entry-separator -->
 
 ## f1e1d9c — Track intentional server stops and adjust alerts
 
@@ -184,7 +194,7 @@ Rework CORS origin handling and IP allowlist so changes to environment vars (e.g
 
 Add intentional-stop tracking to distinguish manual shutdowns from crashes. Introduce markIntentionalStop and consumeIntentionalStop in backend/processManager.js and export them. The servers stop route now marks a stop as intentional before calling stopServer. server.js consumes that flag to log a 'server_stop' (info) and avoid sending crash alerts/Discord notifications when a stop was user-initiated; otherwise it keeps the existing crash handling. Update frontend AlertsPage to display a 'Server Stopped' alert type and badge styling.
 
----
+<!-- entry-separator -->
 
 ## e5d9043 — Reset opposing alert state on alert send
 
@@ -192,7 +202,7 @@ Add intentional-stop tracking to distinguish manual shutdowns from crashes. Intr
 
 Clear the opposing lastSent key when sending crash/online alerts to avoid blocking the next opposite alert. Adds lastSent.delete(`online.${server}`) in sendServerCrash and lastSent.delete(`crash.${server}`) in sendServerOnline (placed after markSent) so online and crash notifications don't suppress each other.
 
----
+<!-- entry-separator -->
 
 ## 6d92047 — Add useEffect to CharacterPage imports
 
@@ -200,7 +210,7 @@ Clear the opposing lastSent key when sending crash/online alerts to avoid blocki
 
 Include useEffect in the React import in frontend/src/components/CharacterPage.jsx to enable use of effect hooks within the component. This prepares the file for side-effect logic that relies on useEffect.
 
----
+<!-- entry-separator -->
 
 ## ca91b3b — Add character nav from Players to Character page
 
@@ -208,7 +218,7 @@ Include useEffect in the React import in frontend/src/components/CharacterPage.j
 
 Enable navigating from the Players list directly to a character detail. Layout: add charNavGuid state, wire Players page to set it and switch to the Characters page, and pass initialGuid into CharacterPage. PlayersPage: accept onViewCharacter prop and render player names as a .btn-link button that calls the callback when provided. CharacterPage: accept initialGuid and auto-open the character on mount (useEffect intentionally omits openDetail from deps). index.css: add .btn-link styles. This streamlines workflow for viewing a character from the players list.
 
----
+<!-- entry-separator -->
 
 ## 58680ae — Add alerts system: DB, API, UI, logging
 
@@ -216,7 +226,7 @@ Enable navigating from the Players list directly to a character detail. Layout: 
 
 Introduce a new system alert feature across backend and frontend: create alerts DB table and SQL migration; add backend alertLogger to persist alerts; expose /api/alerts routes for listing and deleting alerts (GM level 1+ to view, level 3 required for deletes/clear); wire alert logging into server events (server online/crash, agent disconnect, resource threshold breaches and latency breaches) and send corresponding Discord latency alerts; extend thresholds to include latencyWarn/latencyCritical with validation; add frontend API methods, AlertsPage UI, and nav entry; update HomePage threshold settings to configure latency thresholds. Includes minor docs updates.
 
----
+<!-- entry-separator -->
 
 ## fc8e76a — Make sidebar nav groups draggable and relabel
 
@@ -224,7 +234,7 @@ Introduce a new system alert feature across backend and frontend: create alerts 
 
 Add draggable, persistable sidebar group ordering with drag handles and visual states. Introduces getInitialGroupOrder/localStorage key `ac-nav-group-order`, drag handlers (start/over/drop/end), and orderedGroups rendering. Clean up nav labels by removing emoji, move Players-related items into a dedicated "Players" group in the nav and README. Update CSS: make .nav-item flex, adjust paddings, add .nav-group-drag-handle, hover/dragging/drag-over styles, and tweak kbd padding to align with new layout. Improves UX by allowing users to reorder nav groups and provides clearer, emoji-free labels.
 
----
+<!-- entry-separator -->
 
 ## b20d200 — Document .env editor and dashboard management
 
@@ -232,7 +242,7 @@ Add draggable, persistable sidebar group ordering with drag handles and visual s
 
 Update README to document new Dashboard Management features and editable .env keys. Adds explanations for Restart Backend/Agent/Frontend actions (confirmation modals, audit-logging, agent restart warning that game servers will be temporarily unmanaged) and notes that .env edits require backend/agent restarts. Reflects role/permission changes (GM/Admin access to Settings/.env editor and Dashboard Management), adds audit-log entries for Scheduled Tasks, Settings, Environment, and Dashboard restarts, and documents Alerts UI and confirmation changes. Also lists new backend/frontend files and lightweight runner scripts (run.js, runAgent.js) used to auto-restart processes.
 
----
+<!-- entry-separator -->
 
 ## 1dc2ec7 — Add dashboard process management & agent runner
 
@@ -250,7 +260,7 @@ Add UI and API endpoints to manage/restart processes and introduce a resilient a
 
 This change centralizes process control in the dashboard UI, allows safe agent restarts handled by a supervisor, and clarifies that the Vite dev frontend cannot be restarted remotely.
 
----
+<!-- entry-separator -->
 
 ## 9ed61ad — Add .env editor, restart runner & UI
 
@@ -260,7 +270,7 @@ Introduce a safe, whitelisted .env editor and restart workflow across backend an
 
 * closes https://github.com/Kitzunu/Dashboard/issues/37
 
----
+<!-- entry-separator -->
 
 ## 3667675 — Coerce truthy checks to boolean in UI badges
 
@@ -270,7 +280,7 @@ Use explicit boolean coercion (!!) for conditional JSX rendering of online/locke
 
 *closes https://github.com/Kitzunu/Dashboard/issues/36
 
----
+<!-- entry-separator -->
 
 ## 73d7e40 — Add alerts dropdown with sound toggle
 
@@ -278,7 +288,7 @@ Use explicit boolean coercion (!!) for conditional JSX rendering of online/locke
 
 Replace the old NotificationBell with a new AlertsDropdown that combines popup notification and alert-sound controls in a single dropdown. fireNotification now accepts options ({ sound, popup }) so sound and browser popup can be toggled independently. Added soundEnabled state and persisted it to localStorage (ac-sound-enabled) with a corresponding ref and toggle handler. checkAlerts now passes the appropriate options so alerts can be popup-only, sound-only, or both. Also added click-outside handling for the dropdown and small UI tweaks (chevrons for dropdowns and threshold toggle).
 
----
+<!-- entry-separator -->
 
 ## 81f2ee0 — Add removal confirmation modal for name filters
 
@@ -286,7 +296,7 @@ Replace the old NotificationBell with a new AlertsDropdown that combines popup n
 
 Introduce a RemoveModal component to confirm removing names from profanity/reserved lists. Add removeTarget state to track the selected name, update the Remove button to open the modal, and refactor handleRemove to use removeTarget and clear it on success or error. This prevents accidental deletions by requiring explicit confirmation before calling api.removeNameFilter.
 
----
+<!-- entry-separator -->
 
 ## db310f6 — Document Name Filters feature; small CSS tweak
 
@@ -294,7 +304,7 @@ Introduce a RemoveModal component to confirm removing names from profanity/reser
 
 Add documentation for the new Name Filters feature (profanity_name and reserved_name) including UI details, permissions (GM level 2 can view/add/remove), audit logging, and entries for related frontend files (namefilters.js, NameFiltersPage.jsx). Also update README tables and action list to include name filter actions. Minor CSS change: include .guild-bank-info alongside .guild-ranks-list to share the same flex layout.
 
----
+<!-- entry-separator -->
 
 ## 4e87703 — Add name filters API and management UI
 
@@ -302,7 +312,7 @@ Add documentation for the new Name Filters feature (profanity_name and reserved_
 
 Introduce name filters feature: add backend route /api/namefilters with GET/POST/DELETE to manage 'profanity' and 'reserved' lists (GM level 2 required, 12-char limit, duplicate handling, and audit logging). Register the route in server.js. Add frontend API helpers (getNameFilters, addNameFilter, removeNameFilter), a new NameFiltersPage React component for listing, filtering, adding and removing names, and wire the page into Layout navigation.
 
----
+<!-- entry-separator -->
 
 ## f6e651f — Parse MySQL DATETIME and robust date formatting
 
@@ -310,7 +320,7 @@ Introduce name filters feature: add backend route /api/namefilters with GET/POST
 
 Add parseDate helper to normalize timestamp inputs (numeric Unix seconds or MySQL DATETIME strings) and replace space with 'T' for ISO parsing. Refactor fmtUnix and fmtUnixFull to use parseDate, return '—' for missing/invalid dates, and preserve locale formatting for valid dates.
 
----
+<!-- entry-separator -->
 
 ## eaae4a1 — Add character search/detail API & UI
 
@@ -318,7 +328,7 @@ Add parseDate helper to normalize timestamp inputs (numeric Unix seconds or MySQ
 
 Implements a new Characters feature end-to-end. Adds a backend route (backend/routes/characters.js) providing character search and full-character detail (equipment, bags, bank, reputation, currency, achievements, auras, stats) using char/world DBs; search requires >=2 chars and GM level 1. Extends backend/dbc.js to load and expose additional DBC tables (factions, achievements, categories, char titles, spells) and exports helper getters; init logs and gracefully handles missing DBC_PATH. Registers the route in backend/server.js. Frontend: exposes api.searchCharacters / api.getCharacter, adds a new CharacterPage React component with tabbed UI (Overview, Stats, Equipment, Bags, Bank, Auras, Reputation, Achievements) and integrates WoWHead links; minor layout/CSS and README updates documenting the new feature. Handles missing tables gracefully and keeps world/char queries defensive.
 
----
+<!-- entry-separator -->
 
 ## b36f95c — Add guild bank event & money logs + UI
 
@@ -326,13 +336,13 @@ Implements a new Characters feature end-to-end. Adds a backend route (backend/ro
 
 Backend: query guild_bank_eventlog for item events (tabs <100) and money events (tabs >=100), resolve item names from item_template and return enriched eventLog and moneyLog alongside tab data. Limits logs to 200 entries and maps item templates for proper naming/quality. Frontend: refactor BankTab into sections (Info, Items, Item Log, Money Log), add BankItemLink and event description rendering, refresh Wowhead links after render, and display item/money logs. Pass bankMoney into BankTab to show total gold. Improves visibility of bank activity and item metadata in the UI.
 
----
+<!-- entry-separator -->
 
 ## aac6f6c — Merge branch 'master' of https://github.com/Kitzunu/Dashboard
 
 **Author**: Kitzunu | **Date**: 2026-04-03 01:13:13 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/aac6f6c9ae76224db1bbf7c3cbf8f9af1e09098b
 
----
+<!-- entry-separator -->
 
 ## 469c888 — Add WoWHead tooltips to guild bank items
 
@@ -340,7 +350,7 @@ Backend: query guild_bank_eventlog for item events (tabs <100) and money events 
 
 Include the WoWHead widget in index.html and annotate bank item names with data-wowhead links pointing to the WotLK domain. Add a useEffect in GuildsPage to call window.$WowheadPower.refreshLinks() after items render so tooltips are initialized. Links open the corresponding Wowhead item pages in a new tab and preserve existing quality color styling.
 
----
+<!-- entry-separator -->
 
 ## ddaa5bf — Add guild bank endpoint and UI
 
@@ -348,7 +358,7 @@ Include the WoWHead widget in index.html and annotate bank item names with data-
 
 Backend: add GET /api/guilds/:id/bank to return guild bank tabs and items; queries char DB for tabs/items and world DB for item_template info, merges templates into items and groups by tab; import worldPool and basic error handling. Frontend: expose api.getGuildBank, add BankTab React component (fetches bank, shows tabs, item list with quality colours), add Bank to guild page tabs, and render BankTab for selected guild. UI/CSS: add .guilds-list-panel layout and guild bank styles; replace some .table usages with .data-table and rename channels-list-panel to guilds-list-panel.
 
----
+<!-- entry-separator -->
 
 ## ea87303 — Use window hostname for API/socket URLs (#35)
 
@@ -356,7 +366,7 @@ Backend: add GET /api/guilds/:id/bank to return guild bank tabs and items; queri
 
 Detect the frontend host at runtime and build BASE_URL using window.location.hostname so the frontend served from a LAN IP will connect back to the same host. Keeps existing VITE_API_URL override and falls back to 'localhost' when window is undefined (e.g. SSR). Also adds a README section with LAN/Remote Access instructions (ALLOWED_IPS, FRONTEND_URL) to guide accessing the dashboard from other devices on the same network.
 
----
+<!-- entry-separator -->
 
 ## b31e4f8 — Add guilds management page and API
 
@@ -366,13 +376,13 @@ Introduce a new Guilds feature: adds backend routes (/api/guilds, /api/guilds/:i
 
 * closes https://github.com/Kitzunu/Dashboard/issues/10
 
----
+<!-- entry-separator -->
 
 ## 612013d — Update README.md
 
 **Author**: Kitzunu | **Date**: 2026-04-02 18:37:54 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/612013d8639f4f22a81078374e7fec43c48a099f
 
----
+<!-- entry-separator -->
 
 ## 4e424f3 — Update README: dashboard files & Discord notes
 
@@ -380,7 +390,7 @@ Introduce a new Guilds feature: adds backend routes (/api/guilds, /api/guilds/:i
 
 Sync README with recent code changes: add scheduledTasks.js and settingsRoutes.js to the Dashboard file list, clarify that Discord Alerts → Avatar URL defaults to the dashboard icon hosted on GitHub (instead of "blank"), and update the discord.js summary to mention server offline/online alerts alongside thresholds and agent disconnects. Keeps documentation aligned with the implementation.
 
----
+<!-- entry-separator -->
 
 ## 6ade1b9 — Use hosted icon URL for Discord avatar
 
@@ -388,7 +398,7 @@ Sync README with recent code changes: add scheduledTasks.js and settingsRoutes.j
 
 Replace local dashboard icon fallback with a static hosted image URL for Discord webhook avatar. Removes the detectBackendUrl logic and deletes backend/public/icon.png, and updates defaults in backend/dashboardSettings.js and frontend SettingsPage.jsx so the dashboard uses the raw.githubusercontent.com icon URL as the default avatar.
 
----
+<!-- entry-separator -->
 
 ## 725af17 — Add Discord 'server online' alert and init sync
 
@@ -396,7 +406,7 @@ Replace local dashboard icon fallback with a static hosted image URL for Discord
 
 Introduce a new "server online" Discord alert: add settings and default messages (frontend and dashboard defaults), implement sendServerOnline in backend/discord.js (uses settings, payload meta, template interpolation, cooldown and webhook posting), and export it. Update server.js to call the online alert when a server transitions from offline → running. Ensure initial server status is emitted to internal listeners in serverBridge so components receive sync on init. Also update README and refactor payload meta lookup to use settings.getAll().
 
----
+<!-- entry-separator -->
 
 ## 85c17f8 — Add Discord webhook alerting
 
@@ -404,7 +414,7 @@ Introduce a new "server online" Discord alert: add settings and default messages
 
 Introduce Discord webhook-based alerts across the dashboard. Adds a new backend/discord.js module to send crash, resource-threshold, and agent-disconnect notifications (with 5-minute cooldowns); new dashboard settings and defaults in backend/dashboardSettings.js; an icon asset served at /img for webhook avatar fallbacks; and a POST /api/settings/discord/test endpoint to validate webhooks. Integrates alerts into server lifecycle: serverBridge now emits events (server-status, agent-disconnected) and server.js listens to them and to resource polling to trigger alerts. Frontend: exposes api.testDiscordWebhook, adds a Discord Alerts section to SettingsPage with editable messages and a Send Test Message button, and minor styling/tidy changes. README and .env.example updated to document DISCORD_WEBHOOK_URL and alert behavior. Also bumps memory threshold in thresholds.json.
 
----
+<!-- entry-separator -->
 
 ## ed4363f — Emit overview via socket and harden queries
 
@@ -412,7 +422,7 @@ Introduce Discord webhook-based alerts across the dashboard. Adds a new backend/
 
 Make overview data resilient and real-time: backend overview route now wraps each DB call so a single failure won't block the response and reuses thresholds/window logic. getCpuUsage was moved and reused. server now supports subscribe-overview/unsubscribe-overview, adds emitOverview to push an overview:update to the "overview" room, and calls it after resource polls. Frontend HomePage accepts a socket prop, performs an initial HTTP load, and subscribes to overview:update for live updates (Layout passes the socket). Minor UI tweaks to resource graphs to handle missing system data and socket helper getSocket() was added.
 
----
+<!-- entry-separator -->
 
 ## eedb5a0 — Show audit detail modal on row click
 
@@ -420,7 +430,7 @@ Make overview data resilient and real-time: backend overview route now wraps eac
 
 Add AuditDetailModal component and wiring to open it when an audit table row is clicked. The modal shows metadata (time, user, IP, action, status) and a details pane, uses formatDate and actionBadgeClass, and can be closed by clicking the overlay or the Close button. Also add selectedRow state, row onClick handler and pointer cursor styling to enable the new interaction.
 
----
+<!-- entry-separator -->
 
 ## 7903383 — Add scheduled tasks (backup & restart)
 
@@ -428,7 +438,7 @@ Add AuditDetailModal component and wiring to open it when an audit table row is 
 
 Introduce a scheduled tasks system to automate database backups and server restarts. Adds a backend scheduler (backend/scheduler.js) that checks tasks every minute, task REST endpoints (backend/routes/scheduledTasks.js) with Run Now support, and integrates the scheduler and routes into server.js. Creates a scheduled_tasks table (sql/acore_dashboard.sql) and a frontend UI to manage tasks (frontend/src/components/ScheduledTasksPage.jsx) plus API bindings (frontend/src/api.js). Also updates README and .env.example with backup configuration, and ignores the backups/ folder in .gitignore. Tasks are audited, can run mysqldump (configurable via MYSQLDUMP_PATH and BACKUP_PATH), and use processManager to handle restarts.
 
----
+<!-- entry-separator -->
 
 ## 8e51fa5 — Validate config keys when computing diffs
 
@@ -436,7 +446,7 @@ Introduce a scheduled tasks system to automate database backups and server resta
 
 Replace the loose regex-based parsing with a stricter key validator and a small parseKV helper. Keys are now validated against /^[A-Za-z][A-Za-z0-9_.]*$/ and lines without '=' or with invalid keys are ignored. This makes the diff summary generation more robust by avoiding accidental matches of non-KV lines and ensuring trimmed key/value extraction for both old and new content.
 
----
+<!-- entry-separator -->
 
 ## 06aaff2 — Add mutes management (API + UI)
 
@@ -446,7 +456,7 @@ Introduce account mutes management: add a new backend route (backend/routes/mute
 
 *closes https://github.com/Kitzunu/Dashboard/issues/34
 
----
+<!-- entry-separator -->
 
 ## 37de053 — Add account flags admin UI and API
 
@@ -456,7 +466,7 @@ Expose and manage account Flags: include Flags in account GET, add PATCH /api/ac
 
 *closes https://github.com/Kitzunu/Dashboard/issues/32
 
----
+<!-- entry-separator -->
 
 ## 53c25d8 — Bump express to ^5.2.1
 
@@ -464,7 +474,7 @@ Expose and manage account Flags: include Flags in account GET, add PATCH /api/ac
 
 Upgrade Express dependency from ^4.19.2 to ^5.2.1 in backend/package.json and regenerate package-lock.json. The lockfile shows extensive dependency updates (body-parser, content-disposition, debug, type-is, path-to-regexp, send, serve-static, etc.) and newer engine requirements (Node >=18). Run npm install and test the backend for any breaking changes introduced by Express v5 and the updated transitive dependencies.
 
----
+<!-- entry-separator -->
 
 ## 8d60bda — Silence dotenv logs and bump dotenv to v17
 
@@ -472,7 +482,7 @@ Upgrade Express dependency from ^4.19.2 to ^5.2.1 in backend/package.json and re
 
 Add quiet: true to dotenv.config calls in backend/audit.js, backend/db.js, and backend/server.js to suppress dotenv startup messages. Also bump dotenv dependency to ^17.4.0 in package.json and update package-lock.json accordingly.
 
----
+<!-- entry-separator -->
 
 ## a40f4b1 — Bump react and react-dom to 19.2.4
 
@@ -480,7 +490,7 @@ Add quiet: true to dotenv.config calls in backend/audit.js, backend/db.js, and b
 
 Upgrade frontend React dependencies to ^19.2.4 in package.json and update package-lock.json to reflect the new dependency tree. The lockfile now includes updated scheduler and peer dependency versions and removes some obsolete transient entries. Run npm install to apply the changes locally.
 
----
+<!-- entry-separator -->
 
 ## b1310ce — Upgrade @vitejs/plugin-react to ^6.0.1
 
@@ -488,7 +498,7 @@ Upgrade frontend React dependencies to ^19.2.4 in package.json and update packag
 
 Bump devDependency @vitejs/plugin-react from ^4.3.1 to ^6.0.1 and regenerate frontend/package-lock.json. Run npm install and verify the build and Node-version compatibility after the major plugin upgrade.
 
----
+<!-- entry-separator -->
 
 ## 46c6fc9 — Bump concurrently to ^9.2.1
 
@@ -496,7 +506,7 @@ Bump devDependency @vitejs/plugin-react from ^4.3.1 to ^6.0.1 and regenerate fro
 
 Upgrade devDependency 'concurrently' from ^8.2.2 to ^9.2.1 in package.json and update package-lock.json accordingly. The lockfile was regenerated to reflect the new concurrently version, updated transitive dependency versions and metadata (resolved URL, integrity) and the updated engine requirement.
 
----
+<!-- entry-separator -->
 
 ## b948139 — Bump express-rate-limit to 8.3.2 in lockfile
 
@@ -504,7 +514,7 @@ Upgrade devDependency 'concurrently' from ^8.2.2 to ^9.2.1 in package.json and u
 
 Update backend/package-lock.json to use express-rate-limit@8.3.2 — updates version, resolved tarball URL, integrity hash, and adds the MIT license field. No source code changes.
 
----
+<!-- entry-separator -->
 
 ## acfafd0 — Bump lodash to 4.18.1
 
@@ -513,7 +523,7 @@ Update backend/package-lock.json to use express-rate-limit@8.3.2 — updates ver
 CVE-2026-4800
 CVE-2026-2950
 
----
+<!-- entry-separator -->
 
 ## 594ab12 — Add mute toggle for browser alert notifications
 
@@ -521,7 +531,7 @@ CVE-2026-2950
 
 Make browser alert notifications user-controllable. NotificationBell now accepts enabled and onToggle props and renders toggle buttons (🔔/🔕) with appropriate titles. HomePage gains notifEnabled state persisted to localStorage (defaults to enabled unless explicitly 'false'), plus notifEnabledRef to avoid stale closures. A handleToggleNotif handler updates state, localStorage, and shows a toast. checkAlerts now checks notifEnabledRef before calling fireNotification. Minor effect syncs added to keep refs up-to-date and NotificationBell is passed the new props.
 
----
+<!-- entry-separator -->
 
 ## 7ce7ee6 — Add standalone server agent and bridge
 
@@ -529,7 +539,7 @@ Make browser alert notifications user-controllable. NotificationBell now accepts
 
 Decouple game server lifecycle from the dashboard by introducing a standalone server agent (backend/serverAgent.js) that owns worldserver/authserver processes and exposes a small HTTP API + SSE stream. Add serverBridge (backend/serverBridge.js) which connects to the agent's SSE stream and forwards events to frontend Socket.IO clients. Convert processManager to an async HTTP client proxying management calls to the agent, preserve old API (setIO kept as no-op) and add getAllStatus/getLogs async calls. Update backend routes to await processManager methods and initialize the bridge in server.js. Frontend: show dashboard connectivity card and handle agent connected/disconnected state. Add AGENT_PORT and AGENT_SECRET to .env.example and start:server-agent npm script; update README with usage and behavior notes. Security: agent requests require X-Agent-Token header.
 
----
+<!-- entry-separator -->
 
 ## 217468d — Remove expansions 3-6 from EXPANSION_LABELS
 
@@ -539,7 +549,7 @@ Prune EXPANSION_LABELS to include only Classic, The Burning Crusade, and Wrath o
 
 * closes https://github.com/Kitzunu/Dashboard/issues/31
 
----
+<!-- entry-separator -->
 
 ## 8247d2d — Support recursive CONFIG_PATH and subdir configs
 
@@ -549,7 +559,7 @@ Load .conf files recursively from CONFIG_PATH (including subdirectories) and exp
 
 *closes https://github.com/Kitzunu/Dashboard/issues/29
 
----
+<!-- entry-separator -->
 
 ## ebe9d12 — DB query UI: presets, editor, pagination
 
@@ -559,7 +569,7 @@ Enhance DB Query UI and README: add free-form SQL editor with Ctrl+Enter run, pr
 
 * closes https://github.com/Kitzunu/Dashboard/issues/20
 
----
+<!-- entry-separator -->
 
 ## b57dec7 — Restrict GM level dropdown for high-level accounts
 
@@ -569,7 +579,7 @@ Update AccountsPage.jsx to only render the GM Level <select> when the user canAd
 
 * closes https://github.com/Kitzunu/Dashboard/issues/33
 
----
+<!-- entry-separator -->
 
 ## cd44b66 — Extract shared constants into constants.js
 
@@ -577,7 +587,7 @@ Update AccountsPage.jsx to only render the GM Level <select> when the user canAd
 
 Move FALLBACK_RACES, FALLBACK_CLASSES, and GM_LABELS into a new frontend/src/constants.js and update AccountsPage, PlayersPage, and Layout to import them. Removes duplicated local definitions and centralizes common labels for reuse and easier maintenance.
 
----
+<!-- entry-separator -->
 
 ## 031458c — Add DBC race & class name support
 
@@ -587,7 +597,7 @@ Load ChrRaces.dbc and ChrClasses.dbc and expose race/class lookups to the app. B
 
 *closes https://github.com/Kitzunu/Dashboard/issues/30
 
----
+<!-- entry-separator -->
 
 ## 5ea0292 — Add dashboard settings subsystem and UI
 
@@ -595,7 +605,7 @@ Load ChrRaces.dbc and ChrClasses.dbc and expose race/class lookups to the app. B
 
 Introduce a dashboard-wide settings feature stored in acore_dashboard.settings. Adds SQL migration and creates the settings table in audit initialization. Implements backend module (backend/dashboardSettings.js) and REST routes (backend/routes/settingsRoutes.js) with audit logging on saves and mounts /api/settings in the server. Integrates the config editor to respect the config.bak_enabled setting before creating .bak backups. Exposes getSettings/saveSettings in the frontend API and adds a new Settings page component, navigation entry, and styles (frontend/src/components/SettingsPage.jsx, Layout.jsx, api.js, index.css). README updated to document the Settings area.
 
----
+<!-- entry-separator -->
 
 ## c6fdc6d — Increase JSON limit to 10MB; extend graphMinutes
 
@@ -603,7 +613,7 @@ Introduce a dashboard-wide settings feature stored in acore_dashboard.settings. 
 
 Raise Express JSON body parser limit to 10MB in backend/server.js to allow larger request payloads (e.g., bigger telemetry or uploads). Also change graphMinutes from 1 to 60 in backend/thresholds.json to extend the monitoring graph window to the last hour.
 
----
+<!-- entry-separator -->
 
 ## 3563d6c — Add resource history and rolling graphs
 
@@ -613,7 +623,7 @@ Collect and display CPU/memory usage history and add configurable graphing. Back
 
 * closes https://github.com/Kitzunu/Dashboard/issues/26
 
----
+<!-- entry-separator -->
 
 ## a4ab7c8 — Pass 'manual' to logout and adjust threshold panel
 
@@ -623,7 +633,7 @@ Call logout with a 'manual' argument when the user clicks the Logout button so t
 
 *closes https://github.com/Kitzunu/Dashboard/issues/27
 
----
+<!-- entry-separator -->
 
 ## 2e460c9 — Send logout reason to server and log it
 
@@ -633,7 +643,7 @@ Pass a logout reason from the frontend to the backend for improved audit logging
 
 *closes https://github.com/Kitzunu/Dashboard/issues/28
 
----
+<!-- entry-separator -->
 
 ## 5f4b2b5 — Add configurable session idle timeout
 
@@ -641,7 +651,7 @@ Pass a logout reason from the frontend to the backend for improved audit logging
 
 Introduce an IDLE_TIMEOUT_MINUTES setting and implement client/server handling for idle session auto-logout. Added the env var to .env.example and documented behavior in README (60s warning, activity resets timer, value is sent to the frontend at login). Backend: include idleTimeoutMinutes in the /login response. Frontend: new useIdleTimeout hook in Layout.jsx to track activity, show a 60-second warning modal, and auto-logout when the timeout elapses; includes small debounce on activity events. Also added CSS for the idle warning modal.
 
----
+<!-- entry-separator -->
 
 ## 0094461 — Add audit logging and Audit Log UI
 
@@ -651,7 +661,7 @@ Introduce a new audit logging system and UI. Adds backend audit helper (backend/
 
 Frontend: add api.getAuditLog, call logout endpoint on logout, and add the Audit Log page component (frontend/src/components/AuditLogPage.jsx) with filters, action multi-select, paging and badges. Documentation and config: update .env.example (DASHBOARD_DB, AUDIT_LOG_RETENTION_DAYS), README with setup/usage and feature notes, and add a one-time SQL setup file (sql/acore_dashboard.sql). Audit writes are fire-and-forget (failures do not block main operations) and the retention job deletes old entries when configured.
 
----
+<!-- entry-separator -->
 
 ## 4745480 — Add Spam Reports feature
 
@@ -663,7 +673,7 @@ Backend: add routes/backend/routes/spamreports.js providing GET /api/spamreports
 
 Frontend: add API methods (getSpamReports, deleteSpamReport, clearSpamReports) and a new SpamReportsPage component for listing, filtering, searching, sorting, pagination, and a detail modal. UI respects GM levels for delete/clear actions and parses chat report descriptions for display. Update Layout to include navigation and page mounting. Update README to document the feature and GM access. Minor CSS whitespace tweak.
 
----
+<!-- entry-separator -->
 
 ## ad9cda5 — Add Channels management UI and API
 
@@ -673,7 +683,7 @@ Implements a new Channels feature allowing browsing and management of in-game ch
 
 *closes https://github.com/Kitzunu/Dashboard/issues/9
 
----
+<!-- entry-separator -->
 
 ## b3ad655 — Bug reports: add state, search, assignee & UI
 
@@ -685,7 +695,7 @@ Frontend: update api client to accept state/search and add updateBugReport (PATC
 
 * closes https://github.com/Kitzunu/Dashboard/issues/16
 
----
+<!-- entry-separator -->
 
 ## f7960e1 — Add pagination to account search
 
@@ -693,7 +703,7 @@ Frontend: update api client to accept state/search and add updateBugReport (PATC
 
 Implement pagination for the accounts list (50 per page). Backend: add PAGE_SIZE, support ?page= on GET /api/accounts, count total results, use LIMIT/OFFSET and return rows plus pagination metadata (total, page, pageSize, totalPages). Frontend: update api.searchAccounts to accept page, AccountsPage loads accounts on mount, tracks page/total/totalPages, adjusts search flow/messages, adds Prev/Next controls and pagination CSS. README updated to document the new behavior and page controls.
 
----
+<!-- entry-separator -->
 
 ## c65b965 — Show 0 players when worldserver is down
 
@@ -701,7 +711,7 @@ Implement pagination for the accounts list (50 per page). Backend: add PAGE_SIZE
 
 * closes https://github.com/Kitzunu/Dashboard/issues/13
 
----
+<!-- entry-separator -->
 
 ## a3168d8 — Improve server startup log messages
 
@@ -709,7 +719,7 @@ Implement pagination for the accounts list (50 per page). Backend: add PAGE_SIZE
 
 * closes https://github.com/Kitzunu/Dashboard/issues/4
 
----
+<!-- entry-separator -->
 
 ## 7dfbc55 — Allow staging items/conditions for new templates
 
@@ -717,7 +727,7 @@ Implement pagination for the accounts list (50 per page). Backend: add PAGE_SIZE
 
 Enable adding and removing Mail Server items and conditions while creating a new template by using temporary _key entries client-side. Batch-create staged items and conditions after the template is created (API calls made after receiving new template ID). Adjust UI: items/conditions tabs are available when creating a template, the Recipients tab is edit-only for existing templates, and Save/Create button is shown appropriately. Use id ?? _key as list keys and update add/delete flows to handle both staged and persisted entries. Also update README to document that recipients are edit-only and that items/conditions can be added before saving.
 
----
+<!-- entry-separator -->
 
 ## 203f7bd — Introduce grouped sidebar navigation
 
@@ -725,7 +735,7 @@ Enable adding and removing Mail Server items and conditions while creating a new
 
 * closes https://github.com/Kitzunu/Dashboard/issues/15
 
----
+<!-- entry-separator -->
 
 ## 2f2d7ec — Update README: expanded features, config, and structure
 
@@ -733,7 +743,7 @@ Enable adding and removing Mail Server items and conditions while creating a new
 
 Rework README to reflect new features, reorganize setup and configuration, and document project structure. Expanded the Features section with detailed Overview, Console, Players, Tickets, Mail, Mail Server, Lag/Bug reports, Servers, DB Query, Config, and Alerts (thresholds and notifications). Added a dedicated Configuration section with env examples (server paths, CONFIG_PATH, DB, JWT, ALLOWED_IPS, DBC_PATH) and a note on generating a strong JWT_SECRET. Clarified startup instructions and access-level (GM) table, and updated DBC integration and console/lag handling notes. Updated Project Structure to list new/renamed backend routes, threshold persistence (thresholds.json), and frontend components; trimmed and clarified various descriptions and defaults throughout.
 
----
+<!-- entry-separator -->
 
 ## 88d14c4 — Support CONFIG_PATH and async config lookup
 
@@ -741,7 +751,7 @@ Rework README to reflect new features, reorganize setup and configuration, and d
 
 * closes https://github.com/Kitzunu/Dashboard/issues/21
 
----
+<!-- entry-separator -->
 
 ## 902be6e — Revert "Default Vite backend URL to 0.0.0.0 rather than localhost. (#3)"
 
@@ -749,7 +759,7 @@ Rework README to reflect new features, reorganize setup and configuration, and d
 
 This reverts commit 5ba2c8123347112e7ae2938236d58d610b793304.
 
----
+<!-- entry-separator -->
 
 ## fae9fb7 — Remove .server prefix from announcement commands
 
@@ -757,7 +767,7 @@ This reverts commit 5ba2c8123347112e7ae2938236d58d610b793304.
 
 * closes https://github.com/Kitzunu/Dashboard/issues/18
 
----
+<!-- entry-separator -->
 
 ## e933eb1 — Add data and framework to show more content for bug report view. (#22)
 
@@ -765,7 +775,7 @@ This reverts commit 5ba2c8123347112e7ae2938236d58d610b793304.
 
 Init.
 
----
+<!-- entry-separator -->
 
 ## 5ba2c81 — Default Vite backend URL to 0.0.0.0 rather than localhost. (#3)
 
@@ -775,7 +785,7 @@ Init.
 
 * Socket.
 
----
+<!-- entry-separator -->
 
 ## 5f570a2 — Add explicit backend listening address. (#2)
 
@@ -785,7 +795,7 @@ Init.
 
 * dummy
 
----
+<!-- entry-separator -->
 
 ## 4da8622 — Add explicit address to vite configuration. (#1)
 
@@ -797,7 +807,7 @@ Init.
 
 * double dummy
 
----
+<!-- entry-separator -->
 
 ## ff4b5cf — Bump esbuild and vite in /frontend (#17)
 
@@ -826,13 +836,13 @@ updated-dependencies:
 Signed-off-by: dependabot[bot] <support@github.com>
 Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
 
----
+<!-- entry-separator -->
 
 ## 716622f — Init. (#14)
 
 **Author**: Benjamin Jackson | **Date**: 2026-03-29 23:41:26 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/716622f6e5a05a458d1158c57ed810ff95e6a140
 
----
+<!-- entry-separator -->
 
 ## 40ef0d3 — Add worldserver latency monitor and UI
 
@@ -840,7 +850,7 @@ Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.c
 
 Introduce a TCP-based latency monitor for the worldserver and surface stats in the UI. Added backend/latencyMonitor.js which measures TCP round-trip time (uses process.hrtime.bigint for precision), keeps a rolling window (max 120 samples ≈ 60 min), and computes mean/median/P95/P99/max. It skips unreachable hosts and is configurable via WORLDSERVER_HOST and WORLDSERVER_PORT (defaults to 127.0.0.1:8085) with a 3s timeout. Server now starts the monitor (poll every 30s) and the overview route exposes serverLatency. Frontend: added a LatencyPanel to HomePage.jsx to display count, mean, median, P95, P99 and max with colour-coding, and corresponding CSS styling in index.css. Documentation and .env.example updated to mention the new env vars and the latency metric.
 
----
+<!-- entry-separator -->
 
 ## 2a584a7 — Clarify README .env examples and add DBC_PATH
 
@@ -848,7 +858,7 @@ Introduce a TCP-based latency monitor for the worldserver and surface stats in t
 
 Update README .env example to clarify AzerothCore executable/config paths and add optional working-directory variables (WORLDSERVER_DIR/AUTHSERVER_DIR). Improve wording for config file behavior, move PORT/FRONTEND_URL grouping, expand ALLOWED_IPS docs with examples, and add a new DBC_PATH entry with platform examples for WotLK DBFilesClient. Also remind users to set a strong JWT_SECRET and include small wording/formatting tweaks for clarity.
 
----
+<!-- entry-separator -->
 
 ## ce978fe — Batch console lines, memoize AnsiLine
 
@@ -856,7 +866,7 @@ Update README .env example to clarify AzerothCore executable/config paths and ad
 
 Memoize AnsiLine to avoid re-renders unless text changes. Buffer incoming console lines and flush them once per animation frame (requestAnimationFrame) to reduce state updates and rendering overhead, with a 2000-line cap preserved. Replace scrollIntoView with direct scrollTop assignment for auto-scroll to avoid layout thrashing, remove the endRef, and cancel any pending RAF on unmount. Also add refs and effects to keep autoScroll state accessible inside the RAF flush callback.
 
----
+<!-- entry-separator -->
 
 ## cac9a66 — Resolve player zone names via DBC
 
@@ -864,7 +874,7 @@ Memoize AnsiLine to avoid re-renders unless text changes. Buffer incoming consol
 
 Lookup area names on the backend using the dbc module and include a zoneName field in the players API response (falls back to null/raw zone ID when not available). Remove the large hardcoded ZONES map from the frontend and display p.zoneName (or p.zone if unresolved). Update README to document that zones are resolved from AreaTable.dbc when DBC_PATH is configured.
 
----
+<!-- entry-separator -->
 
 ## 0902aa9 — Add DBC lookup support and UI integration
 
@@ -872,7 +882,7 @@ Lookup area names on the backend using the dbc module and include a zoneName fie
 
 Add optional WotLK (3.3.5a) DBC support to resolve map/area IDs to human-readable names in lag reports. Introduces a lightweight DBC binary parser (backend/dbc.js) that reads Map.dbc and AreaTable.dbc, new API routes (/api/dbc/maps, /api/dbc/areas, /api/dbc/status) with GM-level auth, and server initialization to pre-load tables when DBC_PATH is configured. Update lag reports endpoints to include mapName (and topMaps.mapName) and update the frontend (api.js + LagReportsPage.jsx) to fetch/use DBC data and display resolved map names with a MapCell fallback of "Map {id}" when DBC data is unavailable. Documentation (.env.example, README.md) updated with DBC_PATH examples and behavior notes. Also includes small UI/code cleanups in LagReportsPage (formatting, state grouping, stats fields) and wires authentication for the new routes. Gracefully falls back when DBC files or DBC_PATH are not present.
 
----
+<!-- entry-separator -->
 
 ## d8c3141 — Update inputs and modal/form layout styles
 
@@ -880,7 +890,7 @@ Add optional WotLK (3.3.5a) DBC support to resolve map/area IDs to human-readabl
 
 Expand input selectors (number, email, search, unnamed inputs) and switch input background to --surface2 for consistent surface styling. Add structured modal header/footer (.modal-header, .modal-title, .modal-close, .modal-footer) and related close-button hover states for tabbed/modal layouts. Adjust code container and bug-report-detail padding/overflow to improve layout, convert ms-money-row to a column layout and refine ms-money-label typography. Introduce generic .form-row and .form-label helpers and consolidate shared form styling for better spacing and responsive behavior.
 
----
+<!-- entry-separator -->
 
 ## d46834c — Add Mail Server templates UI and API
 
@@ -888,7 +898,7 @@ Expand input selectors (number, email, search, unnamed inputs) and switch input 
 
 Implements a Mail Server templates feature: adds backend API routes (backend/routes/mailserver.js) for full CRUD of templates, items, conditions and recipients with GM-level access checks, and wires the router into backend/server.js. Adds frontend support (frontend/src/api.js) and a new MailServerPage.jsx component with modal editor (General / Items / Conditions / Recipients), list view, delete confirmation, and related styles (frontend/src/index.css). Updates Layout.jsx to expose the page in the nav and documents the feature in README.md.
 
----
+<!-- entry-separator -->
 
 ## 1ea128b — Add browser alert notifications; bump thresholds
 
@@ -896,7 +906,7 @@ Implements a Mail Server templates feature: adds backend API routes (backend/rou
 
 Introduce browser alert notifications and a notification bell in the Overview header. Implements Web Audio API two-tone beeps (ascending for CPU, descending for memory), Notification API usage (permission request, granted/denied states, tagged notifications to replace same-type alerts) and fires alerts once on threshold crossing. Adds UI (bell button, status indicators) and CSS for the header controls. Also refactors HomePage to use refs for thresholds and alert state to avoid stale closures and to check alert transitions during polling. Update backend/thresholds.json defaults to 100% for CPU and memory and update README to document the new notification behavior.
 
----
+<!-- entry-separator -->
 
 ## e73c92f — Add Lag Reports feature (frontend + backend)
 
@@ -904,7 +914,7 @@ Introduce browser alert notifications and a notification bell in the Overview he
 
 Add full Lag Reports support: new backend route (backend/routes/lagreports.js) with paginated listing (50/page), aggregate stats, top reporters/maps, and delete endpoints (view GM1, dismiss GM2, clear-all GM3). Mount the route in backend/server.js. Improve bug report parsing (parseContent) to handle bare keys and tab-indented continuation lines. Frontend: new LagReportsPage component, API methods (getLagReports, getLagStats, deleteLagReport, clearLagReports), Layout navigation entry, and CSS styles for stats, badges, filters, tables, and latency colouring. Update README to document the new Lag Reports functionality.
 
----
+<!-- entry-separator -->
 
 ## bd5763b — Add Bug Reports UI, API, and backend
 
@@ -912,7 +922,7 @@ Add full Lag Reports support: new backend route (backend/routes/lagreports.js) w
 
 Introduce a full Bug Reports feature: backend route (backend/routes/bugreports.js) exposing paginated list, detail, and DELETE endpoints (requireGMLevel 1 for viewing, 2 for dismissing). Register routes in backend/server.js. Add frontend API helpers (frontend/src/api.js), new BugReportsPage component (frontend/src/components/BugReportsPage.jsx), layout/nav entry, and accompanying CSS (frontend/src/index.css) for listing, filtering, detail modal, and dismissing reports (25 per page, filter by type). Update README.md with feature docs and usage notes. Also modify thresholds.json CPU/memory values (cpu: 80→15, memory: 80→50).
 
----
+<!-- entry-separator -->
 
 ## 95b4c87 — Add resource alerts and threshold settings
 
@@ -920,7 +930,7 @@ Introduce a full Bug Reports feature: backend route (backend/routes/bugreports.j
 
 Introduce configurable CPU and memory alert thresholds persisted to backend/thresholds.json and surfaced in the UI. Backend: add thresholds module (load/save) and thresholds.json, new /api/thresholds GET/PUT routes (GM auth), sample CPU usage across cores (200ms) and include memPct/cpuUsage and thresholds in the overview response. Frontend: API helpers for thresholds, new ThresholdSettings and ResourceBar components (replace old MemoryBar) to show memory and CPU bars with warn/critical coloring, save thresholds from the UI, and make core revision a clickable GitHub commit link. Update README and styles (index.css) to document and style the new controls and warnings.
 
----
+<!-- entry-separator -->
 
 ## ddc2504 — Clarify 'text' mail type hint
 
@@ -928,7 +938,7 @@ Introduce configurable CPU and memory alert thresholds persisted to backend/thre
 
 Update the helper text in MailPage.jsx for the 'text' mail type to indicate it uses the "send mail" command instead of the incorrect "server set motd" command. This corrects the user-facing hint to avoid confusion about which server command is used for plain mail messages.
 
----
+<!-- entry-separator -->
 
 ## 3b9dc1e — Accounts: expansion, email, ban, mute, delete
 
@@ -936,7 +946,7 @@ Update the helper text in MailPage.jsx for the 'text' mail type to indicate it u
 
 Add several account management features and UI for GM tools. Backend: include account.expansion in queries, fix result variable naming, add endpoints to set expansion (PATCH /api/accounts/:id/expansion), update account email (PATCH /api/accounts/:id/email), delete accounts via GM command (DELETE /api/accounts/:id), and mute/unmute characters (POST /api/accounts/mute, POST /api/accounts/unmute). Also normalize processManager commands (remove leading dot) and ensure parseInt calls use radix. Frontend: expose new API methods (setExpansion, setEmail, deleteAccount, muteCharacter, unmuteCharacter) and add UI support — expansion labels/select, playtime column, DeleteAccount, EditEmail, Ban and Mute modals, mute/unmute actions per character, and assorted UI/formatting tweaks. README updated to document the new capabilities (expansion, email edit, bans, resets, delete, mute).
 
----
+<!-- entry-separator -->
 
 ## 579f11b — Add Mail and Server Tools UI and API
 
@@ -944,7 +954,7 @@ Add several account management features and UI for GM tools. Backend: include ac
 
 Introduce in-dashboard tools for sending in-game mail/items/money and managing server-level actions. Backend: add /api/mail and /api/servertools routes (send mail/items/money, get/set MOTD, schedule/cancel restart) with GM-level guards and DB queries for MOTD/version; register routes in server.js. Frontend: add MailPage, integrate mail nav item, add API helpers (sendMail/sendMailItems/sendMailMoney/getMOTD/setMOTD/restartServer/cancelRestart), extend ServersPage with Scheduled Restart and MOTD sections, and display MOTD/version on HomePage. UI: add CSS for mail, MOTD, restart, and version blocks. Docs: update README to document Send Mail, Servers (scheduled restart & MOTD), IP allowlist env var, roles, and file layout changes.
 
----
+<!-- entry-separator -->
 
 ## 8b56b5e — Add IP allowlist middleware
 
@@ -952,7 +962,7 @@ Introduce in-dashboard tools for sending in-game mail/items/money and managing s
 
 Introduce backend/middleware/ipAllowlist.js to restrict access by IP using an ALLOWED_IPS env var (comma-separated). The middleware defaults to localhost (::1, 127.0.0.1 and ::ffff:127.0.0.1), expands IPv4 entries to their IPv6-mapped form, checks req.ip (falling back to socket address), logs blocked attempts, and returns 403 for non-allowlisted IPs. Wire the middleware into backend/server.js (app.use(ipAllowlist)) and update .env.example with ALLOWED_IPS documentation and a default value.
 
----
+<!-- entry-separator -->
 
 ## 6802300 — Remove GitHub Pages workflow and update templates
 
@@ -960,13 +970,13 @@ Introduce backend/middleware/ipAllowlist.js to restrict access by IP using an AL
 
 Delete the .github/workflows/static.yml workflow that built and deployed the frontend to GitHub Pages. Also trim the AnnouncePage templates by removing the 'Server is back online!' and 'Welcome to the server!' messages to keep the announcement list focused.
 
----
+<!-- entry-separator -->
 
 ## 05018b7 — Update working directory for frontend build steps
 
 **Author**: Kitzunu | **Date**: 2026-03-29 01:13:54 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/05018b7ee4d553ce84877fc2926a252ff32303fa
 
----
+<!-- entry-separator -->
 
 ## 03a7e23 — Enhance deployment workflow for static content
 
@@ -974,7 +984,7 @@ Delete the .github/workflows/static.yml workflow that built and deployed the fro
 
 Updated the GitHub Actions workflow to include Node.js setup, install dependencies, and build the project before deployment.
 
----
+<!-- entry-separator -->
 
 ## bd59a10 — Update artifact upload path in static.yml
 
@@ -982,7 +992,7 @@ Updated the GitHub Actions workflow to include Node.js setup, install dependenci
 
 Change artifact upload path to './frontend' for GitHub Pages deployment.
 
----
+<!-- entry-separator -->
 
 ## bc2a5dc — Add GitHub Actions workflow for GitHub Pages deployment
 
@@ -990,7 +1000,7 @@ Change artifact upload path to './frontend' for GitHub Pages deployment.
 
 This workflow automates the deployment of static content to GitHub Pages on pushes to the master branch or manually via the Actions tab.
 
----
+<!-- entry-separator -->
 
 ## 568309d — Use authPool for autobroadcast routes
 
@@ -998,7 +1008,7 @@ This workflow automates the deployment of static content to GitHub Pages on push
 
 Replace worldPool with authPool in backend/routes/autobroadcast.js so all CRUD queries (GET, POST, PUT, DELETE) use the correct database connection. This ensures the autobroadcast endpoints operate against the intended auth database pool and fixes inconsistent pool usage.
 
----
+<!-- entry-separator -->
 
 ## 49963a9 — Add overview, announcements & account tools
 
@@ -1006,7 +1016,7 @@ Replace worldPool with authPool in backend/routes/autobroadcast.js so all CRUD q
 
 Introduce backend and frontend support for an Overview dashboard, Announcements, Accounts management, and Autobroadcast features. Adds new backend modules and routes: playerHistory (rolling history, max 120 points), overview, announcements (in-memory history, max 50), accounts (search, detail, GM level, lock, password, create) and autobroadcast (CRUD). processManager now records start times and exposes pid/startTime; server polls player count every 30s and records it to playerHistory. Frontend api endpoints added and new React pages/components (AccountsPage, AnnouncePage, AutobroadcastPage, HomePage) plus layout/style tweaks. All routes are protected with requireGMLevel checks and database interactions use existing pools.
 
----
+<!-- entry-separator -->
 
 ## c72cc88 — Add in-browser config editor and API
 
@@ -1014,7 +1024,7 @@ Introduce backend and frontend support for an Overview dashboard, Announcements,
 
 Introduce a new config editor feature for administrators: adds a backend route (backend/routes/config.js) exposing list/read/save endpoints for worldserver/authserver config files (requires GM level 3). Server now mounts the config routes (backend/server.js). Frontend: new API methods, a full ConfigPage component (frontend/src/components/ConfigPage.jsx), navigation entry and page wiring (Layout.jsx), and editor styles (index.css). README and .env.example updated to document optional WORLDSERVER_CONF/AUTHSERVER_CONF env vars; backend falls back to deriving .conf paths from the executable paths. Saving creates a .bak backup before writing; basic search, line numbers, unsaved-change indicators, and discard/save confirmations are provided in the UI.
 
----
+<!-- entry-separator -->
 
 ## 8ac5114 — Expand README with features, pages, and architecture
 
@@ -1022,7 +1032,7 @@ Introduce a new config editor feature for administrators: adds a backend route (
 
 Significantly enrich README: document new dashboard features (ANSI-colored console, persistent command history, player filters, multi-type bans, GM ticketing, toast notifications, session management, auto-restart, detailed server shutdown options), add a new Pages section describing Console, Players, Tickets, Bans, Servers and DB Query behavior, and clarify authentication (SRP6 verifier) and login rate limiting. Update GM role table and project structure to reflect new backend routes (tickets, multi-type bans, auto-restart, enhanced auth) and new frontend components/utilities (TicketsPage, ansi parser, improved API and toast handling). Also clarify process lifecycle, graceful shutdown behavior, and add credits. These docs changes align README with implemented backend/frontend features and runtime behavior.
 
----
+<!-- entry-separator -->
 
 ## 757fb2b — Add GM tickets UI and API
 
@@ -1030,7 +1040,7 @@ Significantly enrich README: document new dashboard features (ANSI-colored conso
 
 Introduce full GM ticket support: add backend /api/tickets routes (count, list, all, close, respond, comment, assign/unassign, escalate/deescalate) and register them in server.js. Add a new TicketsPage React component with ticket list, expand/detail view, respond modal, assign/comment controls, periodic polling and optimistic updates. Expose ticket endpoints in frontend api.js and show ticket count badge in the sidebar (with polling). Improve player ban flow: include account last_ip in players query, extend ban endpoint to accept type (character/account/ip) and target override, and update PlayersPage and BanModal to select ban type/target. Misc: add CSS for tickets/modals and tweak polling logic to avoid counting players when worldserver is offline.
 
----
+<!-- entry-separator -->
 
 ## dcd552a — Support account/character/IP bans (API + UI)
 
@@ -1038,7 +1048,7 @@ Introduce full GM ticket support: add backend /api/tickets routes (count, list, 
 
 Expand bans functionality to cover accounts, characters, and IPs. Backend: return grouped ban lists (accounts, characters, ips), add POST /api/bans to issue bans via processManager (.ban GM command), and add separate DELETE endpoints for unbanning accounts, characters and IPs; wire in charPool alongside authPool. Frontend: update api client for new endpoints, vastly revamp BansPage with tabs for accounts/characters/ips, add Issue Ban modal, Unban confirmation modal, per-tab tables and unban flows, and refresh/count UI. CSS: add styles for tabs, modal elements and monospace IP cells. This enables managing and issuing bans for multiple target types from the UI.
 
----
+<!-- entry-separator -->
 
 ## 6800685 — Allow fallback JWT secret and remove enforcement
 
@@ -1046,7 +1056,7 @@ Expand bans functionality to cover accounts, characters, and IPs. Backend: retur
 
 Remove the startup check that enforced a non-default JWT_SECRET in backend/server.js and add a fallback 'secret' value in backend/routes/auth.js when signing JWTs. This prevents the app from exiting if JWT_SECRET is not set (useful for local/dev), but is insecure for production—set JWT_SECRET to a strong random value for deployment.
 
----
+<!-- entry-separator -->
 
 ## 656ff3c — Support graceful stop, autorestart & ANSI colors
 
@@ -1056,13 +1066,13 @@ Add graceful shutdown options and auto-restart support for managed servers, pres
 
 Changes include: processManager now preserves SGR color codes, supports stop modes (exit vs shutdown with delay), and implements auto-restart with a new setAutoRestart API and status flag; server startup validation now requires a real JWT_SECRET; auth route login is rate-limited using express-rate-limit and no longer falls back to a default JWT secret; servers routes accept stop mode/delay and a new autorestart endpoint; frontend adds an ANSI parser and renders colored console lines, updates API calls for stop/autorestart, and implements a stop modal + autorestart toggle in the Servers page; minor CSS added for the new UI. Also adds express-rate-limit to backend dependencies.
 
----
+<!-- entry-separator -->
 
 ## 22737d0 — Delete .env
 
 **Author**: Kitzunu | **Date**: 2026-03-28 23:14:42 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/22737d076b4a42157fa453ea0a87a4c89d647c86
 
----
+<!-- entry-separator -->
 
 ## b67db77 — Ignore local .env and .claude/
 
@@ -1070,7 +1080,7 @@ Changes include: processManager now preserves SGR color codes, supports stop mod
 
 Add .env and .claude/ to .gitignore to prevent committing local environment variables and the Claude-related directory (e.g. caches or local files). Keeps sensitive data and large local files out of the repo.
 
----
+<!-- entry-separator -->
 
 ## e336ee3 — Add detailed README for AzerothCore Dashboard
 
@@ -1078,7 +1088,7 @@ Add .env and .claude/ to .gitignore to prevent committing local environment vari
 
 Replace the minimal README with a comprehensive project README for the AzerothCore Dashboard. Adds project overview, feature list, requirements, step-by-step installation and run instructions, example .env configuration, GM role mapping, database setup snippet, project structure, and operational notes about server processes and session behavior. This improves onboarding and documentation for developers and operators.
 
----
+<!-- entry-separator -->
 
 ## 8c3ddcd — Add bans UI/backend, toasts, player count
 
@@ -1086,7 +1096,7 @@ Replace the minimal README with a comprehensive project README for the AzerothCo
 
 Introduce account ban management and UI feedback: add a new backend route (routes/bans.js) to list active bans and clear (unban) them (requires GM level 2), and register it in server.js. Add frontend support: api methods (getBans, unbanAccount, getPlayerCount), a new BansPage component for viewing/unbanning, and a lightweight toast system (toast.js + ToastContainer) with styles. Enhance Layout to show a player-count nav badge (polled every 30s), surface toasts, and add a Bans nav item. Update PlayersPage to handle world offline state, show zone names (ZONES mapping) and use toasts for feedback; add /api/players/count endpoint on the backend. ServersPage now uses toasts for status messages and redundant flash state was removed. Include CSS for nav badge, toasts, offline notice and bans-related styles.
 
----
+<!-- entry-separator -->
 
 ## feddd71 — Use brand image instead of emoji icons
 
@@ -1094,7 +1104,7 @@ Introduce account ban management and UI feedback: add a new backend route (route
 
 Replace the emoji-based brand icons with an actual image (../../img/icon.png) in Layout.jsx and Login.jsx. The image is added to the sidebar brand and login emblem with specified widths (38 and 64) and alt text for consistent branding and better control over the icon appearance.
 
----
+<!-- entry-separator -->
 
 ## 79094cf — Add brand icon and favicon
 
@@ -1102,19 +1112,19 @@ Replace the emoji-based brand icons with an actual image (../../img/icon.png) in
 
 Add frontend/img/icon.png and use it as the site favicon and brand graphic. index.html now links the PNG as a 32x32 favicon. Layout.jsx and Login.jsx replace the '⚔' emoji with an img referencing img/icon.png (inline sizing and draggable=false) so the brand image is shown consistently in the sidebar and login screen.
 
----
+<!-- entry-separator -->
 
 ## 73fe5b3 — Update GitHub Actions to use latest checkout and setup-node
 
 **Author**: Kitzunu | **Date**: 2026-03-28 20:36:49 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/73fe5b30e8d7b5865647c19948a5e9046b93aadb
 
----
+<!-- entry-separator -->
 
 ## fc7703e — Update node.js.yml
 
 **Author**: Kitzunu | **Date**: 2026-03-28 20:34:07 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/fc7703eeca4a6d927a5ec959c77c0575ddca99bc
 
----
+<!-- entry-separator -->
 
 ## 87b6774 — Add Node.js CI workflow for testing
 
@@ -1122,7 +1132,7 @@ Add frontend/img/icon.png and use it as the site favicon and brand graphic. inde
 
 This workflow installs dependencies, builds the code, and runs tests across multiple Node.js versions.
 
----
+<!-- entry-separator -->
 
 ## a7274a3 — Persist console history & autoscroll; add filter
 
@@ -1130,13 +1140,13 @@ This workflow installs dependencies, builds the code, and runs tests across mult
 
 ConsolePanel: persist command history (sessionStorage per-server, capped to 50 entries) and autoscroll preference (localStorage per-server); add loading state and message while fetching logs; save history on send and restore on mount. PlayersPage: add a text filter (name/account/username), show filtered results with a Clear button, and update empty-state messaging when a filter is active. CSS: add styles for console loading message and filter input/row.
 
----
+<!-- entry-separator -->
 
 ## c6c3e8e — Merge branch 'master' of https://github.com/Kitzunu/Dashboard
 
 **Author**: Kitzunu | **Date**: 2026-03-28 20:02:09 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/c6c3e8e953746c0dd2740813c6886d22ff6999a1
 
----
+<!-- entry-separator -->
 
 ## 8b45334 — Graceful shutdown for worldserver
 
@@ -1144,7 +1154,7 @@ ConsolePanel: persist command history (sessionStorage per-server, capped to 50 e
 
 Attempt a graceful shutdown for the 'worldserver' process by writing "server shutdown 0\n" to its stdin and fall back to proc.kill() on error; other servers continue to be killed directly. Additionally, updated Vite dependency metadata and optimized frontend deps (react/react-dom/jsx runtimes, socket.io-client), removed stale chunk files and maps, and applied frontend changes in App.jsx, api.js and ServersPage.jsx (build/artifact updates and related frontend edits).
 
----
+<!-- entry-separator -->
 
 ## d6cbc7d — Clean up .gitignore by removing obsolete entries
 
@@ -1152,27 +1162,26 @@ Attempt a graceful shutdown for the 'worldserver' process by writing "server shu
 
 Remove a number of outdated or redundant ignore patterns from .gitignore (misc caches and logs, coverage folders, e2e artifacts, system files like .DS_Store/Thumbs.db, and .nx/.angular cache entries). The .vscode exceptions are preserved. This simplifies the file and reduces duplicate or unnecessary rules.
 
----
+<!-- entry-separator -->
 
 ## da0bcbe — Delete backend/node_modules directory
 
 **Author**: Kitzunu | **Date**: 2026-03-28 19:55:18 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/da0bcbe405d804729441561afbcd9ea0f757bc9d
 
----
+<!-- entry-separator -->
 
 ## 4b28b55 — Delete frontend/node_modules directory
 
 **Author**: Kitzunu | **Date**: 2026-03-28 19:55:08 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/4b28b55f20bc1bef5a9ee24fc0018038fdb56ade
 
----
+<!-- entry-separator -->
 
 ## 9f2c6e9 — Delete node_modules directory
 
 **Author**: Kitzunu | **Date**: 2026-03-28 19:54:58 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/9f2c6e9ca7ef5fda46faedcb3b9807a90bd6757b
 
----
+<!-- entry-separator -->
 
 ## f2bd2fc — Initial commit
 
 **Author**: Kitzunu | **Date**: 2026-03-28 19:51:37 +0100 | **Link**: https://github.com/Kitzunu/Dashboard/commit/f2bd2fcf9c96f07fdfceafa7574d7aba1098b5a6
-

@@ -115,23 +115,22 @@ export default function ChangelogPage() {
         <table className="data-table">
           <thead>
             <tr>
-              <th style={{ width: 80 }}>Hash</th>
+              <th style={{ width: 90 }}>Hash</th>
               <th>Subject</th>
               <th style={{ width: 140 }}>Author</th>
               <th style={{ width: 170 }}>Date</th>
-              <th style={{ width: 60 }}>Link</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={5} style={{ textAlign: 'center', padding: 32, color: 'var(--text-dim)' }}>
+                <td colSpan={4} style={{ textAlign: 'center', padding: 32, color: 'var(--text-dim)' }}>
                   Loading…
                 </td>
               </tr>
             ) : entries.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ textAlign: 'center', padding: 32, color: 'var(--text-dim)' }}>
+                <td colSpan={4} style={{ textAlign: 'center', padding: 32, color: 'var(--text-dim)' }}>
                   No changelog entries yet.
                 </td>
               </tr>
@@ -143,30 +142,26 @@ export default function ChangelogPage() {
                   style={{ cursor: 'pointer' }}
                   onClick={() => setSelected(entry)}
                 >
-                  <td>
-                    <span
-                      className="badge badge-dim"
-                      style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}
-                    >
-                      {entry.hash}
-                    </span>
-                  </td>
-                  <td className="td-name">{entry.subject}</td>
-                  <td className="td-muted">{entry.author || '—'}</td>
-                  <td className="td-muted">{formatDate(entry.date)}</td>
                   <td onClick={(e) => e.stopPropagation()}>
                     {entry.link ? (
                       <a
                         href={entry.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="btn btn-ghost btn-xs"
-                        title="View commit on GitHub"
+                        className="badge badge-dim"
+                        style={{ fontFamily: 'var(--font-mono)', fontSize: 12, textDecoration: 'none' }}
                       >
-                        ↗
+                        {entry.hash}
                       </a>
-                    ) : '—'}
+                    ) : (
+                      <span className="badge badge-dim" style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                        {entry.hash}
+                      </span>
+                    )}
                   </td>
+                  <td className="td-name">{entry.subject}</td>
+                  <td className="td-muted">{entry.author || '—'}</td>
+                  <td className="td-muted">{formatDate(entry.date)}</td>
                 </tr>
               ))
             )}

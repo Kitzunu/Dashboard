@@ -7,7 +7,7 @@ const router = express.Router();
 const CHANGELOG_PATH = path.join(__dirname, '../../changelog.md');
 
 // Parse changelog.md into an array of structured entry objects.
-// Expected format per entry (entries are separated by \n---\n):
+// Expected format per entry (entries are separated by <!-- entry-separator -->):
 //
 //   ## <shortHash> — <subject>
 //
@@ -16,7 +16,7 @@ const CHANGELOG_PATH = path.join(__dirname, '../../changelog.md');
 //   <optional body>
 //
 function parseChangelog(content) {
-  const sections = content.split(/\n---\n/).map((s) => s.trim()).filter(Boolean);
+  const sections = content.split('<!-- entry-separator -->').map((s) => s.trim()).filter(Boolean);
 
   const entries = [];
   for (const section of sections) {
