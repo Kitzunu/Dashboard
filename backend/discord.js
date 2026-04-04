@@ -8,6 +8,14 @@ const https    = require('https');
 const http     = require('http');
 const { URL }  = require('url');
 const settings = require('./dashboardSettings');
+const wsConfig = require('./worldservers');
+
+/** Map a server id to a human-readable display name. */
+function resolveDisplayName(server) {
+  if (server === 'authserver') return 'Auth Server';
+  const ws = wsConfig.getById(server);
+  return ws ? ws.name : server;
+}
 
 // ── Low-level HTTP sender ─────────────────────────────────────────────────────
 
@@ -91,7 +99,7 @@ async function sendServerCrash(server) {
   if (!(await isGloballyEnabled())) return;
   if (!(await settings.getBoolean('discord.alert_server_crash'))) return;
 
-  const displayName = server === 'worldserver' ? 'World Server' : 'Auth Server';
+  const displayName = resolveDisplayName(server);
   const template    = (await settings.get('discord.message_server_crash')) || '**{server}** has gone offline.';
   const description = interpolate(template, { server: displayName });
 
@@ -104,7 +112,7 @@ async function sendServerOnline(server) {
   if (!(await isGloballyEnabled())) return;
   if (!(await settings.getBoolean('discord.alert_server_online'))) return;
 
-  const displayName = server === 'worldserver' ? 'World Server' : 'Auth Server';
+  const displayName = resolveDisplayName(server);
   const template    = (await settings.get('discord.message_server_online')) || '**{server}** is online.';
   const description = interpolate(template, { server: displayName });
 
@@ -154,7 +162,7 @@ async function sendServerStop(server) {
   if (!(await isGloballyEnabled())) return;
   if (!(await settings.getBoolean('discord.alert_server_stop'))) return;
 
-  const displayName = server === 'worldserver' ? 'World Server' : 'Auth Server';
+  const displayName = resolveDisplayName(server);
   const template    = (await settings.get('discord.message_server_stop')) || '**{server}** was stopped manually.';
   const description = interpolate(template, { server: displayName });
   await postWebhook(url, await buildPayload(buildEmbed(`🔴 ${displayName} Offline`, description, COLORS.red)));
