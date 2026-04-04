@@ -244,6 +244,15 @@ export const api = {
 
   getChangelog: () => request('GET', '/api/changelog'),
 
+  // Calendar
+  getCalendarEvents:     (from, to) => request('GET', `/api/calendar/events?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`),
+  createCalendarEvent:   (data)     => request('POST',   '/api/calendar/events', data),
+  updateCalendarEvent:   (id, data) => request('PUT',    `/api/calendar/events/${id}`, data),
+  deleteCalendarEvent:   (id)       => request('DELETE', `/api/calendar/events/${id}`),
+  getGameEvents:         ()         => request('GET',    '/api/calendar/game-events'),
+  getIngameCalendarEvents: (from, to) => request('GET', `/api/calendar/ingame-events?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`),
+  getRaidResets:          ()         => request('GET',    '/api/calendar/raid-resets'),
+
   getBans: () => request('GET', '/api/bans'),
   banTarget: (type, target, duration, reason) =>
     request('POST', '/api/bans', { type, target, duration, reason }),
