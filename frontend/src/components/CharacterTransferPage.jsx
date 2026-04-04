@@ -101,14 +101,16 @@ export default function CharacterTransferPage() {
       </div>
 
       {/* Search */}
-      <div className="form-group">
-        <label>Search Character</label>
-        <div className="char-transfer-search-row">
-          <input type="text" value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            placeholder="Character name (min 2 chars)" />
-          <button className="btn btn-secondary" onClick={handleSearch}>Search</button>
+      <div className="char-transfer-search-section">
+        <div className="form-group">
+          <label>Search Character</label>
+          <div className="char-transfer-search-row">
+            <input type="text" value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              placeholder="Character name (min 2 chars)" />
+            <button className="btn btn-secondary" onClick={handleSearch}>Search</button>
+          </div>
         </div>
       </div>
 

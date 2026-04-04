@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 
@@ -8,6 +8,87 @@ const OPERATIONS = [
   { id: 'mail', label: 'Batch Mail', minFields: ['recipients', 'subject'] },
   { id: 'gmlevel', label: 'Batch GM Level', minFields: ['accountIds', 'gmlevel'] },
 ];
+
+/* ── Inline search picker ──────────────────────────────────────── */
+function SearchPicker({ searchType, onAdd }) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const wrapRef = useRef(null);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const doSearch = useCallback(async (q) => {
+    if (q.length < 2) { setResults([]); setOpen(false); return; }
+    setLoading(true);
+    try {
+      if (searchType === 'character') {
+        const rows = await api.searchCharacters(q);
+        setResults(rows.map((r) => ({ label: r.name, sub: `Lvl ${r.level}`, value: r.name })));
+      } else {
+        const data = await api.searchAccounts(q);
+        setResults((data.rows || []).map((r) => ({ label: r.username, sub: `#${r.id}`, value: searchType === 'accountId' ? String(r.id) : r.username })));
+      }
+      setOpen(true);
+    } catch {
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchType]);
+
+  const handleChange = (e) => {
+    const v = e.target.value;
+    setQuery(v);
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => doSearch(v), 300);
+  };
+
+  const handleSelect = (item) => {
+    onAdd(item.value);
+    setQuery('');
+    setResults([]);
+    setOpen(false);
+  };
+
+  const placeholder = searchType === 'character'
+    ? 'Search characters to add…'
+    : searchType === 'accountId'
+      ? 'Search accounts to add…'
+      : 'Search accounts to add…';
+
+  return (
+    <div className="batch-search-picker" ref={wrapRef}>
+      <input type="text" value={query} onChange={handleChange}
+        onFocus={() => { if (results.length) setOpen(true); }}
+        placeholder={placeholder}
+        className="batch-search-input" />
+      {open && results.length > 0 && (
+        <div className="batch-search-dropdown">
+          {results.slice(0, 15).map((item, i) => (
+            <div key={i} className="batch-search-option" onClick={() => handleSelect(item)}>
+              <span className="td-name">{item.label}</span>
+              <span className="td-muted">{item.sub}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {open && loading && (
+        <div className="batch-search-dropdown">
+          <div style={{ padding: '8px 12px', color: 'var(--text-dim)', fontSize: 13 }}>Searching…</div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function ResultsModal({ results, onClose }) {
   const succeeded = results.filter((r) => r.success).length;
@@ -79,6 +160,14 @@ export default function BatchOperationsPage() {
 
   const parseList = (text) => text.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean);
 
+  const appendToList = (setter) => (value) => {
+    setter((prev) => {
+      const existing = prev.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean);
+      if (existing.includes(value)) return prev;
+      return prev ? `${prev}\n${value}` : value;
+    });
+  };
+
   const handleExecute = async () => {
     setBusy(true);
     try {
@@ -137,6 +226,7 @@ export default function BatchOperationsPage() {
         <div>
           <div className="form-group">
             <label>Player Names (one per line or comma-separated)</label>
+            <SearchPicker searchType="character" onAdd={appendToList(setKickNames)} />
             <textarea value={kickNames} onChange={(e) => setKickNames(e.target.value)}
               rows={5} placeholder="PlayerName1&#10;PlayerName2&#10;PlayerName3"
               style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: 13 }} />
@@ -165,6 +255,7 @@ export default function BatchOperationsPage() {
           </div>
           <div className="form-group">
             <label>Targets (one per line or comma-separated)</label>
+            <SearchPicker searchType={banType === 'ip' ? 'account' : banType === 'account' ? 'account' : 'character'} onAdd={appendToList(setBanTargets)} />
             <textarea value={banTargets} onChange={(e) => setBanTargets(e.target.value)}
               rows={5} placeholder="Target1&#10;Target2&#10;Target3"
               style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: 13 }} />
@@ -186,6 +277,7 @@ export default function BatchOperationsPage() {
         <div>
           <div className="form-group">
             <label>Recipients (one per line or comma-separated)</label>
+            <SearchPicker searchType="character" onAdd={appendToList(setMailRecipients)} />
             <textarea value={mailRecipients} onChange={(e) => setMailRecipients(e.target.value)}
               rows={5} placeholder="CharacterName1&#10;CharacterName2"
               style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: 13 }} />
@@ -207,6 +299,7 @@ export default function BatchOperationsPage() {
         <div>
           <div className="form-group">
             <label>Account IDs (one per line or comma-separated)</label>
+            <SearchPicker searchType="accountId" onAdd={appendToList(setGmAccountIds)} />
             <textarea value={gmAccountIds} onChange={(e) => setGmAccountIds(e.target.value)}
               rows={5} placeholder="1&#10;2&#10;3"
               style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: 13 }} />

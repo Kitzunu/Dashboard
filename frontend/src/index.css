@@ -3474,6 +3474,16 @@ code {
 .notif-info     .notification-item-type { color: var(--blue); }
 
 /* ── Character Transfer ─────────────────────────────────────── */
+.char-transfer-search-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.char-transfer-search-section .form-group {
+  margin: 0;
+}
 .char-transfer-search-row {
   display: flex;
   gap: 8px;
@@ -3543,6 +3553,40 @@ code {
   transition: background 0.1s;
 }
 .char-transfer-ac-option:hover {
+  background: var(--surface2);
+}
+
+/* ── Batch Operations Search Picker ─────────────────────────── */
+.batch-search-picker {
+  position: relative;
+  margin-bottom: 8px;
+}
+.batch-search-input {
+  width: 100%;
+}
+.batch-search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.batch-search-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+  font-size: 13px;
+}
+.batch-search-option:hover {
   background: var(--surface2);
 }
 
