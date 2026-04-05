@@ -1,5 +1,13 @@
 # Changelog
 
+## c96b51d — Bump wait-on to ^9.0.4
+
+**Author**: Kitzunu | **Date**: 2026-04-05 13:06:41 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/c96b51d2c33223470c5d66935f4b2d0f9e57c110
+
+Update devDependency wait-on from ^8.0.3 to ^9.0.4 in package.json and regenerate package-lock.json. Lockfile now pins wait-on 9.0.4 (with updated transitive versions for axios, joi, lodash) and indicates wait-on requires node >=20.0.0 — verify Node compatibility before upgrading.
+
+<!-- entry-separator -->
+
 ## 64589d6 — Update emnapi  (#55)
 
 **Author**: Copilot | **Date**: 2026-04-05 13:04:29 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/64589d6fe49e36b7f44ee7e51f8d46d15cfddee0
