@@ -3,8 +3,7 @@ import { api } from '../api.js';
 import { toast } from '../toast.js';
 
 // ── Stop modal ────────────────────────────────────────────────────────────────
-function StopModal({ name, onConfirm, onClose }) {
-  const isWorld = name === 'worldserver';
+function StopModal({ name, isWorld, onConfirm, onClose }) {
   const [mode, setMode] = useState('exit');
   const [delay, setDelay] = useState(60);
 
@@ -118,20 +117,29 @@ const PRESET_DELAYS = [
   { label: '1 hour', seconds: 3600 },
 ];
 
-function RestartSection({ worldRunning }) {
+function RestartSection({ worldservers = [], serverStatus = {} }) {
   const [delay, setDelay]         = useState(300);
   const [customDelay, setCustom]  = useState('');
   const [useCustom, setUseCustom] = useState(false);
   const [busy, setBusy]           = useState(false);
+  const [target, setTarget]       = useState('');
+
+  // Default target to first worldserver
+  useEffect(() => {
+    if (!target && worldservers.length > 0) setTarget(worldservers[0].id);
+  }, [worldservers, target]);
 
   const effectiveDelay = useCustom
     ? Math.max(1, parseInt(customDelay, 10) || 1)
     : delay;
 
+  const anyRunning = worldservers.some((ws) => serverStatus[ws.id]?.running);
+  const targetRunning = serverStatus[target]?.running;
+
   const handleRestart = async () => {
     setBusy(true);
     try {
-      await api.restartServer(effectiveDelay);
+      await api.restartServer(effectiveDelay, target || undefined);
       const mins = Math.round(effectiveDelay / 60);
       toast(`Server restart scheduled in ${mins > 0 ? `${mins}m` : `${effectiveDelay}s`} — core will announce in-game`);
     } catch (err) {
@@ -144,7 +152,7 @@ function RestartSection({ worldRunning }) {
   const handleCancel = async () => {
     setBusy(true);
     try {
-      await api.cancelRestart();
+      await api.cancelRestart(target || undefined);
       toast('Scheduled restart cancelled');
     } catch (err) {
       toast(err.message, 'error');
@@ -161,9 +169,20 @@ function RestartSection({ worldRunning }) {
         in-game countdown announcements automatically.
       </p>
 
-      {!worldRunning && (
+      {worldservers.length > 1 && (
+        <div className="form-group" style={{ marginBottom: 12 }}>
+          <label>Target worldserver</label>
+          <select value={target} onChange={(e) => setTarget(e.target.value)} className="form-select">
+            {worldservers.map((ws) => (
+              <option key={ws.id} value={ws.id}>{ws.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {!targetRunning && (
         <div className="alert alert-warn" style={{ marginBottom: 12 }}>
-          Worldserver is not running — restart command will have no effect.
+          {target ? `${worldservers.find((w) => w.id === target)?.name || target}` : 'Worldserver'} is not running — restart command will have no effect.
         </div>
       )}
 
@@ -305,13 +324,18 @@ function MOTDSection() {
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
-export default function ServersPage({ serverStatus, setServerStatus }) {
+export default function ServersPage({ serverStatus, setServerStatus, worldservers = [] }) {
   const [busy, setBusy]           = useState(false);
   const [stopTarget, setStopTarget] = useState(null);
 
+  // Determine which worldserver IDs we have
+  const wsIds = worldservers.length > 0
+    ? worldservers.map((ws) => ws.id)
+    : ['worldserver'];
+
   useEffect(() => {
     api.getServerStatus()
-      .then(setServerStatus)
+      .then((status) => setServerStatus((prev) => ({ ...prev, ...status })))
       .catch(() => {});
   }, []);
 
@@ -339,7 +363,8 @@ export default function ServersPage({ serverStatus, setServerStatus }) {
     try {
       const result = await api.stopServer(name, mode, delay);
       if (result.success) {
-        const label = name === 'worldserver'
+        const isWorld = wsIds.includes(name);
+        const label = isWorld
           ? (mode === 'shutdown' ? `Shutdown in ${delay}s sent to ${name}` : `Exit sent to ${name}`)
           : `Stop signal sent to ${name}`;
         toast(label);
@@ -374,19 +399,22 @@ export default function ServersPage({ serverStatus, setServerStatus }) {
       </p>
 
       <div className="server-cards">
-        <ServerCard
-          name="worldserver"
-          displayName="World Server"
-          status={serverStatus.worldserver}
-          onStart={handleStart}
-          onStop={setStopTarget}
-          onAutoRestartToggle={handleAutoRestartToggle}
-          busy={busy}
-        />
+        {worldservers.map((ws) => (
+          <ServerCard
+            key={ws.id}
+            name={ws.id}
+            displayName={ws.name}
+            status={serverStatus[ws.id] || { running: false }}
+            onStart={handleStart}
+            onStop={setStopTarget}
+            onAutoRestartToggle={handleAutoRestartToggle}
+            busy={busy}
+          />
+        ))}
         <ServerCard
           name="authserver"
           displayName="Auth Server"
-          status={serverStatus.authserver}
+          status={serverStatus.authserver || { running: false }}
           onStart={handleStart}
           onStop={setStopTarget}
           onAutoRestartToggle={handleAutoRestartToggle}
@@ -394,12 +422,13 @@ export default function ServersPage({ serverStatus, setServerStatus }) {
         />
       </div>
 
-      <RestartSection worldRunning={serverStatus.worldserver.running} />
+      <RestartSection worldservers={worldservers} serverStatus={serverStatus} />
       <MOTDSection />
 
       {stopTarget && (
         <StopModal
           name={stopTarget}
+          isWorld={wsIds.includes(stopTarget)}
           onConfirm={handleStopConfirm}
           onClose={() => setStopTarget(null)}
         />

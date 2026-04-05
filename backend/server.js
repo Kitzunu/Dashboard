@@ -62,6 +62,7 @@ const ipAllowlist = require('./middleware/ipAllowlist');
 const processManager = require('./processManager');
 const serverBridge   = require('./serverBridge');
 const dbc = require('./dbc');
+const wsConfig = require('./worldservers');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -169,7 +170,7 @@ io.use((socket, next) => {
 
 io.on('connection', (socket) => {
   socket.on('subscribe', (serverName) => {
-    if (['worldserver', 'authserver'].includes(serverName)) {
+    if (wsConfig.getValidServers().includes(serverName)) {
       socket.join(`console-${serverName}`);
     }
   });
@@ -192,13 +193,20 @@ serverBridge.init(io);   // connect to agent SSE stream and bridge events
 const discord = require('./discord');
 
 // Track last-known running state per server to detect crash transitions
-const serverRunning = { worldserver: null, authserver: null };
+const serverRunning = {};
+for (const id of wsConfig.getValidServers()) {
+  serverRunning[id] = null;
+}
 
 serverBridge.on('server-status', ({ server, running }) => {
   const wasRunning = serverRunning[server];
   serverRunning[server] = running;
+
+  // Determine display label
+  const wsEntry = wsConfig.getById(server);
+  const label = wsEntry ? wsEntry.name : (server === 'authserver' ? 'Auth Server' : server);
+
   if (wasRunning === true && !running) {
-    const label = server === 'worldserver' ? 'World Server' : 'Auth Server';
     if (processManager.consumeIntentionalStop(server)) {
       discord.sendServerStop(server).catch(() => {});
       alertLogger.log('server_stop', 'info', `${label} stopped`, `${label} was stopped manually.`, { server });
@@ -209,7 +217,6 @@ serverBridge.on('server-status', ({ server, running }) => {
   }
   if (wasRunning === false && running) {
     discord.sendServerOnline(server).catch(() => {});
-    const label = server === 'worldserver' ? 'World Server' : 'Auth Server';
     alertLogger.log('server_online', 'info', `${label} is online`, `${label} started successfully.`, { server });
   }
 });
@@ -248,8 +255,15 @@ async function emitOverview() {
   const cutoff   = Date.now() - windowMs;
   const latest   = resourceHistory.getHistory().slice(-1)[0];
 
+  // Build servers object dynamically
+  const servers = { authserver: agentStatus.authserver };
+  for (const id of wsConfig.getIds()) {
+    servers[id] = agentStatus[id] || { running: false, autoRestart: false, pid: null, startTime: null };
+  }
+
   io.to('overview').emit('overview:update', {
-    servers:   { worldserver: agentStatus.worldserver, authserver: agentStatus.authserver },
+    servers,
+    worldservers: wsConfig.load().map((ws) => ({ id: ws.id, name: ws.name })),
     dashboard: { backendUptime: process.uptime(), agentConnected: serverBridge.isConnected(), agentUptime: agentStatus.uptime ?? null },
     players:   { current: playerCount },
     tickets:   { open:    ticketCount },
@@ -260,7 +274,7 @@ async function emitOverview() {
     version,
     playerHistory:   playerHistory.getHistory(),
     resourceHistory: resourceHistory.getHistory().filter((p) => p.time >= cutoff),
-    serverLatency:   latencyMonitor.getStats(),
+    serverLatency:   latencyMonitor.getAllStats(),
   });
 }
 
@@ -309,15 +323,18 @@ function pollResources() {
       alertLogger.log('threshold', 'warning', 'Memory threshold breached', `Memory usage reached ${memory}% (threshold: ${t.memory}%).`, { resource: 'memory', value: memory, threshold: t.memory });
     }
 
-    // Latency threshold check
-    const latStats = latencyMonitor.getStats();
-    if (latStats) {
+    // Latency threshold check — check all worldservers
+    const allLatStats = latencyMonitor.getAllStats();
+    for (const [serverId, latStats] of Object.entries(allLatStats)) {
+      if (!latStats) continue;
+      const wsEntry = wsConfig.getById(serverId);
+      const label = wsEntry ? wsEntry.name : serverId;
       if (t.latencyCritical && latStats.mean >= t.latencyCritical) {
         discord.sendLatencyAlert('critical', latStats.mean, t.latencyCritical).catch(() => {});
-        alertLogger.log('latency', 'critical', 'Latency critical threshold breached', `Mean latency is ${latStats.mean} ms (threshold: ${t.latencyCritical} ms).`, { mean: latStats.mean, p95: latStats.p95, p99: latStats.p99, max: latStats.max, threshold: t.latencyCritical });
+        alertLogger.log('latency', 'critical', `${label} latency critical threshold breached`, `Mean latency is ${latStats.mean} ms (threshold: ${t.latencyCritical} ms).`, { server: serverId, mean: latStats.mean, p95: latStats.p95, p99: latStats.p99, max: latStats.max, threshold: t.latencyCritical });
       } else if (t.latencyWarn && latStats.mean >= t.latencyWarn) {
         discord.sendLatencyAlert('warning', latStats.mean, t.latencyWarn).catch(() => {});
-        alertLogger.log('latency', 'warning', 'Latency warning threshold breached', `Mean latency is ${latStats.mean} ms (threshold: ${t.latencyWarn} ms).`, { mean: latStats.mean, p95: latStats.p95, p99: latStats.p99, max: latStats.max, threshold: t.latencyWarn });
+        alertLogger.log('latency', 'warning', `${label} latency warning threshold breached`, `Mean latency is ${latStats.mean} ms (threshold: ${t.latencyWarn} ms).`, { server: serverId, mean: latStats.mean, p95: latStats.p95, p99: latStats.p99, max: latStats.max, threshold: t.latencyWarn });
       }
     }
 

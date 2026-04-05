@@ -8,6 +8,7 @@ const playerHistory    = require('../playerHistory');
 const resourceHistory  = require('../resourceHistory');
 const thresholds       = require('../thresholds');
 const latencyMonitor   = require('../latencyMonitor');
+const wsConfig         = require('../worldservers');
 
 const router = express.Router();
 
@@ -40,11 +41,15 @@ router.get('/', requireGMLevel(1), async (req, res) => {
     const windowMs = (t.graphMinutes ?? 60) * 60 * 1000;
     const cutoff   = Date.now() - windowMs;
 
+    // Build servers object dynamically
+    const servers = { authserver: agentStatus.authserver };
+    for (const id of wsConfig.getIds()) {
+      servers[id] = agentStatus[id] || { running: false, autoRestart: false, pid: null, startTime: null };
+    }
+
     res.json({
-      servers: {
-        worldserver: agentStatus.worldserver,
-        authserver:  agentStatus.authserver,
-      },
+      servers,
+      worldservers: wsConfig.load().map((ws) => ({ id: ws.id, name: ws.name })),
       dashboard: {
         backendUptime:  process.uptime(),
         agentConnected: serverBridge.isConnected(),
@@ -66,7 +71,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
       version,
       playerHistory:   playerHistory.getHistory(),
       resourceHistory: resourceHistory.getHistory().filter((p) => p.time >= cutoff),
-      serverLatency:   latencyMonitor.getStats(),
+      serverLatency:   latencyMonitor.getAllStats(),
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

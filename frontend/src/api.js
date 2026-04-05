@@ -38,12 +38,13 @@ export const api = {
     request('POST', '/api/auth/login', { username, password }),
 
   getServerStatus: () => request('GET', '/api/servers/status'),
+  getServerList:   () => request('GET', '/api/servers/list'),
   startServer: (name) => request('POST', `/api/servers/${name}/start`),
   stopServer: (name, mode, delay) => request('POST', `/api/servers/${name}/stop`, { mode, delay }),
   setAutoRestart: (name, enabled) => request('POST', `/api/servers/${name}/autorestart`, { enabled }),
   getServerLogs: (name) => request('GET', `/api/servers/${name}/logs`),
 
-  sendCommand: (command) => request('POST', '/api/console/command', { command }),
+  sendCommand: (command, server) => request('POST', '/api/console/command', { command, server }),
 
   getPlayers: () => request('GET', '/api/players'),
   kickPlayer: (name, reason) => request('POST', `/api/players/${encodeURIComponent(name)}/kick`, { reason }),
@@ -91,10 +92,10 @@ export const api = {
   muteCharacter:     (name, minutes, reason) => request('POST', '/api/accounts/mute',   { name, minutes, reason }),
   unmuteCharacter:   (name)           => request('POST',    '/api/accounts/unmute',     { name }),
 
-  getMOTD:         ()             => request('GET',  '/api/servertools/motd'),
-  setMOTD:         (motd)        => request('PUT',  '/api/servertools/motd', { motd }),
-  restartServer:   (delay)       => request('POST', '/api/servertools/restart', { delay }),
-  cancelRestart:   ()            => request('POST', '/api/servertools/restart/cancel'),
+  getMOTD:         ()                     => request('GET',  '/api/servertools/motd'),
+  setMOTD:         (motd, server)        => request('PUT',  '/api/servertools/motd', { motd, server }),
+  restartServer:   (delay, server)       => request('POST', '/api/servertools/restart', { delay, server }),
+  cancelRestart:   (server)              => request('POST', '/api/servertools/restart/cancel', { server }),
 
   sendMail:        (player, subject, body)          => request('POST', '/api/mail', { type: 'text', player, subject, body }),
   sendMailItems:   (player, subject, body, items)   => request('POST', '/api/mail', { type: 'items', player, subject, body, items }),

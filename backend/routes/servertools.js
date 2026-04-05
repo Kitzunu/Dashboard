@@ -18,11 +18,11 @@ router.get('/motd', requireGMLevel(1), async (req, res) => {
 
 // PUT /api/servertools/motd
 router.put('/motd', requireGMLevel(3), async (req, res) => {
-  const { motd } = req.body;
+  const { motd, server } = req.body;
   if (typeof motd !== 'string' || !motd.trim()) {
     return res.status(400).json({ error: 'motd is required' });
   }
-  const result = await processManager.sendCommand(`server set motd ${motd.trim()}`);
+  const result = await processManager.sendCommand(`server set motd ${motd.trim()}`, server);
   if (!result.success) return res.status(503).json({ error: result.error });
   audit(req, 'motd.set', motd.trim());
   res.json({ success: true });
@@ -31,15 +31,17 @@ router.put('/motd', requireGMLevel(3), async (req, res) => {
 // POST /api/servertools/restart  — delay in seconds, min 1
 router.post('/restart', requireGMLevel(3), async (req, res) => {
   const delay  = Math.max(1, parseInt(req.body.delay, 10) || 60);
-  const result = await processManager.sendCommand(`server restart ${delay}`);
+  const server = req.body.server;
+  const result = await processManager.sendCommand(`server restart ${delay}`, server);
   if (!result.success) return res.status(503).json({ error: result.error });
-  audit(req, 'server.restart', `delay=${delay}s`);
+  audit(req, 'server.restart', `delay=${delay}s${server ? ` server=${server}` : ''}`);
   res.json({ success: true, delay });
 });
 
 // POST /api/servertools/restart/cancel
 router.post('/restart/cancel', requireGMLevel(3), async (req, res) => {
-  const result = await processManager.sendCommand('server restart cancel');
+  const server = req.body.server;
+  const result = await processManager.sendCommand('server restart cancel', server);
   if (!result.success) return res.status(503).json({ error: result.error });
   audit(req, 'server.restart_cancel');
   res.json({ success: true });

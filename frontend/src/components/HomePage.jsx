@@ -317,12 +317,13 @@ function latencyColor(ms) {
   return 'var(--green)';
 }
 
-function LatencyPanel({ latency }) {
+function LatencyPanel({ latency, label }) {
+  const title = label ? `${label} Latency` : 'Server Latency';
   if (!latency) {
     return (
       <div className="latency-panel">
         <div className="latency-panel-header">
-          <span className="latency-panel-title">World Server Latency</span>
+          <span className="latency-panel-title">{title}</span>
           <span className="td-muted" style={{ fontSize: 12 }}>No data yet — collecting samples…</span>
         </div>
       </div>
@@ -340,7 +341,7 @@ function LatencyPanel({ latency }) {
   return (
     <div className="latency-panel">
       <div className="latency-panel-header">
-        <span className="latency-panel-title">World Server Latency</span>
+        <span className="latency-panel-title">{title}</span>
         <span className="td-muted" style={{ fontSize: 12 }}>{latency.count} sample{latency.count !== 1 ? 's' : ''}</span>
       </div>
       <div className="latency-stats-grid">
@@ -476,6 +477,7 @@ export default function HomePage({ socket }) {
   if (error && !overview) return <div className="page"><div className="alert alert-error">{error}</div></div>;
 
   const servers       = overview?.servers       ?? {};
+  const worldservers  = overview?.worldservers  ?? [{ id: 'worldserver', name: 'World Server' }];
   const dashboard     = overview?.dashboard     ?? {};
   const players       = overview?.players       ?? {};
   const tickets       = overview?.tickets       ?? {};
@@ -485,7 +487,8 @@ export default function HomePage({ socket }) {
   const resourceHistory = overview?.resourceHistory ?? [];
   const motd            = overview?.motd            ?? '';
   const version       = overview?.version       ?? null;
-  const serverLatency = overview?.serverLatency  ?? null;
+  const serverLatency = overview?.serverLatency  ?? {};
+  const anyWorldRunning = worldservers.some((ws) => servers[ws.id]?.running);
 
   const memPct = system.memPct ?? (system.totalMem > 0
     ? Math.round(((system.totalMem - system.freeMem) / system.totalMem) * 100)
@@ -510,14 +513,16 @@ export default function HomePage({ socket }) {
 
       {/* Server cards */}
       <div className="home-grid">
-        <ServerOverviewCard name="worldserver" displayName="World Server" info={servers.worldserver} />
+        {worldservers.map((ws) => (
+          <ServerOverviewCard key={ws.id} name={ws.id} displayName={ws.name} info={servers[ws.id]} />
+        ))}
         <ServerOverviewCard name="authserver"  displayName="Auth Server"  info={servers.authserver} />
         <DashboardCard dashboard={dashboard} />
       </div>
 
       {/* Stat cards */}
       <div className="home-metrics-row">
-        <StatCard label="Players Online" value={servers.worldserver?.running ? (players.current ?? 0) : 0} />
+        <StatCard label="Players Online" value={anyWorldRunning ? (players.current ?? 0) : 0} />
         <StatCard label="Open Tickets"   value={tickets.open    ?? 0} />
         <StatCard label="Active Bans"    value={bans.active     ?? 0} />
       </div>
@@ -545,10 +550,12 @@ export default function HomePage({ socket }) {
       </div>
 
       {/* Server latency */}
-      <LatencyPanel latency={serverLatency} />
+      {worldservers.map((ws) => (
+        <LatencyPanel key={ws.id} latency={serverLatency[ws.id] ?? null} label={ws.name} />
+      ))}
 
       {/* Sparkline */}
-      <Sparkline playerHistory={playerHistory} currentCount={servers.worldserver?.running ? (players.current ?? 0) : 0} />
+      <Sparkline playerHistory={playerHistory} currentCount={anyWorldRunning ? (players.current ?? 0) : 0} />
 
       {/* Version */}
       {version && (

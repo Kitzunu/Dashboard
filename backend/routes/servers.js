@@ -1,18 +1,24 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const processManager = require('../processManager');
+const wsConfig = require('../worldservers');
 const { audit } = require('../audit');
 
 const router = express.Router();
-const VALID_SERVERS = ['worldserver', 'authserver'];
+
+// GET /api/servers/list — return configured worldservers with metadata
+router.get('/list', async (req, res) => {
+  res.json(wsConfig.load().map((ws) => ({ id: ws.id, name: ws.name })));
+});
 
 router.get('/status', async (req, res) => {
   try {
     const status = await processManager.getAllStatus();
-    res.json({
-      worldserver: status.worldserver,
-      authserver:  status.authserver,
-    });
+    const result = { authserver: status.authserver };
+    for (const id of wsConfig.getIds()) {
+      result[id] = status[id] || { running: false, autoRestart: false, pid: null, startTime: null };
+    }
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -20,13 +26,13 @@ router.get('/status', async (req, res) => {
 
 router.get('/:name/logs', async (req, res) => {
   const { name } = req.params;
-  if (!VALID_SERVERS.includes(name)) return res.status(400).json({ error: 'Invalid server name' });
+  if (!wsConfig.getValidServers().includes(name)) return res.status(400).json({ error: 'Invalid server name' });
   res.json({ logs: await processManager.getLogs(name) });
 });
 
 router.post('/:name/start', requireGMLevel(3), async (req, res) => {
   const { name } = req.params;
-  if (!VALID_SERVERS.includes(name)) return res.status(400).json({ error: 'Invalid server name' });
+  if (!wsConfig.getValidServers().includes(name)) return res.status(400).json({ error: 'Invalid server name' });
   audit(req, 'server.start', `server=${name}`);
   res.json(await processManager.startServer(name));
 });
@@ -35,7 +41,7 @@ router.post('/:name/start', requireGMLevel(3), async (req, res) => {
 // authserver always uses kill regardless of mode
 router.post('/:name/stop', requireGMLevel(3), async (req, res) => {
   const { name } = req.params;
-  if (!VALID_SERVERS.includes(name)) return res.status(400).json({ error: 'Invalid server name' });
+  if (!wsConfig.getValidServers().includes(name)) return res.status(400).json({ error: 'Invalid server name' });
   const { mode = 'exit', delay = 0 } = req.body;
   audit(req, 'server.stop', `server=${name} mode=${mode} delay=${delay}`);
   processManager.markIntentionalStop(name);
@@ -44,7 +50,7 @@ router.post('/:name/stop', requireGMLevel(3), async (req, res) => {
 
 router.post('/:name/autorestart', requireGMLevel(3), async (req, res) => {
   const { name } = req.params;
-  if (!VALID_SERVERS.includes(name)) return res.status(400).json({ error: 'Invalid server name' });
+  if (!wsConfig.getValidServers().includes(name)) return res.status(400).json({ error: 'Invalid server name' });
   res.json(await processManager.setAutoRestart(name, req.body.enabled));
 });
 
