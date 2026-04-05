@@ -1,5 +1,15 @@
 # Changelog
 
+## 51ab151 — Add missing card container CSS for BatchOperationsPage
+
+**Author**: copilot-swe-agent[bot] | **Date**: 2026-04-05 13:12:34 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/51ab151fa2ebaf904e122cac512f47de68a79cf0
+
+Agent-Logs-Url: https://github.com/Kitzunu/Dashboard/sessions/907e81a9-7df8-45e7-9042-9bee13885942
+
+Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## c96b51d — Bump wait-on to ^9.0.4
 
 **Author**: Kitzunu | **Date**: 2026-04-05 13:06:41 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/c96b51d2c33223470c5d66935f4b2d0f9e57c110
