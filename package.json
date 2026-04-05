@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "concurrently \"npm run start:server-agent\" \"npm run start:backend\" \"npm run start:frontend\"",
+    "start": "npm run install:all && concurrently \"npm run start:server-agent\" \"npm run start:backend\" \"npm run start:frontend\"",
     "start:server-agent": "cd backend && node runAgent.js",
     "start:backend": "cd backend && node run.js",
     "start:frontend": "wait-on http://localhost:3001/api/health && cd frontend && npm run dev",
