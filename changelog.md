@@ -1,5 +1,14 @@
 # Changelog
 
+## 64589d6 — Update emnapi  (#55)
+
+**Author**: Copilot | **Date**: 2026-04-05 13:04:29 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/64589d6fe49e36b7f44ee7e51f8d46d15cfddee0
+
+Co-authored-by: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## 1786520 — Add URL-based routing with react-router-dom (#54)
 
 **Author**: Copilot | **Date**: 2026-04-05 12:37:18 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/1786520e5ad3c2927f8e50d59f0612b87401bb88
