@@ -1,5 +1,26 @@
 # Changelog
 
+## 1786520 — Add URL-based routing with react-router-dom (#54)
+
+**Author**: Copilot | **Date**: 2026-04-05 12:37:18 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/1786520e5ad3c2927f8e50d59f0612b87401bb88
+
+* feat: add URL-based routing with react-router-dom
+
+- Install react-router-dom v7.14.0
+- Wrap App in BrowserRouter in main.jsx
+- Replace useState page switching with URL-derived page in Layout.jsx
+- Navigation uses useNavigate() instead of setPage()
+- Character page guid passed via URL search params (?guid=123)
+- Invalid URLs redirect to home page
+- All existing navigation patterns preserved (sidebar, onViewCharacter, NotificationBell)
+
+---------
+
+Co-authored-by: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## 0d9d1bd — Support for multiple worldservers (#53)
 
 **Author**: Copilot | **Date**: 2026-04-05 11:39:45 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/0d9d1bd085345c906112036bcc6579e321f263bd
