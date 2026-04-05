@@ -212,114 +212,116 @@ export default function BatchOperationsPage() {
         </div>
       </div>
 
-      <div className="ban-type-tabs" style={{ marginBottom: 20 }}>
-        {OPERATIONS.map((op) => (
-          <button key={op.id}
-            className={`ban-type-tab ${operation === op.id ? 'active' : ''}`}
-            onClick={() => setOperation(op.id)}>
-            {op.label}
-          </button>
-        ))}
-      </div>
-
-      {operation === 'kick' && (
-        <div>
-          <div className="form-group">
-            <label>Player Names (one per line or comma-separated)</label>
-            <SearchPicker searchType="character" onAdd={appendToList(setKickNames)} />
-            <textarea value={kickNames} onChange={(e) => setKickNames(e.target.value)}
-              rows={5} placeholder="PlayerName1&#10;PlayerName2&#10;PlayerName3"
-              style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: 13 }} />
-          </div>
-          <div className="form-group">
-            <label>Reason</label>
-            <input type="text" value={kickReason} onChange={(e) => setKickReason(e.target.value)}
-              placeholder="Reason for kick" />
-          </div>
+      <div className="batch-operations-card">
+        <div className="ban-type-tabs">
+          {OPERATIONS.map((op) => (
+            <button key={op.id}
+              className={`ban-type-tab ${operation === op.id ? 'active' : ''}`}
+              onClick={() => setOperation(op.id)}>
+              {op.label}
+            </button>
+          ))}
         </div>
-      )}
 
-      {operation === 'ban' && (
-        <div>
-          <div className="form-group">
-            <label>Ban Type</label>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {['character', 'account', 'ip'].map((t) => (
-                <button key={t}
-                  className={`btn btn-xs ${banType === t ? 'btn-primary' : 'btn-secondary'}`}
-                  onClick={() => setBanType(t)}>
-                  {t}
-                </button>
-              ))}
+        {operation === 'kick' && (
+          <>
+            <div className="form-group">
+              <label>Player Names (one per line or comma-separated)</label>
+              <SearchPicker searchType="character" onAdd={appendToList(setKickNames)} />
+              <textarea value={kickNames} onChange={(e) => setKickNames(e.target.value)}
+                rows={5} placeholder="PlayerName1&#10;PlayerName2&#10;PlayerName3"
+                style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: 13 }} />
             </div>
-          </div>
-          <div className="form-group">
-            <label>Targets (one per line or comma-separated)</label>
-            <SearchPicker searchType={banType === 'ip' ? 'account' : banType === 'account' ? 'account' : 'character'} onAdd={appendToList(setBanTargets)} />
-            <textarea value={banTargets} onChange={(e) => setBanTargets(e.target.value)}
-              rows={5} placeholder="Target1&#10;Target2&#10;Target3"
-              style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: 13 }} />
-          </div>
-          <div className="form-group">
-            <label>Duration</label>
-            <input type="text" value={banDuration} onChange={(e) => setBanDuration(e.target.value)}
-              placeholder="e.g. 1h, 7d, 0 for permanent" style={{ width: 150 }} />
-          </div>
-          <div className="form-group">
-            <label>Reason</label>
-            <input type="text" value={banReason} onChange={(e) => setBanReason(e.target.value)}
-              placeholder="Reason for ban" />
-          </div>
-        </div>
-      )}
+            <div className="form-group">
+              <label>Reason</label>
+              <input type="text" value={kickReason} onChange={(e) => setKickReason(e.target.value)}
+                placeholder="Reason for kick" />
+            </div>
+          </>
+        )}
 
-      {operation === 'mail' && (
+        {operation === 'ban' && (
+          <>
+            <div className="form-group">
+              <label>Ban Type</label>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {['character', 'account', 'ip'].map((t) => (
+                  <button key={t}
+                    className={`btn btn-xs ${banType === t ? 'btn-primary' : 'btn-secondary'}`}
+                    onClick={() => setBanType(t)}>
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Targets (one per line or comma-separated)</label>
+              <SearchPicker searchType={banType === 'ip' ? 'account' : banType === 'account' ? 'account' : 'character'} onAdd={appendToList(setBanTargets)} />
+              <textarea value={banTargets} onChange={(e) => setBanTargets(e.target.value)}
+                rows={5} placeholder="Target1&#10;Target2&#10;Target3"
+                style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: 13 }} />
+            </div>
+            <div className="form-group">
+              <label>Duration</label>
+              <input type="text" value={banDuration} onChange={(e) => setBanDuration(e.target.value)}
+                placeholder="e.g. 1h, 7d, 0 for permanent" style={{ width: 150 }} />
+            </div>
+            <div className="form-group">
+              <label>Reason</label>
+              <input type="text" value={banReason} onChange={(e) => setBanReason(e.target.value)}
+                placeholder="Reason for ban" />
+            </div>
+          </>
+        )}
+
+        {operation === 'mail' && (
+          <>
+            <div className="form-group">
+              <label>Recipients (one per line or comma-separated)</label>
+              <SearchPicker searchType="character" onAdd={appendToList(setMailRecipients)} />
+              <textarea value={mailRecipients} onChange={(e) => setMailRecipients(e.target.value)}
+                rows={5} placeholder="CharacterName1&#10;CharacterName2"
+                style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: 13 }} />
+            </div>
+            <div className="form-group">
+              <label>Subject</label>
+              <input type="text" value={mailSubject} onChange={(e) => setMailSubject(e.target.value)}
+                placeholder="Mail subject" />
+            </div>
+            <div className="form-group">
+              <label>Body</label>
+              <textarea value={mailBody} onChange={(e) => setMailBody(e.target.value)}
+                rows={3} placeholder="Mail body text" style={{ width: '100%' }} />
+            </div>
+          </>
+        )}
+
+        {operation === 'gmlevel' && (
+          <>
+            <div className="form-group">
+              <label>Account IDs (one per line or comma-separated)</label>
+              <SearchPicker searchType="accountId" onAdd={appendToList(setGmAccountIds)} />
+              <textarea value={gmAccountIds} onChange={(e) => setGmAccountIds(e.target.value)}
+                rows={5} placeholder="1&#10;2&#10;3"
+                style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: 13 }} />
+            </div>
+            <div className="form-group">
+              <label>GM Level</label>
+              <select value={gmLevel} onChange={(e) => setGmLevel(parseInt(e.target.value, 10))} style={{ width: 200 }}>
+                <option value={0}>0 — Player</option>
+                <option value={1}>1 — Moderator</option>
+                <option value={2}>2 — Game Master</option>
+                <option value={3}>3 — Administrator</option>
+              </select>
+            </div>
+          </>
+        )}
+
         <div>
-          <div className="form-group">
-            <label>Recipients (one per line or comma-separated)</label>
-            <SearchPicker searchType="character" onAdd={appendToList(setMailRecipients)} />
-            <textarea value={mailRecipients} onChange={(e) => setMailRecipients(e.target.value)}
-              rows={5} placeholder="CharacterName1&#10;CharacterName2"
-              style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: 13 }} />
-          </div>
-          <div className="form-group">
-            <label>Subject</label>
-            <input type="text" value={mailSubject} onChange={(e) => setMailSubject(e.target.value)}
-              placeholder="Mail subject" />
-          </div>
-          <div className="form-group">
-            <label>Body</label>
-            <textarea value={mailBody} onChange={(e) => setMailBody(e.target.value)}
-              rows={3} placeholder="Mail body text" style={{ width: '100%' }} />
-          </div>
+          <button className="btn btn-primary" onClick={handleExecute} disabled={busy}>
+            {busy ? 'Executing…' : 'Execute'}
+          </button>
         </div>
-      )}
-
-      {operation === 'gmlevel' && (
-        <div>
-          <div className="form-group">
-            <label>Account IDs (one per line or comma-separated)</label>
-            <SearchPicker searchType="accountId" onAdd={appendToList(setGmAccountIds)} />
-            <textarea value={gmAccountIds} onChange={(e) => setGmAccountIds(e.target.value)}
-              rows={5} placeholder="1&#10;2&#10;3"
-              style={{ width: '100%', fontFamily: 'var(--font-mono)', fontSize: 13 }} />
-          </div>
-          <div className="form-group">
-            <label>GM Level</label>
-            <select value={gmLevel} onChange={(e) => setGmLevel(parseInt(e.target.value, 10))} style={{ width: 200 }}>
-              <option value={0}>0 — Player</option>
-              <option value={1}>1 — Moderator</option>
-              <option value={2}>2 — Game Master</option>
-              <option value={3}>3 — Administrator</option>
-            </select>
-          </div>
-        </div>
-      )}
-
-      <div style={{ marginTop: 20 }}>
-        <button className="btn btn-primary" onClick={handleExecute} disabled={busy}>
-          {busy ? 'Executing…' : 'Execute'}
-        </button>
       </div>
 
       {results && <ResultsModal results={results} onClose={() => setResults(null)} />}
