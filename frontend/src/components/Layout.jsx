@@ -211,7 +211,8 @@ export default function Layout() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const page = pathToPage(location.pathname);
-  const charNavGuid = searchParams.get('guid') ? parseInt(searchParams.get('guid'), 10) : null;
+  const guidParam = searchParams.get('guid');
+  const charNavGuid = guidParam ? parseInt(guidParam, 10) : null;
 
   // Redirect invalid paths to home
   useEffect(() => {
