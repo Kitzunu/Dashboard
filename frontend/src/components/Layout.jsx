@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../App.jsx';
 import { connectSocket, disconnectSocket } from '../socket.js';
 import { api } from '../api.js';
@@ -187,10 +188,39 @@ function getInitialGroupOrder() {
   return NAV_GROUPS.map((g) => g.group);
 }
 
+// Set of all valid page IDs for URL validation
+const VALID_PAGES = new Set(
+  NAV_GROUPS.flatMap((g) => g.items.map((i) => i.id))
+);
+
+// Convert a page ID to a URL path
+function pageToPath(id) {
+  return id === 'home' ? '/' : `/${id}`;
+}
+
+// Derive page ID from a URL pathname
+function pathToPage(pathname) {
+  if (pathname === '/') return 'home';
+  const id = pathname.replace(/^\//, '');
+  return VALID_PAGES.has(id) ? id : 'home';
+}
+
 export default function Layout() {
   const { auth, logout } = useAuth();
-  const [page, setPage] = useState('home');
-  const [charNavGuid, setCharNavGuid] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const page = pathToPage(location.pathname);
+  const guidParam = searchParams.get('guid');
+  const charNavGuid = guidParam ? parseInt(guidParam, 10) : null;
+
+  // Redirect invalid paths to home
+  useEffect(() => {
+    if (location.pathname !== '/' && !VALID_PAGES.has(location.pathname.replace(/^\//, ''))) {
+      navigate('/', { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
   const [collapsedGroups, setCollapsedGroups] = useState({});
   const [groupOrder, setGroupOrder] = useState(getInitialGroupOrder);
   const [dragOverGroup, setDragOverGroup] = useState(null);
@@ -372,7 +402,7 @@ export default function Layout() {
                   <button
                     key={item.id}
                     className={`nav-item ${page === item.id ? 'active' : ''}`}
-                    onClick={() => { setPage(item.id); setCharNavGuid(null); setSidebarOpen(false); }}
+                    onClick={() => { navigate(pageToPath(item.id)); setSidebarOpen(false); }}
                   >
                     <span className="nav-label">{item.label}</span>
                     {item.id === 'players' && playerCount != null && (
@@ -398,7 +428,7 @@ export default function Layout() {
               <StatusDot key={ws.id} label={ws.name} running={serverStatus[ws.id]?.running} />
             ))}
             <StatusDot label="Auth" running={serverStatus.authserver?.running} />
-            <NotificationBell onNavigate={(id) => { setPage(id); setSidebarOpen(false); }} />
+            <NotificationBell onNavigate={(id) => { navigate(pageToPath(id)); setSidebarOpen(false); }} />
           </div>
           <div className="user-row">
             <div>
@@ -413,12 +443,12 @@ export default function Layout() {
       <main className="main-content">
         {page === 'home'          && <HomePage socket={socket} />}
         {page === 'console'       && <ConsolePage socket={socket} auth={auth} worldservers={worldservers} />}
-        {page === 'players'       && <PlayersPage auth={auth} serverStatus={serverStatus} onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
-        {page === 'tickets'       && <TicketsPage onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
+        {page === 'players'       && <PlayersPage auth={auth} serverStatus={serverStatus} onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
+        {page === 'tickets'       && <TicketsPage onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
         {page === 'bans'          && <BansPage />}
         {page === 'mutes'         && <MutesPage />}
         {page === 'announce'      && <AnnouncePage />}
-        {page === 'accounts'      && <AccountsPage auth={auth} onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
+        {page === 'accounts'      && <AccountsPage auth={auth} onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
         {page === 'autobroadcast' && <AutobroadcastPage />}
         {page === 'mail'          && <MailPage />}
         {page === 'bugreports'    && <BugReportsPage />}
@@ -434,8 +464,8 @@ export default function Layout() {
         {page === 'changelog'     && <ChangelogPage />}
         {page === 'settings'      && <SettingsPage />}
         {page === 'scheduled'     && <ScheduledTasksPage />}
-        {page === 'guilds'        && <GuildsPage onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
-        {page === 'arena'         && <ArenaPage auth={auth} onViewCharacter={(guid) => { setCharNavGuid(guid); setPage('characters'); }} />}
+        {page === 'guilds'        && <GuildsPage onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
+        {page === 'arena'         && <ArenaPage auth={auth} onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
         {page === 'characters'    && <CharacterPage initialGuid={charNavGuid} />}
         {page === 'namefilters'      && <NameFiltersPage />}
         {page === 'calendar'         && <CalendarPage auth={auth} />}
