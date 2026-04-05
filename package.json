@@ -7,7 +7,10 @@
     "start:server-agent": "cd backend && node runAgent.js",
     "start:backend": "cd backend && node run.js",
     "start:frontend": "wait-on http://localhost:3001/api/health && cd frontend && npm run dev",
-    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install"
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "test": "cd backend && npm test && cd ../frontend && npm test",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
