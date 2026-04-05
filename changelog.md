@@ -1,5 +1,38 @@
 # Changelog
 
+## 0d9d1bd — Support for multiple worldservers (#53)
+
+**Author**: Copilot | **Date**: 2026-04-05 11:39:45 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/0d9d1bd085345c906112036bcc6579e321f263bd
+
+* feat: add multi-worldserver backend support
+
+- Add worldservers.js config module (reads worldservers.json or .env fallback)
+- Add worldservers.json.example template
+- Update serverAgent.js for dynamic N-worldserver process management
+- Update processManager.js for targeted command proxying
+- Update serverBridge.js for dynamic event handling
+- Update latencyMonitor.js for per-server monitoring
+- Update routes (servers, console, servertools, overview) for multi-worldserver
+- Update server.js Socket.IO, overview, and Discord alerts for dynamic servers
+
+* feat: add multi-worldserver frontend support
+
+- Update api.js with getServerList, targeted sendCommand, restart, MOTD
+- Update Layout.jsx with dynamic worldserver status dots and server list
+- Update ServersPage.jsx with dynamic server cards and target selectors
+- Update ConsolePage.jsx with dynamic console panels for all worldservers
+- Update HomePage.jsx with dynamic server overview cards and latency panels
+- Update .env.example with multi-worldserver documentation
+
+
+*closes https://github.com/Kitzunu/Dashboard/issues/12
+---------
+
+Co-authored-by: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## 49d2414 — support advanced administrative features, including analytics, batch operations, notifications, health checks, backups, and character transfers (#52)
 
 **Author**: Copilot | **Date**: 2026-04-05 01:16:50 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/49d2414d3ef5446758774dfe710d88855cebe27c
