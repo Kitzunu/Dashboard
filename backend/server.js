@@ -52,6 +52,7 @@ const characterTransferRoutes= require('./routes/characterTransfer');
 const notificationsRoutes    = require('./routes/notifications');
 const analyticsRoutes        = require('./routes/analytics');
 const sessionsRoutes         = require('./routes/sessions');
+const auctionhouseRoutes     = require('./routes/auctionhouse');
 const alertLogger            = require('./alertLogger');
 const scheduler              = require('./scheduler');
 const { startRetentionJob } = require('./audit');
@@ -158,6 +159,7 @@ app.use('/api/character-transfer', authenticateToken, characterTransferRoutes);
 app.use('/api/notifications',  authenticateToken, notificationsRoutes);
 app.use('/api/analytics',      authenticateToken, analyticsRoutes);
 app.use('/api/sessions',       authenticateToken, sessionsRoutes);
+app.use('/api/auctionhouse',   authenticateToken, auctionhouseRoutes);
 
 // Authenticate socket connections with JWT
 io.use((socket, next) => {

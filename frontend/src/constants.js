@@ -21,3 +21,13 @@ export const FALLBACK_BATTLEGROUNDS = {
   30: 'Isle of Conquest',
   32: 'Random Battleground',
 };
+
+export const FALLBACK_AUCTION_HOUSES = {
+  1: 'Stormwind Auction House',
+  2: 'Alliance Auction House',
+  3: 'Darnassus Auction House',
+  4: 'Undercity Auction House',
+  5: 'Thunder Bluff Auction House',
+  6: 'Horde Auction House',
+  7: 'Blackwater Auction House',
+};

@@ -40,6 +40,7 @@ import CharacterTransferPage from './CharacterTransferPage.jsx';
 import NotificationBell from './NotificationBell.jsx';
 import AnalyticsPage from './AnalyticsPage.jsx';
 import SessionsPage from './SessionsPage.jsx';
+import AuctionHousePage from './AuctionHousePage.jsx';
 import { GM_LABELS } from '../constants.js';
 
 const NAV_GROUPS = [
@@ -66,8 +67,9 @@ const NAV_GROUPS = [
       { id: 'announce',     label: 'Announce',     minLevel: 2 },
       { id: 'mail',         label: 'Send Mail',    minLevel: 2 },
       { id: 'batch',        label: 'Batch Ops',    minLevel: 3 },
-      { id: 'channels',     label: 'Channels',     minLevel: 1 },
-      { id: 'calendar',     label: 'Calendar',     minLevel: 1 },
+      { id: 'channels',     label: 'Channels',       minLevel: 1 },
+      { id: 'auction-house', label: 'Auction House',  minLevel: 1 },
+      { id: 'calendar',     label: 'Calendar',       minLevel: 1 },
       { id: 'namefilters',  label: 'Name Filters', minLevel: 2 },
     ],
   },
@@ -460,6 +462,7 @@ export default function Layout() {
         {page === 'dbquery'       && <DBQueryPage />}
         {page === 'config'        && <ConfigPage />}
         {page === 'channels'      && <ChannelsPage />}
+        {page === 'auction-house' && <AuctionHousePage auth={auth} onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
         {page === 'spamreports'   && <SpamReportsPage />}
         {page === 'alerts'        && <AlertsPage />}
         {page === 'audit-log'     && <AuditLogPage />}
