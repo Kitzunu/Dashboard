@@ -11,3 +11,13 @@ export const FALLBACK_CLASSES = {
   1: 'Warrior', 2: 'Paladin', 3: 'Hunter', 4: 'Rogue', 5: 'Priest',
   6: 'Death Knight', 7: 'Shaman', 8: 'Mage', 9: 'Warlock', 11: 'Druid',
 };
+
+export const FALLBACK_BATTLEGROUNDS = {
+  1:  'Alterac Valley',
+  2:  'Warsong Gulch',
+  3:  'Arathi Basin',
+  7:  'Eye of the Storm',
+  9:  'Strand of the Ancients',
+  30: 'Isle of Conquest',
+  32: 'Random Battleground',
+};

@@ -18,6 +18,9 @@
  *   Faction.dbc              — ID: 0,  Name_lang[enUS]: 23
  *   Achievement_Category.dbc — ID: 0,  parentId: 1,  Name_lang[enUS]: 2,  sortOrder: 19
  *   Achievement.dbc          — ID: 0,  Name_lang[enUS]: 4,  categoryId: 38,  points: 39
+ *   BattlemasterList.dbc     — ID: 0,  MapID[0..7]: 1–8,  InstanceType: 9,
+ *                              Name_lang[enUS]: 11,  MaxGroupSize: 28,
+ *                              MinLevel: 30,  MaxLevel: 31
  *   Spell.dbc                — ID: 0,  SpellName_lang[enUS]: 136
  *     (WotLK 3.3.5a: non-string fields occupy 0–135; each loc-string block is
  *      16 locale slots + 1 flags dword = 17 fields; enUS is always the first slot)
@@ -81,6 +84,7 @@ let achievementCats     = null;   // { [catId]: { name, parentId, sortOrder } }
 let achievementData     = null;   // { [achievementId]: { name, categoryId, points } }
 let charTitleData       = null;   // { [titleBitIndex]: { id, maleName, femaleName } }
 let spellNames          = null;   // { [spellId]: string }  — loaded from Spell.dbc (~14 MB)
+let bgNames             = null;   // { [bgId]: string }  — loaded from BattlemasterList.dbc
 
 function dbcDir() {
   return process.env.DBC_PATH || null;
@@ -230,6 +234,21 @@ function loadCharTitles() {
   console.log(`[dbc] Loaded ${Object.keys(charTitleData).length} titles from CharTitles.dbc`);
 }
 
+function loadBattlegroundNames() {
+  if (bgNames !== null) return;
+  const dir = dbcDir();
+  bgNames = {};
+  if (!dir) return;
+  const records = parseDBC(path.join(dir, 'BattlemasterList.dbc'));
+  if (!records) return;
+  for (const r of records) {
+    const id   = r.uint32(0);
+    const name = r.locString(11);  // Name_lang[enUS] = field 11
+    if (name) bgNames[id] = name;
+  }
+  console.log(`[dbc] Loaded ${Object.keys(bgNames).length} battleground names from BattlemasterList.dbc`);
+}
+
 function loadSpellNames() {
   if (spellNames !== null) return;
   const dir = dbcDir();
@@ -321,6 +340,16 @@ function getAllSpells() {
   return spellNames;
 }
 
+function getBattlegroundName(id) {
+  if (bgNames === null) loadBattlegroundNames();
+  return bgNames[id] || null;
+}
+
+function getAllBattlegrounds() {
+  if (bgNames === null) loadBattlegroundNames();
+  return bgNames;
+}
+
 /** Call once at server startup to eager-load all tables. */
 function init() {
   if (!dbcDir()) {
@@ -335,6 +364,7 @@ function init() {
   try { loadAchievementCategories(); } catch (e) { console.warn('[dbc] Achievement_Category.dbc load error:', e.message); }
   try { loadAchievements();          } catch (e) { console.warn('[dbc] Achievement.dbc load error:', e.message); }
   try { loadCharTitles();            } catch (e) { console.warn('[dbc] CharTitles.dbc load error:', e.message); }
+  try { loadBattlegroundNames();     } catch (e) { console.warn('[dbc] BattlemasterList.dbc load error:', e.message); }
   try { loadSpellNames();            } catch (e) { console.warn('[dbc] Spell.dbc load error:', e.message); }
 }
 
@@ -346,4 +376,5 @@ module.exports = {
   getAchievementCategories, getAchievements,
   getAllCharTitles,
   getSpellName, getAllSpells,
+  getBattlegroundName, getAllBattlegrounds,
 };
