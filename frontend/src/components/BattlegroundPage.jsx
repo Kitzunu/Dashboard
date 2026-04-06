@@ -216,12 +216,12 @@ function HistoryTab({ onViewCharacter }) {
 
   return (
     <>
-      <div className="channels-search-bar" style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
         <select
           className="input"
           value={typeFilter}
           onChange={(e) => { setTypeFilter(e.target.value); setOffset(0); }}
-          style={{ width: 180 }}
+          style={{ width: 200 }}
         >
           <option value="">All Battlegrounds</option>
           {Object.entries(
