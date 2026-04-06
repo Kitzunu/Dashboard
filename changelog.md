@@ -1,5 +1,11 @@
 # Changelog
 
+## a1d1439 — Merge branch 'master' of https://github.com/Kitzunu/Dashboard
+
+**Author**: Kitzunu | **Date**: 2026-04-06 22:17:34 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/a1d1439605ee03feca693f8092f147ed2527a399
+
+<!-- entry-separator -->
+
 ## 46820a6 — Add paginated hook; tighten auth & errors
 
 **Author**: Kitzunu | **Date**: 2026-04-06 22:06:37 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/46820a6c469ed8fd8b95b203e6641e3f5a9af4fb
