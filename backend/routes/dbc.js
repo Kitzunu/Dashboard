@@ -54,6 +54,16 @@ router.get('/battlegrounds', requireGMLevel(1), (req, res) => {
   }
 });
 
+// GET /api/dbc/auctionhouses  — { [id]: { name, factionId, depositRate, consignmentRate } }
+router.get('/auctionhouses', requireGMLevel(1), (req, res) => {
+  try {
+    const auctionhouses = dbc.getAllAuctionHouses();
+    res.json({ available: Object.keys(auctionhouses).length > 0, auctionhouses });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/dbc/status  — whether DBC data is loaded
 router.get('/status', requireGMLevel(1), (req, res) => {
   const maps    = dbc.getAllMaps();
@@ -61,14 +71,16 @@ router.get('/status', requireGMLevel(1), (req, res) => {
   const races   = dbc.getAllRaces();
   const classes = dbc.getAllClasses();
   const bgs     = dbc.getAllBattlegrounds();
+  const ahs     = dbc.getAllAuctionHouses();
   res.json({
-    configured:  !!process.env.DBC_PATH,
-    dbcPath:     process.env.DBC_PATH || null,
-    mapCount:    Object.keys(maps).length,
-    areaCount:   Object.keys(areas).length,
-    raceCount:   Object.keys(races).length,
-    classCount:  Object.keys(classes).length,
-    bgCount:     Object.keys(bgs).length,
+    configured:       !!process.env.DBC_PATH,
+    dbcPath:          process.env.DBC_PATH || null,
+    mapCount:         Object.keys(maps).length,
+    areaCount:        Object.keys(areas).length,
+    raceCount:        Object.keys(races).length,
+    classCount:       Object.keys(classes).length,
+    bgCount:          Object.keys(bgs).length,
+    auctionHouseCount: Object.keys(ahs).length,
   });
 });
 

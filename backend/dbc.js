@@ -21,6 +21,8 @@
  *   BattlemasterList.dbc     — ID: 0,  MapID[0..7]: 1–8,  InstanceType: 9,
  *                              Name_lang[enUS]: 11,  MaxGroupSize: 28,
  *                              MinLevel: 30,  MaxLevel: 31
+ *   AuctionHouse.dbc         — ID: 0,  FactionID: 1,  DepositRate: 2,
+ *                              ConsignmentRate: 3,  Name_lang[enUS]: 4
  *   Spell.dbc                — ID: 0,  SpellName_lang[enUS]: 136
  *     (WotLK 3.3.5a: non-string fields occupy 0–135; each loc-string block is
  *      16 locale slots + 1 flags dword = 17 fields; enUS is always the first slot)
@@ -83,6 +85,7 @@ let factionNames        = null;   // { [factionId]: string }
 let achievementCats     = null;   // { [catId]: { name, parentId, sortOrder } }
 let achievementData     = null;   // { [achievementId]: { name, categoryId, points } }
 let charTitleData       = null;   // { [titleBitIndex]: { id, maleName, femaleName } }
+let auctionHouseData    = null;   // { [houseId]: { name, factionId, depositRate, consignmentRate } }
 let spellNames          = null;   // { [spellId]: string }  — loaded from Spell.dbc (~14 MB)
 let bgNames             = null;   // { [bgId]: string }  — loaded from BattlemasterList.dbc (InstanceType=3 only)
 let bgNamesAll          = null;   // { [bgId]: string }  — all entries from BattlemasterList.dbc
@@ -235,6 +238,24 @@ function loadCharTitles() {
   console.log(`[dbc] Loaded ${Object.keys(charTitleData).length} titles from CharTitles.dbc`);
 }
 
+function loadAuctionHouses() {
+  if (auctionHouseData !== null) return;
+  const dir = dbcDir();
+  auctionHouseData = {};
+  if (!dir) return;
+  const records = parseDBC(path.join(dir, 'AuctionHouse.dbc'));
+  if (!records) return;
+  for (const r of records) {
+    const id              = r.uint32(0);
+    const factionId       = r.uint32(1);
+    const depositRate     = r.uint32(2);
+    const consignmentRate = r.uint32(3);
+    const name            = r.locString(4);  // Name_lang[enUS] = field 4
+    auctionHouseData[id] = { name: name || `Auction House #${id}`, factionId, depositRate, consignmentRate };
+  }
+  console.log(`[dbc] Loaded ${Object.keys(auctionHouseData).length} auction houses from AuctionHouse.dbc`);
+}
+
 function loadBattlegroundNames() {
   if (bgNames !== null) return;
   const dir = dbcDir();
@@ -338,6 +359,21 @@ function getAllCharTitles() {
   return charTitleData;
 }
 
+function getAuctionHouseName(id) {
+  if (auctionHouseData === null) loadAuctionHouses();
+  return auctionHouseData[id]?.name || null;
+}
+
+function getAuctionHouse(id) {
+  if (auctionHouseData === null) loadAuctionHouses();
+  return auctionHouseData[id] || null;
+}
+
+function getAllAuctionHouses() {
+  if (auctionHouseData === null) loadAuctionHouses();
+  return auctionHouseData;
+}
+
 function getSpellName(id) {
   if (spellNames === null) loadSpellNames();
   return spellNames[id] || null;
@@ -373,6 +409,7 @@ function init() {
   try { loadAchievements();          } catch (e) { console.warn('[dbc] Achievement.dbc load error:', e.message); }
   try { loadCharTitles();            } catch (e) { console.warn('[dbc] CharTitles.dbc load error:', e.message); }
   try { loadBattlegroundNames();     } catch (e) { console.warn('[dbc] BattlemasterList.dbc load error:', e.message); }
+  try { loadAuctionHouses();          } catch (e) { console.warn('[dbc] AuctionHouse.dbc load error:', e.message); }
   try { loadSpellNames();            } catch (e) { console.warn('[dbc] Spell.dbc load error:', e.message); }
 }
 
@@ -383,6 +420,7 @@ module.exports = {
   getFactionName, getAllFactions,
   getAchievementCategories, getAchievements,
   getAllCharTitles,
+  getAuctionHouseName, getAuctionHouse, getAllAuctionHouses,
   getSpellName, getAllSpells,
   getBattlegroundName, getAllBattlegrounds,
 };

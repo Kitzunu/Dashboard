@@ -2,20 +2,48 @@ const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const { charPool, worldPool } = require('../db');
 const { audit } = require('../audit');
+const dbc = require('../dbc');
 
 const router = express.Router();
 
 // ── helpers ────────────────────────────────────────────────────────
 
-/** Map houseid to faction names (AzerothCore conventions). */
-function factionFromHouseId(houseId) {
-  switch (houseId) {
-    case 2:  return 'Alliance';
-    case 6:  return 'Horde';
-    case 1:
-    case 7:  return 'Neutral';
-    default: return 'Unknown';
+/**
+ * Hardcoded fallback when AuctionHouse.dbc is not available.
+ * IDs match AuctionHouse.dbc entries (WotLK 3.3.5a).
+ */
+const FALLBACK_HOUSES = {
+  1: 'Stormwind Auction House',
+  2: 'Alliance Auction House',
+  3: 'Darnassus Auction House',
+  4: 'Undercity Auction House',
+  5: 'Thunder Bluff Auction House',
+  6: 'Horde Auction House',
+  7: 'Blackwater Auction House',
+};
+
+/** Resolve auction house name from DBC or fallback. */
+function auctionHouseName(houseId) {
+  const dbcEntry = dbc.getAuctionHouse(houseId);
+  if (dbcEntry) return dbcEntry.name;
+  return FALLBACK_HOUSES[houseId] || `Auction House #${houseId}`;
+}
+
+/**
+ * Resolve house IDs matching a given filter string.
+ * Uses DBC data when available, falls back to hardcoded mapping.
+ */
+function houseIdsForFilter(filterName) {
+  const allHouses = dbc.getAllAuctionHouses();
+  if (Object.keys(allHouses).length > 0) {
+    const lower = filterName.toLowerCase();
+    return Object.entries(allHouses)
+      .filter(([, h]) => h.name.toLowerCase().includes(lower))
+      .map(([id]) => Number(id));
   }
+  return Object.entries(FALLBACK_HOUSES)
+    .filter(([, name]) => name === filterName)
+    .map(([id]) => Number(id));
 }
 
 /** Break a copper value into gold / silver / copper. */
@@ -28,6 +56,12 @@ function formatMoney(copper) {
 }
 
 // ── GET / — list auctions with optional search, pagination & filters ──
+//
+// auctionhouse columns (per AC wiki):
+//   id, houseid, itemguid, itemowner, buyoutprice, time, buyguid,
+//   lastbid, startbid, deposit
+//
+// Item details (itemEntry, count) come from joining item_instance.
 
 router.get('/', requireGMLevel(1), async (req, res) => {
   try {
@@ -39,7 +73,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
     const sort     = (req.query.sort || 'time').trim();
     const order    = (req.query.order || 'asc').toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
-    const ALLOWED_SORTS = ['time', 'buyoutprice', 'startbid', 'lastbid', 'itemEntry'];
+    const ALLOWED_SORTS = ['time', 'buyoutprice', 'startbid', 'lastbid'];
     const safeSort = ALLOWED_SORTS.includes(sort) ? sort : 'time';
 
     // ── Build WHERE conditions (characters-DB only) ──
@@ -47,10 +81,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
     const params     = [];
 
     if (faction) {
-      const houseIds = [];
-      if (faction === 'Alliance') houseIds.push(2);
-      else if (faction === 'Horde') houseIds.push(6);
-      else if (faction === 'Neutral') houseIds.push(1, 7);
+      const houseIds = houseIdsForFilter(faction);
       if (houseIds.length > 0) {
         conditions.push(`a.houseid IN (${houseIds.map(() => '?').join(',')})`);
         params.push(...houseIds);
@@ -58,7 +89,6 @@ router.get('/', requireGMLevel(1), async (req, res) => {
     }
 
     if (search) {
-      // Seller name search (characters DB)
       conditions.push('seller.name LIKE ?');
       params.push(`%${search}%`);
     }
@@ -74,11 +104,11 @@ router.get('/', requireGMLevel(1), async (req, res) => {
       params
     );
 
-    // Fetch page
+    // Fetch page — join item_instance to get itemEntry and count
     const [rows] = await charPool.query(
       `SELECT
-         a.id, a.houseid, a.itemguid, a.itemEntry,
-         a.count       AS itemCount,
+         a.id, a.houseid, a.itemguid,
+         ii.itemEntry, ii.count AS itemCount,
          a.itemowner   AS sellerGuid,
          seller.name   AS sellerName,
          a.buyguid,
@@ -87,8 +117,9 @@ router.get('/', requireGMLevel(1), async (req, res) => {
          a.time        AS expireTime,
          a.deposit
        FROM auctionhouse a
-       LEFT JOIN characters seller ON seller.guid = a.itemowner
-       LEFT JOIN characters buyer  ON buyer.guid  = a.buyguid
+       LEFT JOIN item_instance ii   ON ii.guid    = a.itemguid
+       LEFT JOIN characters seller  ON seller.guid = a.itemowner
+       LEFT JOIN characters buyer   ON buyer.guid  = a.buyguid
        ${where}
        ORDER BY a.\`${safeSort}\` ${order}
        LIMIT ? OFFSET ?`,
@@ -96,7 +127,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
     );
 
     // ── Resolve item names / quality from world DB (separate query) ──
-    const itemEntries = [...new Set(rows.map((r) => r.itemEntry))];
+    const itemEntries = [...new Set(rows.map((r) => r.itemEntry).filter(Boolean))];
     let itemMap = {};
     if (itemEntries.length > 0) {
       const [items] = await worldPool.query(
@@ -106,8 +137,8 @@ router.get('/', requireGMLevel(1), async (req, res) => {
       itemMap = Object.fromEntries(items.map((i) => [i.entry, i]));
     }
 
-    // If we have an item-name search, do a post-filter (item_template lives in
-    // a different DB so we cannot use it in the main WHERE).
+    // If search is active, post-filter to also match item names (item_template
+    // lives in a different DB so it cannot be part of the SQL WHERE).
     let filtered = rows;
     if (search) {
       const lower = search.toLowerCase();
@@ -121,22 +152,22 @@ router.get('/', requireGMLevel(1), async (req, res) => {
     const listings = filtered.map((r) => {
       const tpl = itemMap[r.itemEntry] ?? {};
       return {
-        id:          r.id,
-        houseId:     r.houseid,
-        faction:     factionFromHouseId(r.houseid),
-        itemGuid:    r.itemguid,
-        itemEntry:   r.itemEntry,
-        itemName:    tpl.name || `Item #${r.itemEntry}`,
-        itemQuality: tpl.Quality ?? 0,
-        itemCount:   r.itemCount,
-        sellerGuid:  r.sellerGuid,
-        sellerName:  r.sellerName || 'Unknown',
-        buyerName:   r.buyerName || null,
-        startBid:    formatMoney(r.startbid),
-        lastBid:     formatMoney(r.lastbid),
-        buyout:      formatMoney(r.buyoutprice),
-        deposit:     formatMoney(r.deposit),
-        expireTime:  r.expireTime,
+        id:               r.id,
+        houseId:          r.houseid,
+        auctionHouseName: auctionHouseName(r.houseid),
+        itemGuid:         r.itemguid,
+        itemEntry:        r.itemEntry,
+        itemName:         tpl.name || `Item #${r.itemEntry || '?'}`,
+        itemQuality:      tpl.Quality ?? 0,
+        itemCount:        r.itemCount ?? 1,
+        sellerGuid:       r.sellerGuid,
+        sellerName:       r.sellerName || 'Unknown',
+        buyerName:        r.buyerName || null,
+        startBid:         formatMoney(r.startbid),
+        lastBid:          formatMoney(r.lastbid),
+        buyout:           formatMoney(r.buyoutprice),
+        deposit:          formatMoney(r.deposit),
+        expireTime:       r.expireTime,
       };
     });
 
@@ -166,16 +197,16 @@ router.get('/stats', requireGMLevel(1), async (req, res) => {
       FROM auctionhouse
     `);
 
-    const [factionRows] = await charPool.query(`
+    const [houseRows] = await charPool.query(`
       SELECT houseid, COUNT(*) AS count
       FROM auctionhouse
       GROUP BY houseid
     `);
 
-    const factionBreakdown = {};
-    for (const row of factionRows) {
-      const name = factionFromHouseId(row.houseid);
-      factionBreakdown[name] = (factionBreakdown[name] || 0) + Number(row.count);
+    const houseBreakdown = {};
+    for (const row of houseRows) {
+      const name = auctionHouseName(row.houseid);
+      houseBreakdown[name] = (houseBreakdown[name] || 0) + Number(row.count);
     }
 
     res.json({
@@ -184,7 +215,7 @@ router.get('/stats', requireGMLevel(1), async (req, res) => {
       totalDeposits:    formatMoney(Number(stats.totalDeposits)),
       uniqueSellers:    Number(stats.uniqueSellers),
       uniqueBidders:    Number(stats.uniqueBidders),
-      factionBreakdown,
+      houseBreakdown,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -198,8 +229,12 @@ router.delete('/:id', requireGMLevel(2), async (req, res) => {
   if (isNaN(id)) return res.status(400).json({ error: 'Invalid auction ID' });
 
   try {
+    // Fetch auction details for audit log before deletion
     const [[auction]] = await charPool.query(
-      'SELECT id, itemEntry, itemowner, buyoutprice FROM auctionhouse WHERE id = ?',
+      `SELECT a.id, ii.itemEntry, a.itemowner
+       FROM auctionhouse a
+       LEFT JOIN item_instance ii ON ii.guid = a.itemguid
+       WHERE a.id = ?`,
       [id]
     );
     if (!auction) return res.status(404).json({ error: 'Auction not found' });

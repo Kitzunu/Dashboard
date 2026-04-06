@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
+import { FALLBACK_AUCTION_HOUSES } from '../constants.js';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -37,11 +38,14 @@ function MoneyDisplay({ money }) {
   );
 }
 
-function FactionBadge({ faction }) {
-  const cls = faction === 'Alliance' ? 'badge-alliance'
-            : faction === 'Horde'    ? 'badge-horde'
-            : 'badge-neutral';
-  return <span className={`badge ${cls}`}>{faction}</span>;
+function AuctionHouseBadge({ name }) {
+  const lower = (name || '').toLowerCase();
+  const cls = lower.includes('alliance') || lower.includes('stormwind') || lower.includes('darnassus')
+    ? 'badge-alliance'
+    : lower.includes('horde') || lower.includes('undercity') || lower.includes('thunder bluff')
+    ? 'badge-horde'
+    : 'badge-neutral';
+  return <span className={`badge ${cls}`}>{name}</span>;
 }
 
 function timeRemaining(unixTime) {
@@ -108,10 +112,10 @@ function StatsPanel({ stats }) {
         <div className="ah-stat-value"><MoneyDisplay money={stats.totalBuyoutValue} /></div>
         <div className="ah-stat-label">Total Buyout Value</div>
       </div>
-      {Object.entries(stats.factionBreakdown || {}).map(([faction, count]) => (
-        <div className="ah-stat-card" key={faction}>
+      {Object.entries(stats.houseBreakdown || {}).map(([house, count]) => (
+        <div className="ah-stat-card" key={house}>
           <div className="ah-stat-value">{count.toLocaleString()}</div>
-          <div className="ah-stat-label">{faction}</div>
+          <div className="ah-stat-label">{house}</div>
         </div>
       ))}
     </div>
@@ -135,6 +139,24 @@ export default function AuctionHousePage({ auth }) {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [stats, setStats]             = useState(null);
   const [showStats, setShowStats]     = useState(false);
+  const [ahNameMap, setAhNameMap]     = useState({});
+
+  // Fetch DBC auction house names for the filter dropdown
+  useEffect(() => {
+    api.getDBCAuctionHouses()
+      .then(({ auctionhouses }) => {
+        if (auctionhouses && Object.keys(auctionhouses).length > 0) {
+          const nameMap = {};
+          for (const [id, entry] of Object.entries(auctionhouses)) {
+            nameMap[id] = entry.name;
+          }
+          setAhNameMap(nameMap);
+        }
+      })
+      .catch(() => { /* DBC not available, use fallbacks */ });
+  }, []);
+
+  const auctionHouseNames = Object.keys(ahNameMap).length > 0 ? ahNameMap : FALLBACK_AUCTION_HOUSES;
 
   const loadListings = useCallback(async () => {
     setLoading(true);
@@ -234,10 +256,10 @@ export default function AuctionHousePage({ auth }) {
           )}
         </form>
         <select value={faction} onChange={(e) => { setFaction(e.target.value); setPage(1); }}>
-          <option value="">All Factions</option>
-          <option value="Alliance">Alliance</option>
-          <option value="Horde">Horde</option>
-          <option value="Neutral">Neutral</option>
+          <option value="">All Auction Houses</option>
+          {Object.entries(auctionHouseNames).map(([id, name]) => (
+            <option key={id} value={name}>{name}</option>
+          ))}
         </select>
       </div>
 
@@ -257,7 +279,7 @@ export default function AuctionHousePage({ auth }) {
                   </th>
                   <th style={{ width: 50 }}>Qty</th>
                   <th>Seller</th>
-                  <th style={{ width: 90 }}>Faction</th>
+                  <th style={{ width: 160 }}>Auction House</th>
                   <th className="sortable-th" onClick={() => handleSort('startbid')}>
                     Start Bid{sortIndicator('startbid')}
                   </th>
@@ -291,7 +313,7 @@ export default function AuctionHousePage({ auth }) {
                       </td>
                       <td className="td-mono">{a.itemCount}</td>
                       <td className="td-name">{a.sellerName}</td>
-                      <td><FactionBadge faction={a.faction} /></td>
+                      <td><AuctionHouseBadge name={a.auctionHouseName} /></td>
                       <td><MoneyDisplay money={a.startBid} /></td>
                       <td><MoneyDisplay money={a.lastBid} /></td>
                       <td><MoneyDisplay money={a.buyout} /></td>

@@ -112,6 +112,7 @@ export const api = {
   getDBCRaces:    () => request('GET', '/api/dbc/races'),
   getDBCClasses:  () => request('GET', '/api/dbc/classes'),
   getDBCBattlegrounds: () => request('GET', '/api/dbc/battlegrounds'),
+  getDBCAuctionHouses: () => request('GET', '/api/dbc/auctionhouses'),
 
   // Mail Server Templates
   getMailServerTemplates:  ()          => request('GET',    '/api/mailserver'),
