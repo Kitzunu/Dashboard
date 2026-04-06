@@ -1,5 +1,11 @@
 # Changelog
 
+## cc40973 — Merge branch 'master' of https://github.com/Kitzunu/Dashboard
+
+**Author**: Kitzunu | **Date**: 2026-04-06 21:50:30 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/cc40973f6e23dd17ba2acf888c2d18e94e016aec
+
+<!-- entry-separator -->
+
 ## ab8cd03 — Introduce ServerContext and useLocalStorage hook
 
 **Author**: Kitzunu | **Date**: 2026-04-06 21:38:49 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/ab8cd036a246afa9c5583559eac3c7f4e0235d6b
