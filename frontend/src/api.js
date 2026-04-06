@@ -111,6 +111,7 @@ export const api = {
   getDBCAreas:    () => request('GET', '/api/dbc/areas'),
   getDBCRaces:    () => request('GET', '/api/dbc/races'),
   getDBCClasses:  () => request('GET', '/api/dbc/classes'),
+  getDBCBattlegrounds: () => request('GET', '/api/dbc/battlegrounds'),
 
   // Mail Server Templates
   getMailServerTemplates:  ()          => request('GET',    '/api/mailserver'),
@@ -189,6 +190,22 @@ export const api = {
   updateArenaTeam: (id, data) => request('PATCH', `/api/arena/${id}`, data),
   removeArenaMember: (id, guid) => request('DELETE', `/api/arena/${id}/members/${guid}`),
   deleteArenaTeam: (id) => request('DELETE', `/api/arena/${id}`),
+
+  getBattlegroundHistory: ({ limit = 50, offset = 0, type, bracket } = {}) => {
+    const params = new URLSearchParams();
+    if (limit)     params.set('limit',   limit);
+    if (offset)    params.set('offset',  offset);
+    if (type != null)    params.set('type',    type);
+    if (bracket != null) params.set('bracket', bracket);
+    return request('GET', `/api/battleground/history?${params}`);
+  },
+  getBattlegroundMatch:     (id) => request('GET', `/api/battleground/history/${id}`),
+  getBattlegroundDeserters: ({ limit = 50, offset = 0 } = {}) => {
+    const params = new URLSearchParams({ limit, offset });
+    return request('GET', `/api/battleground/deserters?${params}`);
+  },
+  removeBattlegroundDeserter: (guid) => request('DELETE', `/api/battleground/deserters/${guid}`),
+  getBattlegroundStats: () => request('GET', '/api/battleground/stats'),
 
   getAlerts: (page = 1, { severity = '', type = '' } = {}) => {
     const params = new URLSearchParams({ page });

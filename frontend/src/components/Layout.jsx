@@ -26,6 +26,7 @@ import MutesPage from './MutesPage.jsx';
 import ScheduledTasksPage from './ScheduledTasksPage.jsx';
 import GuildsPage from './GuildsPage.jsx';
 import ArenaPage from './ArenaPage.jsx';
+import BattlegroundPage from './BattlegroundPage.jsx';
 import CharacterPage from './CharacterPage.jsx';
 import NameFiltersPage from './NameFiltersPage.jsx';
 import DashboardManagePage from './DashboardManagePage.jsx';
@@ -79,6 +80,7 @@ const NAV_GROUPS = [
       { id: 'char-transfer', label: 'Transfer',  minLevel: 3 },
       { id: 'guilds',     label: 'Guilds',     minLevel: 1 },
       { id: 'arena',      label: 'Arena',      minLevel: 1 },
+      { id: 'battleground', label: 'Battlegrounds', minLevel: 1 },
     ],
   },
   {
@@ -466,6 +468,7 @@ export default function Layout() {
         {page === 'scheduled'     && <ScheduledTasksPage />}
         {page === 'guilds'        && <GuildsPage onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
         {page === 'arena'         && <ArenaPage auth={auth} onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
+        {page === 'battleground'  && <BattlegroundPage auth={auth} onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
         {page === 'characters'    && <CharacterPage initialGuid={charNavGuid} />}
         {page === 'namefilters'      && <NameFiltersPage />}
         {page === 'calendar'         && <CalendarPage auth={auth} />}
