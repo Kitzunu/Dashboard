@@ -1,5 +1,13 @@
 # Changelog
 
+## 817b940 — Scope pagination input styles and auto width
+
+**Author**: Kitzunu | **Date**: 2026-04-06 22:23:15 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/817b940283ffd0f0dd09db48c39c69ecf2ee47b0
+
+Limit pagination-related input/select rules to .pagination-row and set select/input width to auto. The .page-jump-input selector was prefixed with .pagination-row to avoid leaking styles globally and ensure pagination controls size correctly.
+
+<!-- entry-separator -->
+
 ## a1d1439 — Merge branch 'master' of https://github.com/Kitzunu/Dashboard
 
 **Author**: Kitzunu | **Date**: 2026-04-06 22:17:34 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/a1d1439605ee03feca693f8092f147ed2527a399
