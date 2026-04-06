@@ -1,5 +1,15 @@
 # Changelog
 
+## 4fd42de — Sort sidebar nav items alphabetically within groups, keeping Overview first
+
+**Author**: copilot-swe-agent[bot] | **Date**: 2026-04-06 21:00:14 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/4fd42de1cc88b37b3b2e8f853fc10357ae70888b
+
+Agent-Logs-Url: https://github.com/Kitzunu/Dashboard/sessions/eaae9111-a365-40bc-8429-f84f106a0ad5
+
+Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## 990a274 — Add backend route, frontend component, and API for auction house (#58)
 
 **Author**: Copilot | **Date**: 2026-04-06 20:46:22 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/990a27499bfb081d69bae1aa4149339f22c87aec
