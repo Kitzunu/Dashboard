@@ -6,8 +6,10 @@
   gap: 12px;
   padding: 12px 0 4px;
 }
+.pagination-row select,
+.pagination-row input { width: auto; }
 .pagination-info { font-size: 13px; color: var(--text-muted); }
-.page-jump-input {
+.pagination-row .page-jump-input {
   width: 42px;
   text-align: center;
   padding: 2px 4px;
