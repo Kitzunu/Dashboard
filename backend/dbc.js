@@ -84,7 +84,8 @@ let achievementCats     = null;   // { [catId]: { name, parentId, sortOrder } }
 let achievementData     = null;   // { [achievementId]: { name, categoryId, points } }
 let charTitleData       = null;   // { [titleBitIndex]: { id, maleName, femaleName } }
 let spellNames          = null;   // { [spellId]: string }  — loaded from Spell.dbc (~14 MB)
-let bgNames             = null;   // { [bgId]: string }  — loaded from BattlemasterList.dbc
+let bgNames             = null;   // { [bgId]: string }  — loaded from BattlemasterList.dbc (InstanceType=3 only)
+let bgNamesAll          = null;   // { [bgId]: string }  — all entries from BattlemasterList.dbc
 
 function dbcDir() {
   return process.env.DBC_PATH || null;
@@ -238,15 +239,22 @@ function loadBattlegroundNames() {
   if (bgNames !== null) return;
   const dir = dbcDir();
   bgNames = {};
+  bgNamesAll = {};
   if (!dir) return;
   const records = parseDBC(path.join(dir, 'BattlemasterList.dbc'));
   if (!records) return;
   for (const r of records) {
-    const id   = r.uint32(0);
-    const name = r.locString(11);  // Name_lang[enUS] = field 11
-    if (name) bgNames[id] = name;
+    const id           = r.uint32(0);
+    const instanceType = r.uint32(9);   // InstanceType: field 9 (3 = battleground)
+    const name         = r.locString(11);  // Name_lang[enUS] = field 11
+    if (name) {
+      bgNamesAll[id] = name;
+      if (instanceType === 3) {
+        bgNames[id] = name;
+      }
+    }
   }
-  console.log(`[dbc] Loaded ${Object.keys(bgNames).length} battleground names from BattlemasterList.dbc`);
+  console.log(`[dbc] Loaded ${Object.keys(bgNames).length} battleground names (${Object.keys(bgNamesAll).length} total incl. arenas) from BattlemasterList.dbc`);
 }
 
 function loadSpellNames() {
@@ -341,8 +349,8 @@ function getAllSpells() {
 }
 
 function getBattlegroundName(id) {
-  if (bgNames === null) loadBattlegroundNames();
-  return bgNames[id] || null;
+  if (bgNamesAll === null) loadBattlegroundNames();
+  return bgNamesAll[id] || null;
 }
 
 function getAllBattlegrounds() {

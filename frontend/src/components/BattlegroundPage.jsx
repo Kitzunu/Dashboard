@@ -18,6 +18,7 @@ function bgName(type, typeName) {
 }
 
 function factionLabel(faction) {
+  if (faction == null) return 'Draw';
   const f = Number(faction);
   if (f === 0) return 'Alliance';
   if (f === 1) return 'Horde';
@@ -25,6 +26,7 @@ function factionLabel(faction) {
 }
 
 function factionClass(faction) {
+  if (faction == null) return 'badge-neutral';
   const f = Number(faction);
   if (f === 0) return 'badge-alliance';
   if (f === 1) return 'badge-horde';
@@ -87,7 +89,7 @@ function MatchDetailModal({ matchId, onClose, onViewCharacter }) {
       <div className="modal modal-wide" onClick={(e) => e.stopPropagation()}>
         <h3>
           {bgName(match.type, match.typeName)} — <span className={`badge ${factionClass(match.winner_faction)}`}>
-            {factionLabel(match.winner_faction)}{Number(match.winner_faction) <= 1 ? ' Win' : ''}
+            {factionLabel(match.winner_faction)}{match.winner_faction != null && Number(match.winner_faction) <= 1 ? ' Win' : ''}
           </span>
         </h3>
         <div className="channels-detail-meta" style={{ marginBottom: 12 }}>

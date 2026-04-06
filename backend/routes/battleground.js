@@ -165,11 +165,13 @@ router.delete('/deserters/:guid', requireGMLevel(2), async (req, res) => {
 router.get('/stats', requireGMLevel(1), async (req, res) => {
   try {
     // Total matches and win distribution by faction
+    // Note: AzerothCore stores winner_faction as NULL for draws, so we must
+    // check IS NULL explicitly (SQL NOT IN does not match NULL values).
     const [[totals]] = await charPool.query(`
       SELECT COUNT(*) AS totalMatches,
              SUM(CASE WHEN winner_faction = 0 THEN 1 ELSE 0 END) AS allianceWins,
              SUM(CASE WHEN winner_faction = 1 THEN 1 ELSE 0 END) AS hordeWins,
-             SUM(CASE WHEN winner_faction NOT IN (0,1) THEN 1 ELSE 0 END) AS draws
+             SUM(CASE WHEN winner_faction IS NULL OR winner_faction NOT IN (0,1) THEN 1 ELSE 0 END) AS draws
       FROM pvpstats_battlegrounds
     `);
 
@@ -179,7 +181,7 @@ router.get('/stats', requireGMLevel(1), async (req, res) => {
              COUNT(*) AS matches,
              SUM(CASE WHEN winner_faction = 0 THEN 1 ELSE 0 END) AS allianceWins,
              SUM(CASE WHEN winner_faction = 1 THEN 1 ELSE 0 END) AS hordeWins,
-             SUM(CASE WHEN winner_faction NOT IN (0,1) THEN 1 ELSE 0 END) AS draws
+             SUM(CASE WHEN winner_faction IS NULL OR winner_faction NOT IN (0,1) THEN 1 ELSE 0 END) AS draws
       FROM pvpstats_battlegrounds
       GROUP BY type
       ORDER BY matches DESC
