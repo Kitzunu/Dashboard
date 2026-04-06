@@ -281,9 +281,7 @@ export default function AuctionHousePage({ auth, onViewCharacter }) {
               <thead>
                 <tr>
                   <th style={{ width: 60 }}>ID</th>
-                  <th className="sortable-th" onClick={() => handleSort('itemEntry')}>
-                    Item{sortIndicator('itemEntry')}
-                  </th>
+                  <th>Item</th>
                   <th style={{ width: 50 }}>Qty</th>
                   <th>Seller</th>
                   <th style={{ width: 160 }}>Auction House</th>
