@@ -1,5 +1,13 @@
 # Changelog
 
+## 46820a6 — Add paginated hook; tighten auth & errors
+
+**Author**: Kitzunu | **Date**: 2026-04-06 22:06:37 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/46820a6c469ed8fd8b95b203e6641e3f5a9af4fb
+
+Introduce usePaginatedData hook to centralize pagination state and fetching (rows/total/pages/page/loading/fetch), and update AlertsPage/AuditLogPage + docs/README to use it. Strengthen authentication by removing fallback JWT_SECRET defaults (socket and HTTP middleware now require JWT_SECRET) and make session check failures return 503 with a logged error instead of silently proceeding. Add a global Express error handler to return JSON errors and log unexpected exceptions. Update .env.example to instruct generating long random JWT and agent secrets (left blank by default). Also add a .btn-muted CSS utility class.
+
+<!-- entry-separator -->
+
 ## cc40973 — Merge branch 'master' of https://github.com/Kitzunu/Dashboard
 
 **Author**: Kitzunu | **Date**: 2026-04-06 21:50:30 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/cc40973f6e23dd17ba2acf888c2d18e94e016aec
