@@ -221,7 +221,7 @@ function HistoryTab({ onViewCharacter }) {
           className="input"
           value={typeFilter}
           onChange={(e) => { setTypeFilter(e.target.value); setOffset(0); }}
-          style={{ width: 200 }}
+          style={{ width: 200, flexShrink: 0 }}
         >
           <option value="">All Battlegrounds</option>
           {Object.entries(
@@ -538,11 +538,11 @@ export default function BattlegroundPage({ auth, onViewCharacter }) {
         <h1 className="page-title">Battlegrounds</h1>
       </div>
 
-      <div className="guild-tabs">
+      <div className="ban-tabs">
         {TABS.map((t) => (
           <button
             key={t}
-            className={`guild-tab${activeTab === t ? ' guild-tab-active' : ''}`}
+            className={`ban-tab${activeTab === t ? ' active' : ''}`}
             onClick={() => setActiveTab(t)}
           >
             {t}
