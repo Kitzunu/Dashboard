@@ -1,5 +1,28 @@
 # Changelog
 
+## f029388 — add Battleground interface with DBC name resolution (#57)
+
+**Author**: Copilot | **Date**: 2026-04-06 20:15:54 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/f0293882da19442ac3ef430899f001dd3be47dbf
+
+* add Battleground interface with DBC name resolution
+
+- Backend: battleground route with history, deserters, stats endpoints
+- Backend: BattlemasterList.dbc support in dbc.js for BG name resolution
+- Backend: DBC route for /api/dbc/battlegrounds
+- Frontend: BattlegroundPage with History, Deserters, Stats tabs
+- Frontend: FALLBACK_BATTLEGROUNDS in constants.js
+- Layout: registered Battlegrounds nav item and page render
+- API: battleground and DBC battleground endpoints
+
+* closes https://github.com/Kitzunu/Dashboard/issues/6
+
+---------
+
+Co-authored-by: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## 51ab151 — Add missing card container CSS for BatchOperationsPage
 
 **Author**: copilot-swe-agent[bot] | **Date**: 2026-04-05 13:12:34 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/51ab151fa2ebaf904e122cac512f47de68a79cf0
