@@ -71,6 +71,7 @@ The frontend uses React with two shared contexts:
 
 Shared hooks live in `src/hooks/`:
 - **`useLocalStorage(key, default)`** — `useState` backed by `localStorage` with JSON serialization.
+- **`usePaginatedData(fetchFn)`** — Manages `rows`, `total`, `pages`, `page`, `loading`, and a loading-wrapped `fetch` function for paginated API endpoints.
 
 ## Credits
 

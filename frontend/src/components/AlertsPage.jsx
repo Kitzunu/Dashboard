@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
+import { usePaginatedData } from '../hooks/usePaginatedData.js';
 
 const SEVERITY_TABS = [
   { value: '',         label: 'All' },
@@ -108,36 +109,23 @@ function AlertDetailModal({ row, onClose, onDelete }) {
 }
 
 export default function AlertsPage() {
-  const [rows, setRows]         = useState([]);
-  const [total, setTotal]       = useState(0);
-  const [pages, setPages]       = useState(1);
-  const [page, setPage]         = useState(1);
   const [severityTab, setSeverityTab] = useState('');
   const [typeFilter, setTypeFilter]   = useState('');
-  const [loading, setLoading]   = useState(true);
   const [selectedRow, setSelectedRow] = useState(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const [confirmDeleteSelected, setConfirmDeleteSelected] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
 
-  const fetchAlerts = useCallback(async (p, sev, typ) => {
-    setLoading(true);
-    try {
-      const data = await api.getAlerts(p, { severity: sev, type: typ });
-      setRows(data.rows);
-      setTotal(data.total);
-      setPages(data.pages);
-    } catch (e) {
-      toast(e.message, 'error');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const fetchFn = useCallback(
+    (p) => api.getAlerts(p, { severity: severityTab, type: typeFilter }),
+    [severityTab, typeFilter]
+  );
+  const { rows, total, pages, page, setPage, loading, fetch: fetchAlerts } = usePaginatedData(fetchFn);
 
   useEffect(() => {
     setSelectedIds(new Set());
-    fetchAlerts(page, severityTab, typeFilter);
-  }, [page, severityTab, typeFilter, fetchAlerts]);
+    fetchAlerts(page);
+  }, [page, fetchAlerts]);
 
   const handleTabChange = (val) => { setSeverityTab(val); setPage(1); };
   const handleTypeChange = (e) => { setTypeFilter(e.target.value); setPage(1); };
@@ -148,7 +136,7 @@ export default function AlertsPage() {
       setSelectedRow(null);
       setSelectedIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
       toast('Alert deleted.', 'success');
-      fetchAlerts(page, severityTab, typeFilter);
+      fetchAlerts(page);
     } catch (e) {
       toast(e.message, 'error');
     }
@@ -162,7 +150,7 @@ export default function AlertsPage() {
       setSelectedIds(new Set());
       setConfirmDeleteSelected(false);
       toast(`${ids.length} alert${ids.length !== 1 ? 's' : ''} deleted.`, 'success');
-      fetchAlerts(page, severityTab, typeFilter);
+      fetchAlerts(page);
     } catch (e) {
       toast(e.message, 'error');
     }
@@ -192,7 +180,7 @@ export default function AlertsPage() {
       setConfirmClear(false);
       setPage(1);
       toast('Alerts cleared.', 'success');
-      fetchAlerts(1, severityTab, typeFilter);
+      fetchAlerts(1);
     } catch (e) {
       toast(e.message, 'error');
     }

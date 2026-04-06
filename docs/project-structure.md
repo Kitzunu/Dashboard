@@ -74,7 +74,8 @@ Dashboard/
 │       ├── context/
 │       │   └── ServerContext.jsx      # Server state context (socket, serverStatus, worldservers, player/ticket counts)
 │       ├── hooks/
-│       │   └── useLocalStorage.js     # useState backed by localStorage with JSON serialization
+│       │   ├── useLocalStorage.js     # useState backed by localStorage with JSON serialization
+│       │   └── usePaginatedData.js    # Paginated fetch hook: rows/total/pages/page/loading + fetch wrapper
 │       ├── components/
 │       │   ├── AccountsPage.jsx
 │       │   ├── AlertsPage.jsx

@@ -100,15 +100,17 @@ DASHBOARD_DB=acore_dashboard
 AGENT_PORT=3002
 
 # Shared secret between the dashboard backend and the server agent.
-# Change this to a random string for security.
-AGENT_SECRET=changeme
+# Must be set to a random string — leaving it blank will prevent the agent from starting.
+# Generate: node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"
+AGENT_SECRET=
 ```
 
 ## Application
 
 ```env
-# JWT secret — must be a strong random value
-JWT_SECRET=change-this-to-a-random-secret
+# JWT secret — required. Must be set to a long random string before use.
+# Generate: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+JWT_SECRET=
 
 # Backend port (default: 3001)
 PORT=3001
@@ -127,10 +129,7 @@ PORT=3001
 # FRONTEND_URL=http://localhost:5173
 ```
 
-> Generate a strong `JWT_SECRET` with:
-> ```bash
-> node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-> ```
+> Both `JWT_SECRET` and `AGENT_SECRET` are **required** — the backend will accept any JWT token if `JWT_SECRET` is not set, which is a critical security risk. Generate them before first use.
 
 ## LAN / Remote Access
 

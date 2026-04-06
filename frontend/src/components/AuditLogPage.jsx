@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
+import { usePaginatedData } from '../hooks/usePaginatedData.js';
 
 const SUCCESS_TABS = [
   { value: '',  label: 'All' },
@@ -221,36 +222,23 @@ function AuditDetailModal({ row, onClose }) {
 }
 
 export default function AuditPage() {
-  const [rows, setRows]               = useState([]);
-  const [total, setTotal]             = useState(0);
-  const [pages, setPages]             = useState(1);
-  const [page, setPage]               = useState(1);
   const [successTab, setSuccessTab]   = useState('');
   const [selectedActions, setSelectedActions] = useState([]);
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch]           = useState('');
-  const [loading, setLoading]         = useState(true);
   const [sortCol, setSortCol]         = useState('id');
   const [sortDir, setSortDir]         = useState('desc');
   const [selectedRow, setSelectedRow] = useState(null);
 
-  const fetchLogs = useCallback(async (p, s, acts, q) => {
-    setLoading(true);
-    try {
-      const data = await api.getAuditLog(p, { success: s, actions: acts, search: q });
-      setRows(data.rows);
-      setTotal(data.total);
-      setPages(data.pages);
-    } catch (e) {
-      toast(e.message, 'error');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const fetchFn = useCallback(
+    (p) => api.getAuditLog(p, { success: successTab, actions: selectedActions, search }),
+    [successTab, selectedActions, search]
+  );
+  const { rows, total, pages, page, setPage, loading, fetch: fetchLogs } = usePaginatedData(fetchFn);
 
   useEffect(() => {
-    fetchLogs(page, successTab, selectedActions, search);
-  }, [page, successTab, selectedActions, search]);
+    fetchLogs(page);
+  }, [page, fetchLogs]);
 
   const handleTabChange = (val) => { setSuccessTab(val); setPage(1); };
   const handleActionsChange = (acts) => { setSelectedActions(acts); setPage(1); };

@@ -8,7 +8,7 @@ function authenticateToken(req, res, next) {
 
   let user;
   try {
-    user = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    user = jwt.verify(token, process.env.JWT_SECRET);
   } catch {
     return res.status(403).json({ error: 'Invalid or expired token' });
   }
@@ -24,9 +24,9 @@ function authenticateToken(req, res, next) {
     }
     touchSession(tokenHash);
     next();
-  }).catch(() => {
-    // If session check fails, allow request to proceed
-    next();
+  }).catch((err) => {
+    console.error('[auth] Session check failed:', err);
+    res.status(503).json({ error: 'Service unavailable' });
   });
 }
 

@@ -21,6 +21,7 @@
 .btn-danger    { background: #6e2020; color: #f5b0b0; }
 .btn-warning   { background: #7a4a10; color: #f7d4a0; }
 .btn-ghost     { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+.btn-muted     { opacity: 0.45; }
 .btn-full      { width: 100%; justify-content: center; }
 
 .btn-sm { padding: 5px 12px; font-size: 12px; }

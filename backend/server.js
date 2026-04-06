@@ -165,7 +165,7 @@ app.use('/api/auctionhouse',   authenticateToken, auctionhouseRoutes);
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
   if (!token) return next(new Error('Authentication required'));
-  jwt.verify(token, process.env.JWT_SECRET || 'secret', (err, user) => {
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) return next(new Error('Invalid token'));
     socket.user = user;
     next();
@@ -353,6 +353,14 @@ latencyMonitor.start(30000);
 
 // Start audit log retention job (honours AUDIT_LOG_RETENTION_DAYS env var)
 startRetentionJob();
+
+// Global error handler — catches any next(err) calls and unhandled Express errors
+app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
+  console.error('[express]', err);
+  if (!res.headersSent) {
+    res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
+  }
+});
 
 const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, '0.0.0.0', () => {
