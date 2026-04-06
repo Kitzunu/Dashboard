@@ -462,7 +462,7 @@ export default function Layout() {
         {page === 'dbquery'       && <DBQueryPage />}
         {page === 'config'        && <ConfigPage />}
         {page === 'channels'      && <ChannelsPage />}
-        {page === 'auction-house' && <AuctionHousePage auth={auth} />}
+        {page === 'auction-house' && <AuctionHousePage auth={auth} onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
         {page === 'spamreports'   && <SpamReportsPage />}
         {page === 'alerts'        && <AlertsPage />}
         {page === 'audit-log'     && <AuditLogPage />}

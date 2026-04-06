@@ -5,35 +5,20 @@ import { FALLBACK_AUCTION_HOUSES } from '../constants.js';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const QUALITY_CLASSES = {
-  0: 'quality-poor',
-  1: 'quality-common',
-  2: 'quality-uncommon',
-  3: 'quality-rare',
-  4: 'quality-epic',
-  5: 'quality-legendary',
-  6: 'quality-artifact',
-  7: 'quality-heirloom',
-};
-
-const QUALITY_LABELS = {
-  0: 'Poor',
-  1: 'Common',
-  2: 'Uncommon',
-  3: 'Rare',
-  4: 'Epic',
-  5: 'Legendary',
-  6: 'Artifact',
-  7: 'Heirloom',
+const QUALITY_COLORS = {
+  0: '#9d9d9d', 1: '#ffffff', 2: '#1eff00',
+  3: '#0070dd', 4: '#a335ee', 5: '#ff8000',
+  6: '#e6cc80', 7: '#e6cc80',
 };
 
 function MoneyDisplay({ money }) {
   if (!money || money.raw === 0) return <span className="td-muted">—</span>;
+  const { gold: g, silver: s, copper: c } = money;
   return (
     <span className="money-display">
-      {money.gold > 0 && <><span className="money-gold">{money.gold.toLocaleString()}</span><span className="money-label money-g">g</span></>}
-      {money.silver > 0 && <><span className="money-silver">{money.silver}</span><span className="money-label money-s">s</span></>}
-      {money.copper > 0 && <><span className="money-copper">{money.copper}</span><span className="money-label money-c">c</span></>}
+      {g > 0 && <><span className="money-gold">{g.toLocaleString()}g</span>{' '}</>}
+      {s > 0 && <><span className="money-silver">{s}s</span>{' '}</>}
+      {(c > 0 || (!g && !s)) && <span className="money-copper">{c}c</span>}
     </span>
   );
 }
@@ -46,6 +31,21 @@ function AuctionHouseBadge({ name }) {
     ? 'badge-horde'
     : 'badge-neutral';
   return <span className={`badge ${cls}`}>{name}</span>;
+}
+
+function AuctionItemLink({ itemEntry, itemName, itemQuality }) {
+  if (!itemEntry) return <span className="td-muted">{itemName || '—'}</span>;
+  return (
+    <a
+      data-wowhead={`item=${itemEntry}&domain=wotlk`}
+      href={`https://www.wowhead.com/wotlk/item=${itemEntry}`}
+      target="_blank"
+      rel="noreferrer"
+      style={{ color: QUALITY_COLORS[itemQuality] ?? '#fff', fontWeight: 500, textDecoration: 'none' }}
+    >
+      {itemName}
+    </a>
+  );
 }
 
 function timeRemaining(unixTime) {
@@ -124,7 +124,7 @@ function StatsPanel({ stats }) {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-export default function AuctionHousePage({ auth }) {
+export default function AuctionHousePage({ auth, onViewCharacter }) {
   const [listings, setListings]       = useState([]);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState('');
@@ -185,6 +185,13 @@ export default function AuctionHousePage({ auth }) {
 
   useEffect(() => { loadListings(); }, [loadListings]);
   useEffect(() => { if (showStats) loadStats(); }, [showStats, loadStats]);
+
+  // Refresh Wowhead tooltips after listings render
+  useEffect(() => {
+    if (!loading && listings.length > 0) {
+      setTimeout(() => window.$WowheadPower?.refreshLinks(), 100);
+    }
+  }, [loading, listings]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -255,7 +262,7 @@ export default function AuctionHousePage({ auth }) {
             </button>
           )}
         </form>
-        <select value={faction} onChange={(e) => { setFaction(e.target.value); setPage(1); }}>
+        <select value={faction} onChange={(e) => { setFaction(e.target.value); setPage(1); }} style={{ width: 'auto', minWidth: 160, flexShrink: 0 }}>
           <option value="">All Auction Houses</option>
           {Object.entries(auctionHouseNames).map(([id, name]) => (
             <option key={id} value={name}>{name}</option>
@@ -307,12 +314,14 @@ export default function AuctionHousePage({ auth }) {
                     <tr key={a.id}>
                       <td className="td-mono td-muted">{a.id}</td>
                       <td>
-                        <span className={QUALITY_CLASSES[a.itemQuality] || ''}>
-                          {a.itemName}
-                        </span>
+                        <AuctionItemLink itemEntry={a.itemEntry} itemName={a.itemName} itemQuality={a.itemQuality} />
                       </td>
                       <td className="td-mono">{a.itemCount}</td>
-                      <td className="td-name">{a.sellerName}</td>
+                      <td>
+                        {onViewCharacter && a.sellerGuid
+                          ? <button className="btn-link" onClick={() => onViewCharacter(a.sellerGuid)}>{a.sellerName}</button>
+                          : <span className="td-name">{a.sellerName}</span>}
+                      </td>
                       <td><AuctionHouseBadge name={a.auctionHouseName} /></td>
                       <td><MoneyDisplay money={a.startBid} /></td>
                       <td><MoneyDisplay money={a.lastBid} /></td>
