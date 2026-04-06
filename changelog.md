@@ -1,5 +1,13 @@
 # Changelog
 
+## 985de94 — Add sidebar navigation search with highlights
+
+**Author**: Kitzunu | **Date**: 2026-04-06 22:38:47 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/985de9463dc2c97470563d4c79c4618a96147ec4
+
+Add a sidebar search input and UI to filter navigation items. Introduces NavHighlight to mark matched substrings, navSearch state and searchRef, and a '/' keyboard shortcut to focus the search (Escape clears and blurs). While searching, items from all groups are flattened and filtered (showing a "No results" message when empty); clicking a result navigates and clears the search. Player/ticket badges are preserved in search results. Also add related CSS for the search box, clear button, empty state and match highlight.
+
+<!-- entry-separator -->
+
 ## 817b940 — Scope pagination input styles and auto width
 
 **Author**: Kitzunu | **Date**: 2026-04-06 22:23:15 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/817b940283ffd0f0dd09db48c39c69ecf2ee47b0
