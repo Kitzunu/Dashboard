@@ -2,23 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { GM_LABELS } from '../constants.js';
-
-function formatDate(val) {
-  if (!val) return '—';
-  return new Date(val).toLocaleString();
-}
-
-function timeAgo(dateStr) {
-  if (!dateStr) return '—';
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
+import { formatDate, timeAgo } from '../utils/format.js';
 
 function truncateUA(ua) {
   if (!ua) return '—';

@@ -1,16 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
-import { FALLBACK_AUCTION_HOUSES } from '../constants.js';
+import { FALLBACK_AUCTION_HOUSES, QUALITY_COLORS } from '../constants.js';
 import { useAuth } from '../App.jsx';
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-const QUALITY_COLORS = {
-  0: '#9d9d9d', 1: '#ffffff', 2: '#1eff00',
-  3: '#0070dd', 4: '#a335ee', 5: '#ff8000',
-  6: '#e6cc80', 7: '#e6cc80',
-};
 
 function MoneyDisplay({ money }) {
   if (!money || money.raw === 0) return <span className="td-muted">—</span>;

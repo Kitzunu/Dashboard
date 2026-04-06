@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../App.jsx';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
+import SortTh from './SortTh.jsx';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const FEEDBACK_LABELS = { 0: 'Bug', 1: 'Suggestion', 2: 'Survey' };
@@ -338,18 +339,6 @@ function sortReports(reports, col, dir) {
   return dir === 'asc' ? sorted : sorted.reverse();
 }
 
-function SortTh({ col, label, sortCol, sortDir, onSort, style }) {
-  const active = sortCol === col;
-  return (
-    <th style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap', ...style }}
-        onClick={() => onSort(col)}>
-      {label}
-      <span style={{ marginLeft: 4, opacity: active ? 1 : 0.25, fontSize: 10 }}>
-        {active ? (sortDir === 'asc' ? '▲' : '▼') : '▼'}
-      </span>
-    </th>
-  );
-}
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function BugReportsPage() {

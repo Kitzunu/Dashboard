@@ -1,14 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
-import { FALLBACK_CLASSES, FALLBACK_RACES } from '../constants.js';
+import { FALLBACK_CLASSES, FALLBACK_RACES, QUALITY_COLORS } from '../constants.js';
+import { formatUnixDate as fmt } from '../utils/format.js';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function fmt(unix) {
-  if (!unix) return '—';
-  return new Date(unix * 1000).toLocaleString();
-}
 
 function formatMoney(copper) {
   if (!copper) return '0g';
@@ -182,12 +178,6 @@ function EventLogTab({ eventLog, ranks }) {
   );
 }
 
-// WoW item quality colours
-const QUALITY_COLORS = {
-  0: '#9d9d9d', 1: '#ffffff', 2: '#1eff00',
-  3: '#0070dd', 4: '#a335ee', 5: '#ff8000',
-  6: '#e6cc80', 7: '#e6cc80',
-};
 
 // Bank event type labels
 const BANK_EVENT_LABELS = {

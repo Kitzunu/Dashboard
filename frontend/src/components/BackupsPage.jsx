@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
+import { formatDate } from '../utils/format.js';
 
 function formatSize(bytes) {
   if (bytes === 0) return '0 B';
@@ -8,11 +9,6 @@ function formatSize(bytes) {
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-}
-
-function formatDate(val) {
-  if (!val) return '—';
-  return new Date(val).toLocaleString();
 }
 
 function DeleteModal({ file, onConfirm, onClose }) {

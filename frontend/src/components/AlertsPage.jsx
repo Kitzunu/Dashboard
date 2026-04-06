@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { usePaginatedData } from '../hooks/usePaginatedData.js';
+import { formatDate } from '../utils/format.js';
 
 const SEVERITY_TABS = [
   { value: '',         label: 'All' },
@@ -40,11 +41,6 @@ function typeBadgeClass(type) {
     case 'agent_disconnect': return 'badge badge-danger';
     default:                 return 'badge badge-dim';
   }
-}
-
-function formatDate(val) {
-  if (!val) return '—';
-  return new Date(val).toLocaleString();
 }
 
 function AlertDetailModal({ row, onClose, onDelete }) {

@@ -2,11 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { useAuth } from '../App.jsx';
 import { toast } from '../toast.js';
-
-function formatDate(unixSec) {
-  if (!unixSec) return '—';
-  return new Date(unixSec * 1000).toLocaleString();
-}
+import { formatUnixDate as formatDate } from '../utils/format.js';
 
 const TEAM_COLORS = {
   Alliance: 'badge-blue',

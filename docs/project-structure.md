@@ -76,6 +76,8 @@ Dashboard/
 │       ├── hooks/
 │       │   ├── useLocalStorage.js     # useState backed by localStorage with JSON serialization
 │       │   └── usePaginatedData.js    # Paginated fetch hook: rows/total/pages/page/loading + fetch wrapper
+│       ├── utils/
+│       │   └── format.js              # Shared formatters: formatDate, formatUnixDate, timeAgo
 │       ├── components/
 │       │   ├── AccountsPage.jsx
 │       │   ├── AlertsPage.jsx
@@ -154,9 +156,9 @@ Dashboard/
 │       │       ├── tickets.css    # Tickets page
 │       │       └── transfer.css   # Character Transfer and Batch Operations
 │       ├── ansi.js                # ANSI SGR colour parser
+│       ├── constants.js           # Shared constants (races, classes, GM labels, quality colors)
 │       ├── api.js                 # Fetch wrapper with JWT auth and 401 handling
 │       ├── App.jsx                # Auth context (useAuth), ServerProvider wrapper, and page routing
-│       ├── constants.js           # Shared constants (races, classes, GM labels)
 │       ├── index.css              # Entry point — @import chain for all style layers
 │       ├── socket.js              # Socket.IO client (connect/disconnect/get)
 │       └── toast.js               # Global toast notification helper

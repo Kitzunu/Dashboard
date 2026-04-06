@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { usePaginatedData } from '../hooks/usePaginatedData.js';
+import SortTh from './SortTh.jsx';
+import { formatDate } from '../utils/format.js';
 
 const SUCCESS_TABS = [
   { value: '',  label: 'All' },
@@ -71,24 +73,6 @@ function actionBadgeClass(action) {
   if (action.startsWith('mail.'))                    return 'badge badge-green';
   if (action.startsWith('dbquery.'))                 return 'badge badge-danger';
   return 'badge badge-dim';
-}
-
-function formatDate(val) {
-  if (!val) return '—';
-  return new Date(val).toLocaleString();
-}
-
-function SortTh({ col, label, sortCol, sortDir, onSort, style }) {
-  const active = sortCol === col;
-  return (
-    <th style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap', ...style }}
-        onClick={() => onSort(col)}>
-      {label}
-      <span style={{ marginLeft: 4, opacity: active ? 1 : 0.25, fontSize: 10 }}>
-        {active ? (sortDir === 'asc' ? '▲' : '▼') : '▼'}
-      </span>
-    </th>
-  );
 }
 
 function ActionMultiSelect({ selected, onChange }) {

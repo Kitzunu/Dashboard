@@ -22,6 +22,12 @@ export const FALLBACK_BATTLEGROUNDS = {
   32: 'Random Battleground',
 };
 
+export const QUALITY_COLORS = {
+  0: '#9d9d9d', 1: '#ffffff', 2: '#1eff00',
+  3: '#0070dd', 4: '#a335ee', 5: '#ff8000',
+  6: '#e6cc80', 7: '#e6cc80',
+};
+
 export const FALLBACK_AUCTION_HOUSES = {
   1: 'Stormwind Auction House',
   2: 'Alliance Auction House',

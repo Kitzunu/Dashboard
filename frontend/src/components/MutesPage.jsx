@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
-
-function fmt(unix) {
-  if (!unix) return '—';
-  return new Date(unix * 1000).toLocaleString();
-}
+import { formatUnixDate as fmt } from '../utils/format.js';
 
 function fmtRemaining(unix) {
   const secs = Math.max(0, unix - Math.floor(Date.now() / 1000));

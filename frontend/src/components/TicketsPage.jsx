@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
-
-function fmt(unix) {
-  if (!unix) return '—';
-  return new Date(unix * 1000).toLocaleString();
-}
+import { formatUnixDate as fmt } from '../utils/format.js';
 
 // type: 0 = open, 1 = closed, 2 = character deleted
 function ticketTypeLabel(type) {

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
-import { FALLBACK_RACES, FALLBACK_CLASSES } from '../constants.js';
+import { FALLBACK_RACES, FALLBACK_CLASSES, QUALITY_COLORS } from '../constants.js';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -29,11 +29,6 @@ function fmtTime(secs) {
   return parts.join(' ') || '< 1m';
 }
 
-const QUALITY_COLORS = {
-  0: '#9d9d9d', 1: '#ffffff', 2: '#1eff00',
-  3: '#0070dd', 4: '#a335ee', 5: '#ff8000',
-  6: '#e6cc80', 7: '#e6cc80',
-};
 
 function ItemLink({ item }) {
   if (!item) return <span className="td-muted">—</span>;
