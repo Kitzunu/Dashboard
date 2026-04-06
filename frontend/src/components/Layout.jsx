@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../App.jsx';
-import { connectSocket, disconnectSocket } from '../socket.js';
+import { useSocket, useServerStatus } from '../context/ServerContext.jsx';
 import { api } from '../api.js';
 import ConsolePage from './ConsolePage.jsx';
 import ServersPage from './ServersPage.jsx';
@@ -229,89 +229,16 @@ export default function Layout() {
   const [groupOrder, setGroupOrder] = useState(getInitialGroupOrder);
   const [dragOverGroup, setDragOverGroup] = useState(null);
   const draggedGroup = useRef(null);
-  const [socket, setSocket] = useState(null);
-  const [serverStatus, setServerStatus] = useState({
-    worldserver: { running: false },
-    authserver: { running: false },
-  });
-  const [worldservers, setWorldservers] = useState([{ id: 'worldserver', name: 'World Server' }]);
-  const [playerCount, setPlayerCount]   = useState(null);
-  const [ticketCount, setTicketCount]   = useState(null);
   const [toasts, setToasts] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const toastId        = useRef(0);
-  const worldRunningRef = useRef(false); // tracks live world status for polling closure
+  const toastId = useRef(0);
+
+  const { serverStatus, worldservers, playerCount, ticketCount } = useServerStatus();
 
   const { showWarning, countdown, stayLoggedIn } = useIdleTimeout(
     auth.idleTimeoutMinutes || 0,
     logout
   );
-
-  useEffect(() => {
-    api.getServerStatus()
-      .then((status) => {
-        setServerStatus((prev) => ({ ...prev, ...status }));
-      })
-      .catch(() => {});
-
-    api.getServerList()
-      .then((list) => {
-        if (Array.isArray(list) && list.length > 0) {
-          setWorldservers(list);
-          // Ensure serverStatus has entries for all worldservers
-          setServerStatus((prev) => {
-            const next = { ...prev };
-            for (const ws of list) {
-              if (!next[ws.id]) next[ws.id] = { running: false };
-            }
-            return next;
-          });
-        }
-      })
-      .catch(() => {});
-
-    const s = connectSocket(auth.token);
-    setSocket(s);
-
-    s.on('server-status', ({ server, running }) => {
-      setServerStatus((prev) => ({ ...prev, [server]: { ...prev[server], running } }));
-    });
-
-    return () => disconnectSocket();
-  }, [auth.token]);
-
-  // Keep ref in sync so the polling closure always sees the current running state
-  // Check if ANY worldserver is running (not just 'worldserver')
-  const anyWorldRunning = worldservers.some((ws) => serverStatus[ws.id]?.running);
-  useEffect(() => {
-    worldRunningRef.current = anyWorldRunning;
-    if (!anyWorldRunning) setPlayerCount(0);
-  }, [anyWorldRunning]);
-
-  // Poll player count every 30s — skip DB call and force 0 when world is offline
-  useEffect(() => {
-    const fetchCount = () => {
-      if (!worldRunningRef.current) { setPlayerCount(0); return; }
-      api.getPlayerCount()
-        .then((d) => setPlayerCount(d.count))
-        .catch(() => setPlayerCount(0));
-    };
-    fetchCount();
-    const interval = setInterval(fetchCount, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Poll ticket count every 60s
-  useEffect(() => {
-    const fetchTicketCount = () => {
-      api.getTicketCount()
-        .then((d) => setTicketCount(d.count))
-        .catch(() => {});
-    };
-    fetchTicketCount();
-    const interval = setInterval(fetchTicketCount, 60000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Toast listener
   useEffect(() => {
@@ -445,24 +372,24 @@ export default function Layout() {
       </aside>
 
       <main className="main-content">
-        {page === 'home'          && <HomePage socket={socket} />}
-        {page === 'console'       && <ConsolePage socket={socket} auth={auth} worldservers={worldservers} />}
-        {page === 'players'       && <PlayersPage auth={auth} serverStatus={serverStatus} onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
+        {page === 'home'          && <HomePage />}
+        {page === 'console'       && <ConsolePage />}
+        {page === 'players'       && <PlayersPage onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
         {page === 'tickets'       && <TicketsPage onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
         {page === 'bans'          && <BansPage />}
         {page === 'mutes'         && <MutesPage />}
         {page === 'announce'      && <AnnouncePage />}
-        {page === 'accounts'      && <AccountsPage auth={auth} onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
+        {page === 'accounts'      && <AccountsPage onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
         {page === 'autobroadcast' && <AutobroadcastPage />}
         {page === 'mail'          && <MailPage />}
         {page === 'bugreports'    && <BugReportsPage />}
         {page === 'lagreports'    && <LagReportsPage />}
         {page === 'mailserver'    && <MailServerPage />}
-        {page === 'servers'       && <ServersPage serverStatus={serverStatus} setServerStatus={setServerStatus} worldservers={worldservers} />}
+        {page === 'servers'       && <ServersPage />}
         {page === 'dbquery'       && <DBQueryPage />}
         {page === 'config'        && <ConfigPage />}
         {page === 'channels'      && <ChannelsPage />}
-        {page === 'auction-house' && <AuctionHousePage auth={auth} onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
+        {page === 'auction-house' && <AuctionHousePage onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
         {page === 'spamreports'   && <SpamReportsPage />}
         {page === 'alerts'        && <AlertsPage />}
         {page === 'audit-log'     && <AuditLogPage />}
@@ -470,18 +397,18 @@ export default function Layout() {
         {page === 'settings'      && <SettingsPage />}
         {page === 'scheduled'     && <ScheduledTasksPage />}
         {page === 'guilds'        && <GuildsPage onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
-        {page === 'arena'         && <ArenaPage auth={auth} onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
-        {page === 'battleground'  && <BattlegroundPage auth={auth} onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
+        {page === 'arena'         && <ArenaPage onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
+        {page === 'battleground'  && <BattlegroundPage onViewCharacter={(guid) => navigate(`/characters?guid=${guid}`)} />}
         {page === 'characters'    && <CharacterPage initialGuid={charNavGuid} />}
         {page === 'namefilters'      && <NameFiltersPage />}
-        {page === 'calendar'         && <CalendarPage auth={auth} />}
+        {page === 'calendar'         && <CalendarPage />}
         {page === 'dashboard-manage' && <DashboardManagePage />}
         {page === 'backups'          && <BackupsPage />}
         {page === 'healthcheck'      && <HealthCheckPage />}
         {page === 'batch'            && <BatchOperationsPage />}
         {page === 'char-transfer'    && <CharacterTransferPage />}
         {page === 'analytics'        && <AnalyticsPage />}
-        {page === 'sessions'         && <SessionsPage auth={auth} />}
+        {page === 'sessions'         && <SessionsPage />}
       </main>
 
       <ToastContainer toasts={toasts} />

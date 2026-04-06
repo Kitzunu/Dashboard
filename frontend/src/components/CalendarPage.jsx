@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
+import { useAuth } from '../App.jsx';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 const MONTH_NAMES = [
@@ -291,7 +292,8 @@ function CalendarLegend({ filters, onToggle }) {
 }
 
 // ── Main Page ───────────────────────────────────────────────────────────────
-export default function CalendarPage({ auth }) {
+export default function CalendarPage() {
+  const { auth } = useAuth();
   const today = new Date();
   const [viewYear, setViewYear]   = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());

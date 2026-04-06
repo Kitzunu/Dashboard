@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { FALLBACK_RACES, FALLBACK_CLASSES } from '../constants.js';
+import { useAuth } from '../App.jsx';
+import { useServerStatus } from '../context/ServerContext.jsx';
 
 function KickModal({ name, onConfirm, onClose }) {
   const [reason, setReason] = useState('');
@@ -108,7 +110,9 @@ function BanModal({ player, onConfirm, onClose }) {
   );
 }
 
-export default function PlayersPage({ auth, serverStatus, onViewCharacter }) {
+export default function PlayersPage({ onViewCharacter }) {
+  const { auth } = useAuth();
+  const { serverStatus } = useServerStatus();
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');

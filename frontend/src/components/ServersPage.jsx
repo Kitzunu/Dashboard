@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
+import { useServerStatus } from '../context/ServerContext.jsx';
 
 // ── Stop modal ────────────────────────────────────────────────────────────────
 function StopModal({ name, isWorld, onConfirm, onClose }) {
@@ -324,7 +325,8 @@ function MOTDSection() {
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
-export default function ServersPage({ serverStatus, setServerStatus, worldservers = [] }) {
+export default function ServersPage() {
+  const { serverStatus, setServerStatus, worldservers } = useServerStatus();
   const [busy, setBusy]           = useState(false);
   const [stopTarget, setStopTarget] = useState(null);
 

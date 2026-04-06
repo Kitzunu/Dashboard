@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { api } from '../api.js';
 import { parseAnsi } from '../ansi.js';
+import { useAuth } from '../App.jsx';
+import { useSocket, useServerStatus } from '../context/ServerContext.jsx';
+import { useLocalStorage } from '../hooks/useLocalStorage.js';
 
 // Memoized — only re-renders when `text` actually changes (i.e. new lines only)
 const AnsiLine = memo(function AnsiLine({ text }) {
@@ -30,9 +33,7 @@ function ConsolePanel({ title, serverName, socket, canSendCommands }) {
     }
   });
   const [histIdx, setHistIdx] = useState(-1);
-  const [autoScroll, setAutoScroll] = useState(
-    () => localStorage.getItem(`console-autoscroll-${serverName}`) !== 'false'
-  );
+  const [autoScroll, setAutoScroll] = useLocalStorage(`console-autoscroll-${serverName}`, true);
   const [sending, setSending] = useState(false);
   const outputRef   = useRef(null);
   const pendingRef  = useRef([]);   // buffer for incoming lines between RAF flushes
@@ -146,10 +147,7 @@ function ConsolePanel({ title, serverName, socket, canSendCommands }) {
           <input
             type="checkbox"
             checked={autoScroll}
-            onChange={(e) => {
-              setAutoScroll(e.target.checked);
-              localStorage.setItem(`console-autoscroll-${serverName}`, e.target.checked);
-            }}
+            onChange={(e) => setAutoScroll(e.target.checked)}
           />
           Auto-scroll
         </label>
@@ -184,7 +182,10 @@ function ConsolePanel({ title, serverName, socket, canSendCommands }) {
   );
 }
 
-export default function ConsolePage({ socket, auth, worldservers = [] }) {
+export default function ConsolePage() {
+  const { auth } = useAuth();
+  const socket = useSocket();
+  const { worldservers } = useServerStatus();
   const canSendCommands = auth.gmlevel >= 2;
   const wsIds = worldservers.length > 0
     ? worldservers

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { FALLBACK_RACES, FALLBACK_CLASSES, GM_LABELS } from '../constants.js';
+import { useAuth } from '../App.jsx';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const EXPANSION_LABELS = {
@@ -825,7 +826,8 @@ function CreateAccountModal({ onClose, onCreated }) {
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
-export default function AccountsPage({ auth, onViewCharacter }) {
+export default function AccountsPage({ onViewCharacter }) {
+  const { auth } = useAuth();
   const [query, setQuery]               = useState('');
   const [results, setResults]           = useState([]);
   const [total, setTotal]               = useState(0);

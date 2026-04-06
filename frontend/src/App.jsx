@@ -1,6 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import Login from './components/Login.jsx';
 import Layout from './components/Layout.jsx';
+import { ServerProvider } from './context/ServerContext.jsx';
 import { api } from './api.js';
 
 export const AuthContext = createContext(null);
@@ -53,7 +54,11 @@ export default function App() {
 
   return (
     <AuthContext.Provider value={{ auth, login, logout }}>
-      {auth ? <Layout /> : <Login />}
+      {auth ? (
+        <ServerProvider token={auth.token}>
+          <Layout />
+        </ServerProvider>
+      ) : <Login />}
     </AuthContext.Provider>
   );
 }

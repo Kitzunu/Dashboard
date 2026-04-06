@@ -71,6 +71,10 @@ Dashboard/
 │   └── server.js                  # Express + Socket.IO entry point
 ├── frontend/
 │   └── src/
+│       ├── context/
+│       │   └── ServerContext.jsx      # Server state context (socket, serverStatus, worldservers, player/ticket counts)
+│       ├── hooks/
+│       │   └── useLocalStorage.js     # useState backed by localStorage with JSON serialization
 │       ├── components/
 │       │   ├── AccountsPage.jsx
 │       │   ├── AlertsPage.jsx
@@ -114,9 +118,9 @@ Dashboard/
 │       │   └── TicketsPage.jsx
 │       ├── ansi.js                # ANSI SGR colour parser
 │       ├── api.js                 # Fetch wrapper with JWT auth and 401 handling
-│       ├── App.jsx                # Auth context and page routing
+│       ├── App.jsx                # Auth context (useAuth), ServerProvider wrapper, and page routing
 │       ├── constants.js           # Shared constants (races, classes, GM labels)
-│       ├── socket.js              # Socket.IO client
+│       ├── socket.js              # Socket.IO client (connect/disconnect/get)
 │       └── toast.js               # Global toast notification helper
 ├── sql/
 │   └── acore_dashboard.sql        # One-time setup: creates acore_dashboard DB, grants access, creates audit_logs table

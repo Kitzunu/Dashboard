@@ -62,6 +62,16 @@ Then open [http://localhost:5173](http://localhost:5173) and log in with your Az
 | Project Structure | [docs/project-structure.md](docs/project-structure.md) |
 | Notes & Credits | [docs/notes.md](docs/notes.md) |
 
+## Architecture
+
+The frontend uses React with two shared contexts:
+
+- **`AuthContext`** (`src/App.jsx`) — user auth state (`token`, `username`, `gmlevel`). Consumed via `useAuth()`.
+- **`ServerContext`** (`src/context/ServerContext.jsx`) — WebSocket connection, server running state, worldserver list, player/ticket counts. Consumed via `useSocket()` and `useServerStatus()`.
+
+Shared hooks live in `src/hooks/`:
+- **`useLocalStorage(key, default)`** — `useState` backed by `localStorage` with JSON serialization.
+
 ## Credits
 
 - **[AzerothCore](https://www.azerothcore.org/)** — the open-source World of Warcraft emulator this dashboard is built for

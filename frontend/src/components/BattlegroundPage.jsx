@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { FALLBACK_CLASSES, FALLBACK_RACES, FALLBACK_BATTLEGROUNDS } from '../constants.js';
+import { useAuth } from '../App.jsx';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -546,7 +547,8 @@ function StatsTab() {
 
 const TABS = ['History', 'Deserters', 'Stats'];
 
-export default function BattlegroundPage({ auth, onViewCharacter }) {
+export default function BattlegroundPage({ onViewCharacter }) {
+  const { auth } = useAuth();
   const [activeTab, setActiveTab] = useState('History');
 
   return (

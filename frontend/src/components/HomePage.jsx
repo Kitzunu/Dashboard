@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
+import { useSocket } from '../context/ServerContext.jsx';
+import { useLocalStorage } from '../hooks/useLocalStorage.js';
 
 // ── Alert sound (Web Audio API — no external files) ───────────────────────────
 // type 'cpu'    → ascending two-tone beep
@@ -359,18 +361,15 @@ function LatencyPanel({ latency, label }) {
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
-export default function HomePage({ socket }) {
+export default function HomePage() {
+  const socket = useSocket();
   const [overview, setOverview]     = useState(null);
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState(null);
   const [thresholds, setThresholds] = useState({ cpu: 80, memory: 85, graphMinutes: 60 });
 
-  const [notifEnabled, setNotifEnabled] = useState(
-    () => localStorage.getItem('ac-notif-enabled') !== 'false'
-  );
-  const [soundEnabled, setSoundEnabled] = useState(
-    () => localStorage.getItem('ac-sound-enabled') !== 'false'
-  );
+  const [notifEnabled, setNotifEnabled] = useLocalStorage('ac-notif-enabled', true);
+  const [soundEnabled, setSoundEnabled] = useLocalStorage('ac-sound-enabled', true);
 
   // Refs so the socket callback always reads current values without stale closures
   const thresholdsRef    = useRef({ cpu: 80, memory: 85, graphMinutes: 60 });
@@ -387,7 +386,6 @@ export default function HomePage({ socket }) {
   const handleToggleNotif = () => {
     const next = !notifEnabledRef.current;
     notifEnabledRef.current = next;
-    localStorage.setItem('ac-notif-enabled', next);
     setNotifEnabled(next);
     toast(next ? 'Alert notifications enabled' : 'Alert notifications muted');
   };
@@ -395,7 +393,6 @@ export default function HomePage({ socket }) {
   const handleToggleSound = () => {
     const next = !soundEnabledRef.current;
     soundEnabledRef.current = next;
-    localStorage.setItem('ac-sound-enabled', next);
     setSoundEnabled(next);
     toast(next ? 'Alert sounds enabled' : 'Alert sounds muted');
   };

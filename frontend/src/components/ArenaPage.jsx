@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { FALLBACK_CLASSES, FALLBACK_RACES } from '../constants.js';
+import { useAuth } from '../App.jsx';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -374,7 +375,8 @@ function MatchHistoryTab({ arenaTeamId }) {
 
 const TABS = ['Members', 'Stats', 'Match History'];
 
-export default function ArenaPage({ auth, onViewCharacter }) {
+export default function ArenaPage({ onViewCharacter }) {
+  const { auth } = useAuth();
   const [teams, setTeams]               = useState([]);
   const [loading, setLoading]           = useState(true);
   const [search, setSearch]             = useState('');

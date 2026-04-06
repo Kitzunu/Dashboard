@@ -26,7 +26,7 @@ function truncateUA(ua) {
   return ua;
 }
 
-export default function SessionsPage({ auth }) {
+export default function SessionsPage() {
   const [sessions, setSessions] = useState([]);
   const [currentSessionId, setCurrentSessionId] = useState(null);
   const [loading, setLoading] = useState(true);

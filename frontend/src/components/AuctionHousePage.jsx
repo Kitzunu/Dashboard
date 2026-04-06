@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { FALLBACK_AUCTION_HOUSES } from '../constants.js';
+import { useAuth } from '../App.jsx';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -124,7 +125,8 @@ function StatsPanel({ stats }) {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-export default function AuctionHousePage({ auth, onViewCharacter }) {
+export default function AuctionHousePage({ onViewCharacter }) {
+  const { auth } = useAuth();
   const [listings, setListings]       = useState([]);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState('');
