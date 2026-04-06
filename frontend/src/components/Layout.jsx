@@ -209,6 +209,18 @@ function pathToPage(pathname) {
   return VALID_PAGES.has(id) ? id : 'home';
 }
 
+function NavHighlight({ label, query }) {
+  const idx = label.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return label;
+  return (
+    <>
+      {label.slice(0, idx)}
+      <mark className="nav-search-match">{label.slice(idx, idx + query.length)}</mark>
+      {label.slice(idx + query.length)}
+    </>
+  );
+}
+
 export default function Layout() {
   const { auth, logout } = useAuth();
   const navigate = useNavigate();
@@ -224,6 +236,20 @@ export default function Layout() {
       navigate('/', { replace: true });
     }
   }, [location.pathname, navigate]);
+
+  const [navSearch, setNavSearch] = useState('');
+  const searchRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   const [collapsedGroups, setCollapsedGroups] = useState({});
   const [groupOrder, setGroupOrder] = useState(getInitialGroupOrder);
@@ -306,8 +332,43 @@ export default function Layout() {
           </div>
         </div>
 
+        <div className="sidebar-search">
+          <input
+            ref={searchRef}
+            type="text"
+            placeholder="Search… (/)"
+            value={navSearch}
+            onChange={(e) => setNavSearch(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Escape') { setNavSearch(''); searchRef.current?.blur(); } }}
+          />
+          {navSearch && (
+            <button className="sidebar-search-clear" onClick={() => { setNavSearch(''); searchRef.current?.focus(); }}>✕</button>
+          )}
+        </div>
+
         <nav className="sidebar-nav">
-          {orderedGroups.map(({ group, items }) => {
+          {navSearch.trim() ? (() => {
+            const q = navSearch.trim().toLowerCase();
+            const results = NAV_GROUPS.flatMap(({ items }) =>
+              items.filter((item) => auth.gmlevel >= item.minLevel && item.label.toLowerCase().includes(q))
+            );
+            if (results.length === 0) return <div className="nav-search-empty">No results</div>;
+            return results.map((item) => (
+              <button
+                key={item.id}
+                className={`nav-item ${page === item.id ? 'active' : ''}`}
+                onClick={() => { navigate(pageToPath(item.id)); setNavSearch(''); setSidebarOpen(false); }}
+              >
+                <span className="nav-label"><NavHighlight label={item.label} query={navSearch.trim()} /></span>
+                {item.id === 'players' && playerCount != null && (
+                  <span className={`nav-badge ${playerCount > 0 ? 'nav-badge-active' : ''}`}>{playerCount}</span>
+                )}
+                {item.id === 'tickets' && ticketCount != null && (
+                  <span className={`nav-badge ${ticketCount > 0 ? 'nav-badge-warn' : ''}`}>{ticketCount}</span>
+                )}
+              </button>
+            ));
+          })() : orderedGroups.map(({ group, items }) => {
             const visible = items.filter((item) => auth.gmlevel >= item.minLevel);
             if (visible.length === 0) return null;
             const collapsed = !!collapsedGroups[group];

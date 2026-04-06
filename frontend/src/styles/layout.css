@@ -39,6 +39,56 @@
   letter-spacing: 1px;
 }
 
+.sidebar-search {
+  position: relative;
+  padding: 8px 8px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-search input {
+  width: 100%;
+  padding: 6px 28px 6px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.sidebar-search input::placeholder { color: var(--text-dim); }
+.sidebar-search input:focus { border-color: var(--gold-dim); }
+
+.sidebar-search-clear {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 4px;
+  line-height: 1;
+}
+.sidebar-search-clear:hover { color: var(--text); }
+
+.nav-search-empty {
+  padding: 12px 16px;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-style: italic;
+}
+
+.nav-search-match {
+  background: rgba(201, 162, 39, 0.25);
+  color: var(--gold);
+  border-radius: 2px;
+}
+
 .sidebar-nav {
   flex: 1;
   overflow-y: auto;
