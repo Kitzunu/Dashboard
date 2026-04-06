@@ -485,6 +485,15 @@ function StatsTab() {
             </span>
           </span>
         </div>
+        <div className="arena-summary-item">
+          <span className="arena-summary-label">Draws</span>
+          <span className="arena-summary-value">
+            {formatNumber(stats.draws)}
+            <span className="td-muted" style={{ fontSize: 12, marginLeft: 6 }}>
+              ({winPct(stats.draws, stats.totalMatches)})
+            </span>
+          </span>
+        </div>
       </div>
 
       {/* Per-BG breakdown */}
@@ -499,6 +508,7 @@ function StatsTab() {
                   <th style={{ textAlign: 'center' }}>Matches</th>
                   <th style={{ textAlign: 'center' }}>Alliance Wins</th>
                   <th style={{ textAlign: 'center' }}>Horde Wins</th>
+                  <th style={{ textAlign: 'center' }}>Draws</th>
                   <th style={{ textAlign: 'center' }}>Alliance %</th>
                   <th style={{ textAlign: 'center' }}>Horde %</th>
                 </tr>
@@ -510,6 +520,7 @@ function StatsTab() {
                     <td style={{ textAlign: 'center' }}>{bg.matches}</td>
                     <td style={{ textAlign: 'center' }}>{bg.allianceWins}</td>
                     <td style={{ textAlign: 'center' }}>{bg.hordeWins}</td>
+                    <td style={{ textAlign: 'center' }}>{bg.draws}</td>
                     <td style={{ textAlign: 'center' }} className="td-muted">
                       {winPct(bg.allianceWins, bg.matches)}
                     </td>

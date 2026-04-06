@@ -168,7 +168,8 @@ router.get('/stats', requireGMLevel(1), async (req, res) => {
     const [[totals]] = await charPool.query(`
       SELECT COUNT(*) AS totalMatches,
              SUM(CASE WHEN winner_faction = 0 THEN 1 ELSE 0 END) AS allianceWins,
-             SUM(CASE WHEN winner_faction = 1 THEN 1 ELSE 0 END) AS hordeWins
+             SUM(CASE WHEN winner_faction = 1 THEN 1 ELSE 0 END) AS hordeWins,
+             SUM(CASE WHEN winner_faction NOT IN (0,1) THEN 1 ELSE 0 END) AS draws
       FROM pvpstats_battlegrounds
     `);
 
@@ -177,7 +178,8 @@ router.get('/stats', requireGMLevel(1), async (req, res) => {
       SELECT type,
              COUNT(*) AS matches,
              SUM(CASE WHEN winner_faction = 0 THEN 1 ELSE 0 END) AS allianceWins,
-             SUM(CASE WHEN winner_faction = 1 THEN 1 ELSE 0 END) AS hordeWins
+             SUM(CASE WHEN winner_faction = 1 THEN 1 ELSE 0 END) AS hordeWins,
+             SUM(CASE WHEN winner_faction NOT IN (0,1) THEN 1 ELSE 0 END) AS draws
       FROM pvpstats_battlegrounds
       GROUP BY type
       ORDER BY matches DESC
@@ -190,7 +192,7 @@ router.get('/stats', requireGMLevel(1), async (req, res) => {
   } catch (err) {
     if (err.code === 'ER_NO_SUCH_TABLE') {
       return res.json({
-        totalMatches: 0, allianceWins: 0, hordeWins: 0, byType: [],
+        totalMatches: 0, allianceWins: 0, hordeWins: 0, draws: 0, byType: [],
         notice: 'PvP statistics tables not found.',
       });
     }

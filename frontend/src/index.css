@@ -2381,6 +2381,18 @@ code {
   border: 1px solid rgba(122,133,160,0.25);
 }
 
+.badge-alliance {
+  background: rgba(51,122,183,0.15);
+  color: #5b9bd5;
+  border: 1px solid rgba(51,122,183,0.30);
+}
+
+.badge-horde {
+  background: rgba(200,55,55,0.15);
+  color: #e05c5c;
+  border: 1px solid rgba(200,55,55,0.30);
+}
+
 /* ── Audit log ───────────────────────────────────────────────── */
 .audit-row-failed td { background: rgba(224, 92, 92, 0.04); }
 .audit-row-failed:hover td { background: rgba(224, 92, 92, 0.08) !important; }
