@@ -1,5 +1,19 @@
 # Changelog
 
+## 990a274 — Add backend route, frontend component, and API for auction house (#58)
+
+**Author**: Copilot | **Date**: 2026-04-06 20:46:22 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/990a27499bfb081d69bae1aa4149339f22c87aec
+
+* Add backend route, frontend component, and API for auction house
+
+*closes https://github.com/Kitzunu/Dashboard/issues/7
+---------
+
+Co-authored-by: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Co-authored-by: Kitzunu <24550914+Kitzunu@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## f029388 — add Battleground interface with DBC name resolution (#57)
 
 **Author**: Copilot | **Date**: 2026-04-06 20:15:54 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/f0293882da19442ac3ef430899f001dd3be47dbf
