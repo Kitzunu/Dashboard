@@ -1,0 +1,28 @@
+/* ── Buttons ─────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: filter 0.15s, opacity 0.15s;
+  white-space: nowrap;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn:not(:disabled):hover { filter: brightness(1.15); }
+
+.btn-primary   { background: var(--gold);    color: #111; }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-success   { background: #2a7a4a; color: #d4f7e5; }
+.btn-danger    { background: #6e2020; color: #f5b0b0; }
+.btn-warning   { background: #7a4a10; color: #f7d4a0; }
+.btn-ghost     { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+.btn-full      { width: 100%; justify-content: center; }
+
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn-xs { padding: 3px 9px; font-size: 11px; }
+

@@ -1,0 +1,33 @@
+/* ── Alerts ──────────────────────────────────────────────────── */
+.alert {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+.alert-error   { background: rgba(224, 92, 92, 0.15); border: 1px solid var(--red); color: #f08080; }
+.alert-info    { background: rgba(61, 220, 132, 0.1); border: 1px solid var(--green); color: var(--green); }
+.alert-warning { background: rgba(201,162,39,0.12); border: 1px solid var(--gold); color: var(--gold); }
+.input-dirty   { border-color: var(--gold) !important; }
+
+/* ── Offline notice ──────────────────────────────────────────── */
+.offline-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+  color: var(--red);
+  font-size: 15px;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+/* ── Alert variants ──────────────────────────────────────────── */
+.alert-warn {
+  background: rgba(232,168,56,0.08);
+  border: 1px solid rgba(232,168,56,0.3);
+  color: var(--warn);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 13px;
+}

@@ -1,0 +1,64 @@
+/* ── Forms ───────────────────────────────────────────────────── */
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 12px; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-group small { font-size: 11px; color: var(--text-dim); }
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="email"],
+input[type="search"],
+input[type="datetime-local"],
+input:not([type]),
+textarea,
+select {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--gold-dim); }
+
+/* ── Readonly input ──────────────────────────────────────────── */
+.input-readonly {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-dim);
+  cursor: default;
+}
+.text-warn { color: var(--warn); font-size: 12px; }
+
+/* ── Shared form helpers ─────────────────────────────────────── */
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+
+.form-row-sm {
+  margin-bottom: 0;
+}
+
+.input-sm {
+  padding: 5px 10px;
+  font-size: 13px;
+  height: 32px;
+}

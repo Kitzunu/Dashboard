@@ -1,0 +1,79 @@
+/* ── DB Query ────────────────────────────────────────────────── */
+.db-page { max-width: 100%; }
+
+.db-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.db-presets {
+  width: 160px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.presets-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  padding: 0 4px;
+}
+
+.preset-btn {
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  cursor: pointer;
+  text-align: left;
+  padding: 7px 10px;
+  font-size: 12px;
+  transition: background 0.15s, color 0.15s;
+}
+.preset-btn:hover { background: var(--surface2); color: var(--text); }
+.preset-btn.active { background: var(--surface2); color: var(--gold); }
+.preset-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.db-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+
+.db-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.db-select { padding: 7px 10px; flex-shrink: 0; width: auto; }
+
+.query-textarea {
+  width: 100%;
+  resize: vertical;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  background: #090b0f;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: #b8c5d0;
+  padding: 10px 12px;
+}
+
+.query-results { display: flex; flex-direction: column; gap: 10px; }
+
+.data-table.db-result-table { width: auto; min-width: 100%; white-space: nowrap; }
+
+.results-meta {
+  font-size: 12px;
+  color: var(--text-dim);
+  padding: 6px 0;
+}

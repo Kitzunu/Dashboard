@@ -1,0 +1,140 @@
+/* ── Servers ─────────────────────────────────────────────────── */
+.server-cards {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.server-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  width: 300px;
+}
+
+.card-running { border-color: rgba(61, 220, 132, 0.3); }
+.card-stopped { border-color: rgba(224, 92, 92, 0.2); }
+
+.server-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.server-card-name { font-size: 16px; font-weight: 700; color: var(--text); }
+.server-card-bin  { font-size: 11px; color: var(--text-dim); font-family: var(--font-mono); margin-top: 3px; display: block; }
+
+.server-card-actions { margin-bottom: 14px; }
+
+.autorestart-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  user-select: none;
+}
+.autorestart-toggle input { cursor: pointer; }
+.autorestart-toggle:has(input:checked) { color: var(--green); }
+
+/* ── Stop modal options ──────────────────────────────────────── */
+.stop-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.stop-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.stop-option:has(input:checked) {
+  border-color: var(--gold-dim);
+  background: rgba(201,162,39,0.07);
+}
+.stop-option input { margin-top: 2px; flex-shrink: 0; cursor: pointer; }
+.stop-option div { display: flex; flex-direction: column; gap: 2px; }
+.stop-option strong { font-size: 13px; color: var(--text); }
+.stop-option span { font-size: 12px; color: var(--text-dim); }
+
+
+/* ── Server Tools (restart / MOTD) ───────────────────────────── */
+.tools-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-top: 24px;
+}
+
+.tools-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.tools-section-sub {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+}
+
+.restart-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.restart-preset.active {
+  background: var(--gold-dim);
+  color: #111;
+  border-color: var(--gold);
+}
+
+.restart-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+/* ── MOTD current display ─────────────────────────────────────── */
+.motd-current {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+}
+
+.motd-current-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.motd-current-value {
+  font-size: 13px;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}

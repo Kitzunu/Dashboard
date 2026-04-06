@@ -1,0 +1,110 @@
+/* ── Tickets ─────────────────────────────────────────────────── */
+.ticket-row { cursor: pointer; }
+.ticket-row:hover td { background: var(--surface2); }
+.ticket-row-expanded td { background: var(--surface2); }
+
+.ticket-desc-cell {
+  max-width: 320px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-dim);
+}
+
+.ticket-status-cell { white-space: nowrap; }
+
+.ticket-detail-row td { padding: 0; }
+.ticket-detail {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 14px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13px;
+}
+.ticket-detail strong { color: var(--text); }
+
+.ticket-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 4px 24px;
+  color: var(--text-dim);
+}
+
+.ticket-meta { color: var(--text-dim); }
+
+.ticket-full-desc {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+.ticket-full-desc p {
+  margin-top: 4px;
+  white-space: pre-wrap;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.ticket-actions-row,
+.ticket-comment-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.ticket-comment-input { flex: 1; width: auto; min-width: 200px; }
+
+.ticket-assigned-name {
+  color: var(--green);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.ticket-assign-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ticket-assign-input {
+  width: 160px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 5px 10px;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.ticket-assign-input:focus { border-color: var(--gold-dim); }
+
+.ticket-textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.ticket-textarea:focus { border-color: var(--gold-dim); }
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.checkbox-label input[type="checkbox"] { accent-color: var(--gold); width: 15px; height: 15px; }

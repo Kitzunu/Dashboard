@@ -1,0 +1,124 @@
+/* ── Character Transfer ─────────────────────────────────────── */
+.char-transfer-search-section {
+  margin-bottom: 24px;
+}
+.char-transfer-search-section .form-group {
+  margin: 0;
+}
+.char-transfer-search-row {
+  display: flex;
+  gap: 8px;
+}
+.char-transfer-search-row input {
+  flex: 1;
+}
+.char-transfer-results {
+  margin-bottom: 20px;
+}
+.char-transfer-detail {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.char-transfer-detail h3 {
+  margin-bottom: 12px;
+}
+.char-transfer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px 16px;
+}
+.char-transfer-grid .form-group {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.char-transfer-grid .form-group label {
+  font-weight: 600;
+  font-size: 12px;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+.char-transfer-target {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.char-transfer-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.char-transfer-ac-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.char-transfer-ac-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.char-transfer-ac-option:hover {
+  background: var(--surface2);
+}
+
+/* ── Batch Operations Card ──────────────────────────────────── */
+.batch-operations-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Batch Operations Search Picker ─────────────────────────── */
+.batch-search-picker {
+  position: relative;
+  margin-bottom: 8px;
+}
+.batch-search-input {
+  width: 100%;
+}
+.batch-search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.batch-search-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+  font-size: 13px;
+}
+.batch-search-option:hover {
+  background: var(--surface2);
+}

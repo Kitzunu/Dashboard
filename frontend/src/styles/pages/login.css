@@ -1,0 +1,33 @@
+/* ── Login ───────────────────────────────────────────────────── */
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.login-box {
+  width: 360px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 36px 32px;
+}
+
+.login-logo {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.login-emblem { font-size: 40px; line-height: 1; }
+.login-logo h1 { font-size: 22px; color: var(--gold); margin-top: 8px; }
+.login-logo p  { color: var(--text-dim); font-size: 13px; margin-top: 2px; }
+
+.login-form { display: flex; flex-direction: column; gap: 16px; }
+
+.login-note {
+  text-align: center;
+  margin-top: 16px;
+  color: var(--text-dim);
+  font-size: 12px;
+}

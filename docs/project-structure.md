@@ -116,10 +116,47 @@ Dashboard/
 │       │   ├── SettingsPage.jsx
 │       │   ├── SpamReportsPage.jsx
 │       │   └── TicketsPage.jsx
+│       ├── styles/
+│       │   ├── base.css           # CSS custom properties (:root) and reset
+│       │   ├── layout.css         # Sidebar, nav groups/badges, main content, page shell, responsive
+│       │   ├── components/
+│       │   │   ├── alerts.css     # .alert variants and .offline-notice
+│       │   │   ├── badges.css     # All .badge colour variants
+│       │   │   ├── buttons.css    # .btn and size/colour modifiers
+│       │   │   ├── forms.css      # Inputs, .form-group, readonly, shared form helpers
+│       │   │   ├── modals.css     # .modal-overlay, .modal shell, idle-warning, header/footer
+│       │   │   ├── pagination.css # Pagination controls
+│       │   │   ├── scrollbars.css # ::-webkit-scrollbar rules, kbd, code
+│       │   │   ├── table.css      # .data-table, td helpers, .filter-row, .loading-text
+│       │   │   └── toasts.css     # Toast container and animation
+│       │   └── pages/
+│       │       ├── accounts.css   # Account detail modal
+│       │       ├── announce.css   # Announcements page
+│       │       ├── arena.css      # Arena page
+│       │       ├── auctionhouse.css # Auction House page
+│       │       ├── auditlog.css   # Audit log and action multi-select
+│       │       ├── bans.css       # Bans page
+│       │       ├── calendar.css   # Calendar page
+│       │       ├── channels.css   # Channels page
+│       │       ├── characters.css # Character detail page
+│       │       ├── config.css     # Config file editor
+│       │       ├── console.css    # Console page
+│       │       ├── dbquery.css    # DB Query page
+│       │       ├── guilds.css     # Guilds page
+│       │       ├── login.css      # Login page
+│       │       ├── mail.css       # Mail compose and Mail Server pages
+│       │       ├── notifications.css # Notification bell component
+│       │       ├── overview.css   # Homepage/Overview, resource graphs, latency panel, thresholds
+│       │       ├── reports.css    # Bug Reports and Lag Reports pages
+│       │       ├── servers.css    # Servers page, server cards, restart tools, MOTD
+│       │       ├── settings.css   # Settings page
+│       │       ├── tickets.css    # Tickets page
+│       │       └── transfer.css   # Character Transfer and Batch Operations
 │       ├── ansi.js                # ANSI SGR colour parser
 │       ├── api.js                 # Fetch wrapper with JWT auth and 401 handling
 │       ├── App.jsx                # Auth context (useAuth), ServerProvider wrapper, and page routing
 │       ├── constants.js           # Shared constants (races, classes, GM labels)
+│       ├── index.css              # Entry point — @import chain for all style layers
 │       ├── socket.js              # Socket.IO client (connect/disconnect/get)
 │       └── toast.js               # Global toast notification helper
 ├── sql/

@@ -1,0 +1,103 @@
+/* ── Audit log ───────────────────────────────────────────────── */
+.audit-row-failed td { background: rgba(224, 92, 92, 0.04); }
+.audit-row-failed:hover td { background: rgba(224, 92, 92, 0.08) !important; }
+
+.audit-details-cell {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+
+/* ── Action multi-select ─────────────────────────────────────── */
+.action-multiselect {
+  position: relative;
+}
+
+.action-multiselect-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.action-multiselect-btn:hover { border-color: var(--border-hover, var(--gold)); }
+.action-multiselect-btn.has-selection { border-color: rgba(201,162,39,0.5); color: var(--gold); }
+
+.action-multiselect-chevron {
+  font-size: 15px;
+  line-height: 1;
+  transition: transform 0.15s;
+  display: inline-block;
+}
+.action-multiselect-chevron.open { transform: rotate(90deg); }
+
+.action-multiselect-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 200;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.action-multiselect-search {
+  padding: 8px 10px;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+.action-multiselect-search::placeholder { color: var(--text-dim); }
+
+.action-multiselect-list {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.action-multiselect-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.action-multiselect-item:hover { background: var(--surface2); }
+.action-multiselect-item input[type="checkbox"] { margin: 0; cursor: pointer; accent-color: var(--gold); }
+
+.action-multiselect-empty {
+  padding: 10px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.action-multiselect-clear {
+  padding: 7px 10px;
+  border: none;
+  border-top: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+}
+.action-multiselect-clear:hover { color: var(--red); background: rgba(224,92,92,0.06); }

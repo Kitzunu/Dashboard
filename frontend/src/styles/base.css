@@ -1,0 +1,29 @@
+/* ── Reset & base ────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0d0f14;
+  --surface:   #161921;
+  --surface2:  #1e2330;
+  --border:    #2a3045;
+  --gold:      #c9a227;
+  --gold-dim:  #9a7a1e;
+  --green:     #3ddc84;
+  --red:       #e05c5c;
+  --blue:      #5b9bd5;
+  --warn:      #e8a838;
+  --text:      #d4d8e8;
+  --text-dim:  #7a85a0;
+  --radius:    6px;
+  --font-mono: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+}
+
+html, body, #root {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+

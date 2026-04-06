@@ -1,0 +1,141 @@
+/* ── Character page ──────────────────────────────────────────── */
+.char-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.char-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.char-stat {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.char-stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  font-weight: 700;
+}
+
+.char-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.char-coin {
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 1px;
+}
+
+.char-stats-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.char-bags {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.char-rep {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.char-rep-filters {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.char-rep-bar-wrap {
+  height: 6px;
+  background: var(--surface2);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 2px;
+  width: 100%;
+}
+
+.char-rep-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s;
+  min-width: 2px;
+}
+
+.char-achievements {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.char-ach-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.char-ach-category {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.char-ach-cat-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  background: var(--surface2);
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.char-ach-cat-header:hover { background: var(--surface3, var(--surface2)); filter: brightness(1.1); }
+
+.char-ach-cat-name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.char-ach-chevron {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.char-ach-category .table-wrap {
+  border: none;
+  border-radius: 0;
+  border-top: 1px solid var(--border);
+}

@@ -1,0 +1,82 @@
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.badge-green { background: rgba(61, 220, 132, 0.15); color: var(--green); }
+.badge-red   { background: rgba(224, 92, 92, 0.15);  color: var(--red); }
+
+
+/* ── Badges ──────────────────────────────────────────────────── */
+.badge-warn     { background: rgba(232,168,56,0.12); border: 1px solid rgba(232,168,56,0.25); color: var(--warn); }
+.badge-info     { background: rgba(91,155,213,0.12); border: 1px solid rgba(91,155,213,0.25); color: var(--blue); }
+.badge-assigned { background: rgba(61,220,132,0.10); border: 1px solid rgba(61,220,132,0.25); color: var(--green); }
+
+/* ── Sidebar ticket badge (amber/gold for open tickets) ──────── */
+.nav-badge-warn { background: rgba(232,168,56,0.18); border-color: rgba(232,168,56,0.4); color: var(--warn); }
+
+/* ── Extra badge variants ─────────────────────────────────────── */
+.badge-success {
+  background: rgba(61,220,132,0.15);
+  color: var(--green);
+  border: 1px solid rgba(61,220,132,0.25);
+}
+
+.badge-dim {
+  background: var(--surface2);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+
+/* ── Extra badge variants ─────────────────────────────────────── */
+.badge-dim {
+  background: rgba(122,133,160,0.12);
+  color: var(--text-dim);
+  border: 1px solid rgba(122,133,160,0.2);
+}
+
+.badge-danger {
+  background: rgba(224,92,92,0.12);
+  color: var(--red);
+  border: 1px solid rgba(224,92,92,0.25);
+}
+
+.badge-info {
+  background: rgba(91,155,213,0.12);
+  color: var(--blue);
+  border: 1px solid rgba(91,155,213,0.25);
+}
+
+.badge-gold {
+  background: rgba(201,162,39,0.12);
+  color: var(--gold);
+  border: 1px solid rgba(201,162,39,0.25);
+}
+
+.badge-warn {
+  background: rgba(232,168,56,0.12);
+  color: var(--warn);
+  border: 1px solid rgba(232,168,56,0.25);
+}
+
+.badge-neutral {
+  background: rgba(122,133,160,0.10);
+  color: var(--text-dim);
+  border: 1px solid rgba(122,133,160,0.25);
+}
+
+.badge-alliance {
+  background: rgba(51,122,183,0.15);
+  color: #5b9bd5;
+  border: 1px solid rgba(51,122,183,0.30);
+}
+
+.badge-horde {
+  background: rgba(200,55,55,0.15);
+  color: #e05c5c;
+  border: 1px solid rgba(200,55,55,0.30);
+}

@@ -1,0 +1,105 @@
+/* ── Modals ──────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 28px;
+  width: 380px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.modal-wide { width: 700px; max-width: 95vw; }
+
+/* Use on any .modal that has a .modal-header / .modal-footer so they render flush */
+.modal-structured { padding: 0; gap: 0; }
+
+/* General body region inside a structured modal */
+.modal-body { padding: 20px 24px; flex: 1; overflow-y: auto; }
+
+.modal h3 { font-size: 16px; color: var(--text); }
+
+/* ── Idle warning modal ──────────────────────────────────────── */
+.idle-warning-modal {
+  width: 360px;
+  text-align: center;
+  padding: 0;
+  gap: 0;
+}
+.idle-warning-modal .modal-header { justify-content: center; }
+.idle-warning-modal .modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.idle-warning-modal .modal-footer { justify-content: center; }
+
+.idle-countdown {
+  font-size: 52px;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Structured modal header / footer (used by tabbed modals) */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: var(--radius);
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+}
+.modal-close:hover {
+  color: var(--text);
+  background: var(--surface2);
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.player-name-em { color: var(--gold); }
+
