@@ -338,4 +338,14 @@ export const api = {
   getSessions:     ()              => request('GET', '/api/sessions'),
   revokeSession:   (id)            => request('DELETE', `/api/sessions/${id}`),
   revokeAllSessions: (exceptTokenHash) => request('DELETE', '/api/sessions', { exceptTokenHash }),
+
+  // Auction House
+  getAuctionListings: ({ page = 1, limit = 50, search = '', faction = '', sort = 'time', order = 'asc' } = {}) => {
+    const params = new URLSearchParams({ page, limit, sort, order });
+    if (search) params.set('search', search);
+    if (faction) params.set('faction', faction);
+    return request('GET', `/api/auctionhouse?${params}`);
+  },
+  getAuctionStats:    ()   => request('GET', '/api/auctionhouse/stats'),
+  removeAuction:      (id) => request('DELETE', `/api/auctionhouse/${id}`),
 };
