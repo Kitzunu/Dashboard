@@ -6,9 +6,11 @@ import { FALLBACK_CLASSES, FALLBACK_RACES, FALLBACK_BATTLEGROUNDS } from '../con
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const DESERTER_TYPE_NAMES = {
-  0: 'No Penalty',
-  1: 'Left Early',
-  2: 'Not Joined',
+  0: 'Left BG',
+  1: 'Offline Kick',
+  2: 'Declined Invite',
+  3: 'Invite Expired',
+  4: 'Logged Out',
 };
 
 function bgName(type, typeName) {
@@ -533,7 +535,7 @@ export default function BattlegroundPage({ auth, onViewCharacter }) {
   const [activeTab, setActiveTab] = useState('History');
 
   return (
-    <div className="page-wrap">
+    <div className="page">
       <div className="page-header">
         <h1 className="page-title">Battlegrounds</h1>
       </div>
