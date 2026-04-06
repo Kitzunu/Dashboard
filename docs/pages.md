@@ -96,6 +96,13 @@
 - **Delete Team** (GM 3+) — permanently remove a team and all its members
 - **Remove Member** (GM 2+) — remove individual members (captain must transfer captainship first)
 
+## Battlegrounds
+- Three tabs: **History**, **Deserters**, **Stats**
+- **History** — paginated table (50 per page) of recent battleground matches; columns: ID, Battleground (name from `BattlemasterList.dbc` with fallbacks), Bracket, Winner (Alliance/Horde/Draw badge), Date; filter by BG type; click any row to open the match detail modal
+  - **Match Detail Modal** — battleground name, winner badge, bracket, date, and player count; two faction tables (Alliance and Horde) showing each player's name (clickable), class, killing blows, deaths, honorable kills, damage, healing, and win/loss badge
+- **Deserters** — paginated table of characters with the battleground deserter debuff; columns: Character (clickable), Class, Level, Type (Left BG / Offline Kick / Declined Invite / Invite Expired / Logged Out), Date; **Remove** deserter entries per character (GM 2+)
+- **Stats** — overall summary (total matches, Alliance/Horde wins with percentages, draws) and per-battleground breakdown table (total, Alliance wins, Horde wins, draws, win percentages)
+
 ## Channels
 - Lists all custom chat channels with name, faction (Alliance / Horde / Both), active ban count, password lock indicator, and last used timestamp
 - Lock icon shown for password-protected channels — credentials are never exposed
@@ -105,6 +112,16 @@
 - **Unban** removes a player's channel ban (GM 2+)
 - **Delete Channel** removes the channel and all associated bans from the database (Administrator)
 - Note: in-game member roles (Owner, Moderator, Muted) are runtime-only and not persisted to the database
+
+## Auction House
+- Paginated table (50 per page) of active auction listings with search and faction filter
+- Columns: ID, Item (WoWHead-linked name with item quality colour), Qty, Seller (clickable to view character), Auction House (faction badge), Start Bid, Current Bid, Buyout, Expires (time remaining)
+- **Search** by item name or seller name
+- **Faction filter** dropdown — filter by auction house name (e.g. Alliance, Horde, Blackwater); house names resolved from `AuctionHouse.dbc` with hardcoded fallbacks
+- Money values displayed as gold / silver / copper breakdown
+- **Statistics panel** — total listings, unique sellers, active bidders, total buyout value, and per-auction-house breakdown
+- **Remove** individual auction listings (GM 2+) with confirmation modal showing auction ID, item name, quantity, and seller
+- Item quality colour-coding (Poor through Artifact)
 
 ## Calendar
 - Month-view grid with Monday–Sunday columns; today highlighted; previous/next month navigation and "Today" button

@@ -238,4 +238,4 @@ When set, the backend runs a purge on startup and then once every 24 hours, dele
 # DBC_PATH=C:\World of Warcraft\Data\enUS\DBFilesClient
 ```
 
-Files used: `Map.dbc` (map names), `AreaTable.dbc` (zone/area names), `ChrRaces.dbc` (race names), and `ChrClasses.dbc` (class names).
+Files used: `Map.dbc` (map names), `AreaTable.dbc` (zone/area names), `ChrRaces.dbc` (race names), `ChrClasses.dbc` (class names), `Faction.dbc` (faction names for reputation), `Achievement.dbc` and `Achievement_Category.dbc` (achievement names and categories), `CharTitles.dbc` (character title names), `AuctionHouse.dbc` (auction house names and factions), `BattlemasterList.dbc` (battleground names), and `Spell.dbc` (spell names for auras/deserter debuffs).

@@ -23,6 +23,8 @@
 - **Calendar** — Month-view calendar with custom events and notes, WoW game holidays, in-game player-created events, and weekly raid reset schedule; create, edit, and delete custom events (GM 2+); toggle event type visibility; day detail panel
 - **Name Filters** — View, add, and remove entries in the `profanity_name` and `reserved_name` tables; tabbed interface with live filter and per-entry remove (GM 2+)
 - **Batch Operations** — Perform bulk actions on multiple players or accounts: batch kick, batch ban (character/account/IP), batch mail, and batch GM level changes; inline search picker to find characters or accounts by name; results modal showing per-target success/failure
+- **Auction House** — Browse all active auction listings with search, faction filter (Alliance/Horde/Neutral), item quality colour-coding, gold/silver/copper money display, and WoWHead item links; statistics panel with total listings, total value, and average price; delete individual listings (GM 2+); house names resolved from `AuctionHouse.dbc` with hardcoded fallbacks
+- **Battlegrounds** — Match history browser with type/bracket filtering, faction winner indicators (Alliance/Horde/Draw), and per-match detail modal with full player rosters; deserter tracker with removal (GM 2+); statistics panel with win rates and participation; BG names resolved from `BattlemasterList.dbc` with hardcoded fallbacks
 
 ## Players
 

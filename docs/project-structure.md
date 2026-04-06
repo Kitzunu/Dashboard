@@ -12,12 +12,14 @@ Dashboard/
 │   │   ├── analytics.js           # Historical analytics data and summary endpoints
 │   │   ├── announcements.js       # Announce / notify broadcasts
 │   │   ├── arena.js               # Arena team CRUD (list, detail, create, edit, delete, remove member)
+│   │   ├── auctionhouse.js       # Auction house listing browser, stats, and delete
 │   │   ├── auditLogRoutes.js      # Audit Log read endpoint (Administrator)
 │   │   ├── auth.js                # SRP6 login + rate limiting + logout
 │   │   ├── autobroadcast.js       # Autobroadcast CRUD
 │   │   ├── backups.js              # Backup browse, download, create (mysqldump), restore, delete
 │   │   ├── bans.js                # Ban management
 │   │   ├── batchOperations.js     # Batch kick, ban, mail, and GM level operations
+│   │   ├── battleground.js       # Battleground match history, deserters, and stats
 │   │   ├── bugreports.js          # Bug report browser
 │   │   ├── calendar.js            # Calendar event CRUD and game event / raid reset queries
 │   │   ├── changelog.js           # Changelog parser (reads changelog.md)
@@ -75,11 +77,13 @@ Dashboard/
 │       │   ├── AnalyticsPage.jsx
 │       │   ├── AnnouncePage.jsx
 │       │   ├── ArenaPage.jsx
+│       │   ├── AuctionHousePage.jsx
 │       │   ├── AuditLogPage.jsx
 │       │   ├── AutobroadcastPage.jsx
 │       │   ├── BackupsPage.jsx
 │       │   ├── BansPage.jsx
 │       │   ├── BatchOperationsPage.jsx
+│       │   ├── BattlegroundPage.jsx
 │       │   ├── BugReportsPage.jsx
 │       │   ├── CalendarPage.jsx
 │       │   ├── ChangelogPage.jsx
