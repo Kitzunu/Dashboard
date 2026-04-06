@@ -1,5 +1,13 @@
 # Changelog
 
+## ab8cd03 — Introduce ServerContext and useLocalStorage hook
+
+**Author**: Kitzunu | **Date**: 2026-04-06 21:38:49 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/ab8cd036a246afa9c5583559eac3c7f4e0235d6b
+
+Add a ServerContext provider to centralize WebSocket, server status, worldserver list, and player/ticket counts (frontend/src/context/ServerContext.jsx). Add a reusable useLocalStorage hook for JSON-backed localStorage state (frontend/src/hooks/useLocalStorage.js). Wrap the app with ServerProvider in App.jsx and refactor many pages/components (Layout, HomePage, ConsolePage, PlayersPage, ServersPage, AccountsPage, ArenaPage, AuctionHousePage, BattlegroundPage, CalendarPage, SessionsPage, and others) to consume useSocket/useServerStatus/useLocalStorage/useAuth instead of prop-drilling or ad-hoc localStorage usage. Update README and project-structure docs to document the new context and hook. These changes centralize server/socket logic, reduce prop passing, and unify localStorage handling.
+
+<!-- entry-separator -->
+
 ## e9f9f9e — Bump vite from 8.0.3 to 8.0.5 in /frontend in the npm_and_yarn group across 1 directory (#59)
 
 **Author**: dependabot[bot] | **Date**: 2026-04-06 21:02:30 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/e9f9f9e947176ef979534fc047cfaf9dd8b5a94f
