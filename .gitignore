@@ -4,6 +4,7 @@
 .claude/
 backups/
 pdump/
+worldservers.json
 
 # compiled output
 /dist

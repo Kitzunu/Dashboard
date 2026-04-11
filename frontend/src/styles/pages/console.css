@@ -1,14 +1,52 @@
 /* ── Console ─────────────────────────────────────────────────── */
 .console-page { height: calc(100vh - 48px); display: flex; flex-direction: column; max-width: none; }
 
-.console-page .page-title { margin-bottom: 12px; }
+.console-page .page-title { margin-bottom: 0; }
+
+.console-page-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.console-toggles {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.console-toggle-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  font-size: 11px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.console-toggle-btn:hover { border-color: var(--gold-dim); color: var(--text); }
+.console-toggle-btn.visible-panel { color: var(--text); }
+.console-toggle-btn.hidden-panel { opacity: 0.5; }
 
 .console-grid {
   flex: 1;
   display: grid;
   grid-template-columns: 2fr 1fr;
+  grid-template-rows: 1fr;
   gap: 16px;
   min-height: 0;
+}
+
+
+.console-grid.has-auth-row {
+  grid-template-rows: 3fr 1fr;
+}
+
+.console-grid .console-panel.auth-panel-full {
+  grid-column: 1 / -1;
 }
 
 .console-panel {

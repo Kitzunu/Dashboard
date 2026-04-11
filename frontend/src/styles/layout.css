@@ -126,7 +126,9 @@
 
 .server-status-row {
   display: flex;
-  gap: 14px;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: center;
 }
 
 .status-dot-group {

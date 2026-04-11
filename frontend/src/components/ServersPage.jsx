@@ -171,7 +171,7 @@ function RestartSection({ worldservers = [], serverStatus = {} }) {
       </p>
 
       {worldservers.length > 1 && (
-        <div className="form-group" style={{ marginBottom: 12 }}>
+        <div className="form-group" style={{ marginBottom: 12, maxWidth: 280 }}>
           <label>Target worldserver</label>
           <select value={target} onChange={(e) => setTarget(e.target.value)} className="form-select">
             {worldservers.map((ws) => (

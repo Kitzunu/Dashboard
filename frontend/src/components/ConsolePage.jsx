@@ -21,7 +21,7 @@ const AnsiLine = memo(function AnsiLine({ text }) {
   );
 });
 
-function ConsolePanel({ title, serverName, socket, canSendCommands }) {
+function ConsolePanel({ title, serverName, socket, canSendCommands, className = '' }) {
   const [lines, setLines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [command, setCommand] = useState('');
@@ -140,7 +140,7 @@ function ConsolePanel({ title, serverName, socket, canSendCommands }) {
   };
 
   return (
-    <div className="console-panel">
+    <div className={`console-panel ${className}`}>
       <div className="console-header">
         <span className="console-title">{title}</span>
         <label className="toggle-label">
@@ -191,11 +191,47 @@ export default function ConsolePage() {
     ? worldservers
     : [{ id: 'worldserver', name: 'World Server' }];
 
+  const allPanels = [...wsIds.map((ws) => ({ id: ws.id, name: ws.name })), { id: 'authserver', name: 'Auth Server' }];
+  const [hidden, setHidden] = useLocalStorage('console-hidden-panels', []);
+
+  const visiblePanels = allPanels.filter((p) => !hidden.includes(p.id));
+  const visibleWs = visiblePanels.filter((p) => p.id !== 'authserver');
+
+  const gridStyle = {
+    gridTemplateColumns: visibleWs.length === 1
+      ? '2fr 1fr'
+      : visibleWs.length > 1
+        ? `repeat(${visibleWs.length}, 1fr)`
+        : '1fr',
+  };
+
+  const togglePanel = (id) => {
+    setHidden((prev) =>
+      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
+    );
+  };
+
   return (
     <div className="page console-page">
-      <h2 className="page-title">Console</h2>
-      <div className="console-grid">
-        {wsIds.map((ws) => (
+      <div className="console-page-header">
+        <h2 className="page-title">Console</h2>
+        {allPanels.length > 2 && (
+          <div className="console-toggles">
+            {allPanels.map((p) => (
+              <button
+                key={p.id}
+                className={`console-toggle-btn ${hidden.includes(p.id) ? 'hidden-panel' : 'visible-panel'}`}
+                onClick={() => togglePanel(p.id)}
+                title={hidden.includes(p.id) ? `Show ${p.name}` : `Hide ${p.name}`}
+              >
+                {hidden.includes(p.id) ? '◻' : '◼'} {p.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      <div className={`console-grid${visibleWs.length >= 2 && !hidden.includes('authserver') ? ' has-auth-row' : ''}`} style={gridStyle}>
+        {wsIds.filter((ws) => !hidden.includes(ws.id)).map((ws) => (
           <ConsolePanel
             key={ws.id}
             title={ws.name}
@@ -204,12 +240,15 @@ export default function ConsolePage() {
             canSendCommands={canSendCommands}
           />
         ))}
-        <ConsolePanel
-          title="Auth Server"
-          serverName="authserver"
-          socket={socket}
-          canSendCommands={false}
-        />
+        {!hidden.includes('authserver') && (
+          <ConsolePanel
+            title="Auth Server"
+            serverName="authserver"
+            socket={socket}
+            canSendCommands={false}
+            className={visibleWs.length >= 2 ? 'auth-panel-full' : ''}
+          />
+        )}
       </div>
     </div>
   );
