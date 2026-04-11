@@ -1,5 +1,13 @@
 # Changelog
 
+## f31be8e — Add backend logger and replace console calls
+
+**Author**: Kitzunu | **Date**: 2026-04-11 10:56:22 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/f31be8e1ec475f04cc854d746bb287059245f595
+
+Add a centralized colored console logger (backend/logger.js) that mirrors AzerothCore Log4j color mapping and provides timestamped, component-scoped logging (fatal/error/warn/info/debug/trace). Update README with Console Logging usage and ANSI color table. Replace ad-hoc console.log/warn/error calls across backend modules to use the new logger with appropriate component scopes (alertLogger, audit, dbc, middleware, routes, run/runAgent, scheduler, server, serverAgent, serverBridge, worldservers, etc.), improving consistency of startup, error and operational messages.
+
+<!-- entry-separator -->
+
 ## 985de94 — Add sidebar navigation search with highlights
 
 **Author**: Kitzunu | **Date**: 2026-04-06 22:38:47 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/985de9463dc2c97470563d4c79c4618a96147ec4
