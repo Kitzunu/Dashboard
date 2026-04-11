@@ -1,5 +1,13 @@
 # Changelog
 
+## 077610f — Add console panel toggles and layout tweaks
+
+**Author**: Kitzunu | **Date**: 2026-04-11 11:46:56 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/077610f3f04b660004a2a61efe7ce19b79e0e82b
+
+Introduce toggleable console panels with persisted hidden state and responsive grid sizing. ConsolePage: add className prop to ConsolePanel, track hidden panels in localStorage, render show/hide buttons for world/auth servers, and adjust grid columns/rows depending on visible panels. Update console CSS to style header, toggles, and an auth-panel-full rule so auth can span full width when needed. Minor UI fixes: limit target select width on ServersPage, make server-status-row wrap and align items in layout.css, and add worldservers.json to .gitignore.
+
+<!-- entry-separator -->
+
 ## f31be8e — Add backend logger and replace console calls
 
 **Author**: Kitzunu | **Date**: 2026-04-11 10:56:22 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/f31be8e1ec475f04cc854d746bb287059245f595
