@@ -1,3 +1,5 @@
+const log = require('../logger')('ipAllowlist');
+
 /**
  * IP allowlist middleware.
  *
@@ -49,7 +51,7 @@ function ipAllowlist(req, res, next) {
   // When ALLOWED_IPS is not explicitly configured, accept connections from
   // any private/LAN address (mobile devices, other machines on the LAN).
   if (!process.env.ALLOWED_IPS && isPrivateIP(ip)) return next();
-  console.warn(`[ipAllowlist] Blocked request from ${ip}`);
+  log.warn(`Blocked request from ${ip}`);
   res.status(403).json({ error: 'Access denied: your IP is not allowlisted' });
 }
 

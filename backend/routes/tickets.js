@@ -2,6 +2,7 @@ const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const { charPool } = require('../db');
 const processManager = require('../processManager');
+const log = require('../logger')('tickets');
 
 const router = express.Router();
 
@@ -37,7 +38,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
     );
     res.json(rows);
   } catch (err) {
-    console.error('Tickets query error:', err.message);
+    log.error('Query error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -50,7 +51,7 @@ router.get('/all', requireGMLevel(2), async (req, res) => {
     );
     res.json(rows);
   } catch (err) {
-    console.error('Tickets/all query error:', err.message);
+    log.error('Query error (all):', err.message);
     res.status(500).json({ error: err.message });
   }
 });

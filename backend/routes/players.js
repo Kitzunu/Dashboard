@@ -3,6 +3,7 @@ const { requireGMLevel } = require('../middleware/auth');
 const { charPool, authPool } = require('../db');
 const processManager = require('../processManager');
 const dbc = require('../dbc');
+const log = require('../logger')('players');
 
 const router = express.Router();
 
@@ -32,7 +33,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
     }));
     res.json(players);
   } catch (err) {
-    console.error('Players query error:', err);
+    log.error('Players query error:', err);
     res.status(500).json({ error: 'Database error: ' + err.message });
   }
 });

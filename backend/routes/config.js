@@ -4,6 +4,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const { audit } = require('../audit');
 const dashboardSettings = require('../dashboardSettings');
+const log = require('../logger')('config');
 
 const router = express.Router();
 
@@ -15,7 +16,7 @@ async function walkDir(dir, baseDir, map) {
   try {
     entries = await fs.readdir(dir);
   } catch (err) {
-    console.warn(`[config] Could not read directory (${dir}): ${err.message}`);
+    log.warn(`Could not read directory (${dir}): ${err.message}`);
     return;
   }
   for (const entry of entries) {

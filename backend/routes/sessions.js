@@ -4,6 +4,7 @@ const router = express.Router();
 const { requireGMLevel } = require('../middleware/auth');
 const { dashPool } = require('../db');
 const { audit } = require('../audit');
+const log = require('../logger')('sessions');
 
 // Auto-create active_sessions table
 dashPool.query(`
@@ -31,7 +32,7 @@ async function registerSession(username, tokenHash, ip, userAgent, gmlevel) {
       [username, tokenHash, ip, userAgent || '', gmlevel]
     );
   } catch (err) {
-    console.error('[sessions] Failed to register session:', err.message);
+    log.error('Failed to register session:', err.message);
   }
 }
 

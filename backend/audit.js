@@ -4,6 +4,7 @@
  * audit failures never break the main operation.
  */
 const mysql2 = require('mysql2/promise');
+const log = require('./logger')('audit');
 require('dotenv').config({
   path: require('path').join(__dirname, '../.env'),
   quiet: true
@@ -89,7 +90,7 @@ async function logAudit(username, ip, action, details = null, success = true) {
     );
   } catch (err) {
     // Audit failures must not break core operations, but log so they're diagnosable
-    console.error('[audit] Failed to write audit log:', err.message);
+    log.error('Failed to write audit log:', err.message);
   }
 }
 
@@ -117,10 +118,10 @@ async function startRetentionJob() {
         [days]
       );
       if (result.affectedRows > 0) {
-        console.log(`[audit] Purged ${result.affectedRows} log entries older than ${days} days`);
+        log.info(`Purged ${result.affectedRows} log entries older than ${days} days`);
       }
     } catch (err) {
-      console.error('[audit] Retention purge failed:', err.message);
+      log.error('Retention purge failed:', err.message);
     }
   }
 

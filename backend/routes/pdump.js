@@ -5,6 +5,7 @@ const { requireGMLevel } = require('../middleware/auth');
 const { audit } = require('../audit');
 const path = require('path');
 const fs = require('fs').promises;
+const log = require('../logger')('pdump');
 
 // ── Write helpers ─────────────────────────────────────────────────────────────
 
@@ -503,7 +504,7 @@ router.post('/load', requireGMLevel(2), async (req, res) => {
     audit(req, 'pdump.load', `character=${result.characterName} guid=${result.characterGuid} account=${accountId} source=${filePath ? `path:${path.resolve(filePath)}` : 'upload'}`);
     return res.json({ ok: true, ...result });
   } catch (err) {
-    console.error('[pdump load] Error:', err);
+    log.error('Load error:', err);
     audit(req, 'pdump.load', `account=${accountId} error=${err.message}`, null, false);
     return res.status(500).json({ error: err.message });
   }
@@ -540,7 +541,7 @@ router.post('/:guid', requireGMLevel(2), async (req, res) => {
     return res.send(dumpContent);
 
   } catch (err) {
-    console.error('[pdump write] Error:', err);
+    log.error('Write error:', err);
     if (!res.headersSent) return res.status(500).json({ error: err.message });
   }
 });

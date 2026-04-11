@@ -62,6 +62,23 @@ Then open [http://localhost:5173](http://localhost:5173) and log in with your Az
 | Project Structure | [docs/project-structure.md](docs/project-structure.md) |
 | Notes & Credits | [docs/notes.md](docs/notes.md) |
 
+## Console Logging
+
+The backend uses a custom logger (`backend/logger.js`) styled after AzerothCore's Log4j appender with the same color mapping from the default `worldserver.conf`:
+
+| Level | Color | ANSI |
+| --- | --- | --- |
+| FATAL | Red | `\x1b[31m` |
+| ERROR | Bright Red | `\x1b[91m` |
+| WARN | Yellow | `\x1b[33m` |
+| INFO | Cyan | `\x1b[36m` |
+| DEBUG | Magenta | `\x1b[35m` |
+| TRACE | Bright Yellow | `\x1b[93m` |
+
+Output format: `YYYY-MM-DD HH:MM:SS LEVEL [component] message`
+
+Usage: `const log = require('./logger')('component-name');` then call `log.info(...)`, `log.error(...)`, etc.
+
 ## Architecture
 
 The frontend uses React with two shared contexts:

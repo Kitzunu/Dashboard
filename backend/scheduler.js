@@ -8,6 +8,7 @@ const fs      = require('fs');
 const { execFile } = require('child_process');
 const { dashPool } = require('./db');
 const processManager = require('./processManager');
+const log = require('./logger')('scheduler');
 
 let intervalId    = null;
 let lastFiredKey  = null; // "HH:MM" of the last minute tasks were checked
@@ -118,7 +119,7 @@ async function tick() {
     const days = String(task.days).split(',').map(Number);
     if (!days.includes(curDay)) continue;
 
-    console.log(`[scheduler] Running "${task.name}" (${task.type})`);
+    log.info(`Running "${task.name}" (${task.type})`);
     try {
       let status;
       if      (task.type === 'restart') status = await runRestart(task);
@@ -127,7 +128,7 @@ async function tick() {
       await setStatus(task.id, status);
     } catch (err) {
       await setStatus(task.id, `Error: ${err.message}`).catch(() => {});
-      console.error(`[scheduler] Task "${task.name}" failed:`, err.message);
+      log.error(`Task "${task.name}" failed:`, err.message);
     }
   }
 }
@@ -174,7 +175,7 @@ function init() {
   const msToNextMinute = (60 - new Date().getSeconds()) * 1000;
   setTimeout(() => { tick(); }, msToNextMinute);
 
-  console.log('[scheduler] Started');
+  log.info('Started');
 }
 
 module.exports = { init, runNow };

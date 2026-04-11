@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const log = require('../logger')('auth');
 
 function authenticateToken(req, res, next) {
   const header = req.headers['authorization'];
@@ -25,7 +26,7 @@ function authenticateToken(req, res, next) {
     touchSession(tokenHash);
     next();
   }).catch((err) => {
-    console.error('[auth] Session check failed:', err);
+    log.error('Session check failed:', err);
     res.status(503).json({ error: 'Service unavailable' });
   });
 }

@@ -17,6 +17,7 @@
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 
 const express = require('express');
+const log     = require('./logger')('server-agent');
 const http    = require('http');
 const { spawn } = require('child_process');
 const path    = require('path');
@@ -285,5 +286,5 @@ app.get('/events', (req, res) => {
 
 const server = http.createServer(app);
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`[server-agent] Server Agent listening on port ${PORT}`);
+  log.info(`Server Agent listening on port ${PORT}`);
 });

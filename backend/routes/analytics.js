@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { requireGMLevel } = require('../middleware/auth');
 const { dashPool } = require('../db');
+const log = require('../logger')('analytics');
 
 // Auto-create analytics_history table
 dashPool.query(`
@@ -102,7 +103,7 @@ async function recordSnapshot(playerCount, cpu, memory) {
       ['player_count', playerCount, 'cpu', cpu, 'memory', memory]
     );
   } catch (err) {
-    console.error('[analytics] Failed to record snapshot:', err.message);
+    log.error('Failed to record snapshot:', err.message);
   }
 }
 

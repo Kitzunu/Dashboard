@@ -8,6 +8,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const log = require('./logger')('server');
 
 const authRoutes = require('./routes/auth');
 const serverRoutes = require('./routes/servers');
@@ -97,7 +98,7 @@ function dynamicOrigin(origin, callback) {
   // same network can connect.  CORS is a browser-level mechanism; actual access
   // control is handled by authentication and the IP allowlist middleware.
   if (isPrivateOrigin(origin)) return callback(null, true);
-  console.warn(`[CORS] Rejected origin: ${origin}  (allowed: ${allowed.join(', ')})`);
+  log.warn(`[CORS] Rejected origin: ${origin}  (allowed: ${allowed.join(', ')})`);
   callback(null, false);
 }
 
@@ -356,7 +357,7 @@ startRetentionJob();
 
 // Global error handler — catches any next(err) calls and unhandled Express errors
 app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
-  console.error('[express]', err);
+  log.error(err);
   if (!res.headersSent) {
     res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
   }
@@ -364,6 +365,6 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
 
 const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, '0.0.0.0', () => {
-  console.log(`AzerothCore Dashboard backend listening on port ${PORT}`);
-  console.log(`  Frontend: ${getFrontendOrigins().join(', ')}`);
+  log.info(`AzerothCore Dashboard backend listening on port ${PORT}`);
+  log.info(`Frontend: ${getFrontendOrigins().join(', ')}`);
 });

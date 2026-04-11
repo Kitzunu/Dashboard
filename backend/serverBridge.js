@@ -8,6 +8,7 @@
 
 const http         = require('http');
 const EventEmitter = require('events');
+const log          = require('./logger')('server-bridge');
 const wsConfig     = require('./worldservers');
 
 const emitter = new EventEmitter();
@@ -44,7 +45,7 @@ function connect() {
 
     connected = true;
     emitter.emit('agent-connected');
-    console.log('[server-bridge] Connected to server agent');
+    log.info('Connected to server agent');
 
     let buffer = '';
     res.on('data', (chunk) => {
@@ -61,7 +62,7 @@ function connect() {
 
     res.on('end', () => {
       connected = false;
-      console.log('[server-bridge] Agent event stream ended');
+      log.info('Agent event stream ended');
       emitter.emit('agent-disconnected');
       notifyServersDown();
       scheduleReconnect();

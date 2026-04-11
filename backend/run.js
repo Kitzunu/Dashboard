@@ -4,11 +4,12 @@
  */
 const { spawn } = require('child_process');
 const path = require('path');
+const log = require('./logger')('runner');
 
 const RESTART_CODE = 42;
 
 function start() {
-  console.log('[runner] Starting backend...');
+  log.info('Starting backend...');
   const child = spawn(process.execPath, [path.join(__dirname, 'server.js')], {
     cwd: __dirname,
     stdio: 'inherit',
@@ -17,7 +18,7 @@ function start() {
 
   child.on('exit', (code) => {
     if (code === RESTART_CODE) {
-      console.log('[runner] Restart requested — restarting backend in 1s...');
+      log.info('Restart requested — restarting backend in 1s...');
       setTimeout(start, 1000);
     } else {
       process.exit(code ?? 0);

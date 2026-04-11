@@ -16,6 +16,7 @@
 
 const fs   = require('fs');
 const path = require('path');
+const log  = require('./logger')('worldservers');
 
 const CONFIG_PATH = path.join(__dirname, '../worldservers.json');
 
@@ -32,7 +33,7 @@ function load() {
     if (Array.isArray(parsed) && parsed.length > 0) {
       _configs = parsed.map((ws, i) => {
         if (!ws.id) {
-          console.warn(`[worldservers] Entry at index ${i} has no "id" — auto-assigned. Set an explicit "id" to avoid issues.`);
+          log.warn(`Entry at index ${i} has no "id" — auto-assigned. Set an explicit "id" to avoid issues.`);
         }
         return {
           id:          ws.id   || (i === 0 ? 'worldserver' : `worldserver-${i + 1}`),

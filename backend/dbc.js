@@ -1,3 +1,5 @@
+const log = require('./logger')('dbc');
+
 /**
  * Lightweight DBC binary parser for WotLK (3.3.5a) client data files.
  *
@@ -37,14 +39,14 @@ const HEADER_SIZE = 20;
 // ── Binary parser ─────────────────────────────────────────────────────────────
 function parseDBC(filePath) {
   if (!fs.existsSync(filePath)) {
-    console.warn(`[dbc] File not found: ${filePath}`);
+    log.warn(`File not found: ${filePath}`);
     return null;
   }
 
   const buf = fs.readFileSync(filePath);
 
   if (buf.toString('ascii', 0, 4) !== MAGIC) {
-    console.warn(`[dbc] Invalid magic in: ${filePath}`);
+    log.warn(`Invalid magic in: ${filePath}`);
     return null;
   }
 
@@ -110,7 +112,7 @@ function loadMapNames() {
     if (name) mapNames[id] = name;
   }
 
-  console.log(`[dbc] Loaded ${Object.keys(mapNames).length} map names from Map.dbc`);
+  log.info(`Loaded ${Object.keys(mapNames).length} map names from Map.dbc`);
 }
 
 function loadAreaNames() {
@@ -129,7 +131,7 @@ function loadAreaNames() {
     if (name) areaNames[id] = name;
   }
 
-  console.log(`[dbc] Loaded ${Object.keys(areaNames).length} area names from AreaTable.dbc`);
+  log.info(`Loaded ${Object.keys(areaNames).length} area names from AreaTable.dbc`);
 }
 
 function loadRaceNames() {
@@ -148,7 +150,7 @@ function loadRaceNames() {
     if (name) raceNames[id] = name;
   }
 
-  console.log(`[dbc] Loaded ${Object.keys(raceNames).length} race names from ChrRaces.dbc`);
+  log.info(`Loaded ${Object.keys(raceNames).length} race names from ChrRaces.dbc`);
 }
 
 function loadClassNames() {
@@ -167,7 +169,7 @@ function loadClassNames() {
     if (name) classNames[id] = name;
   }
 
-  console.log(`[dbc] Loaded ${Object.keys(classNames).length} class names from ChrClasses.dbc`);
+  log.info(`Loaded ${Object.keys(classNames).length} class names from ChrClasses.dbc`);
 }
 
 function loadFactionNames() {
@@ -182,7 +184,7 @@ function loadFactionNames() {
     const name = r.locString(23);  // Name_lang[enUS] = field 23
     if (name) factionNames[id] = name;
   }
-  console.log(`[dbc] Loaded ${Object.keys(factionNames).length} faction names from Faction.dbc`);
+  log.info(`Loaded ${Object.keys(factionNames).length} faction names from Faction.dbc`);
 }
 
 function loadAchievementCategories() {
@@ -199,7 +201,7 @@ function loadAchievementCategories() {
     const sortOrder= r.uint32(19);
     if (name) achievementCats[id] = { name, parentId: parentId === 0xFFFFFFFF ? null : parentId, sortOrder };
   }
-  console.log(`[dbc] Loaded ${Object.keys(achievementCats).length} achievement categories from Achievement_Category.dbc`);
+  log.info(`Loaded ${Object.keys(achievementCats).length} achievement categories from Achievement_Category.dbc`);
 }
 
 function loadAchievements() {
@@ -216,7 +218,7 @@ function loadAchievements() {
     const points     = r.uint32(39);
     if (name) achievementData[id] = { name, categoryId, points };
   }
-  console.log(`[dbc] Loaded ${Object.keys(achievementData).length} achievements from Achievement.dbc`);
+  log.info(`Loaded ${Object.keys(achievementData).length} achievements from Achievement.dbc`);
 }
 
 function loadCharTitles() {
@@ -235,7 +237,7 @@ function loadCharTitles() {
       charTitleData[titleBitIndex] = { id, maleName, femaleName };
     }
   }
-  console.log(`[dbc] Loaded ${Object.keys(charTitleData).length} titles from CharTitles.dbc`);
+  log.info(`Loaded ${Object.keys(charTitleData).length} titles from CharTitles.dbc`);
 }
 
 function loadAuctionHouses() {
@@ -253,7 +255,7 @@ function loadAuctionHouses() {
     const name            = r.locString(4);  // Name_lang[enUS] = field 4
     auctionHouseData[id] = { name: name || `Auction House #${id}`, factionId, depositRate, consignmentRate };
   }
-  console.log(`[dbc] Loaded ${Object.keys(auctionHouseData).length} auction houses from AuctionHouse.dbc`);
+  log.info(`Loaded ${Object.keys(auctionHouseData).length} auction houses from AuctionHouse.dbc`);
 }
 
 function loadBattlegroundNames() {
@@ -275,7 +277,7 @@ function loadBattlegroundNames() {
       }
     }
   }
-  console.log(`[dbc] Loaded ${Object.keys(bgNames).length} battleground names (${Object.keys(bgNamesAll).length} total incl. arenas) from BattlemasterList.dbc`);
+  log.info(`Loaded ${Object.keys(bgNames).length} battleground names (${Object.keys(bgNamesAll).length} total incl. arenas) from BattlemasterList.dbc`);
 }
 
 function loadSpellNames() {
@@ -290,7 +292,7 @@ function loadSpellNames() {
     const name = r.locString(136);  // SpellName_lang[enUS] — field 136
     if (id && name) spellNames[id] = name;
   }
-  console.log(`[dbc] Loaded ${Object.keys(spellNames).length} spell names from Spell.dbc`);
+  log.info(`Loaded ${Object.keys(spellNames).length} spell names from Spell.dbc`);
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
@@ -397,20 +399,20 @@ function getAllBattlegrounds() {
 /** Call once at server startup to eager-load all tables. */
 function init() {
   if (!dbcDir()) {
-    console.log('[dbc] DBC_PATH not configured — DBC name resolution disabled');
+    log.info('DBC_PATH not configured — DBC name resolution disabled');
     return;
   }
-  try { loadMapNames();              } catch (e) { console.warn('[dbc] Map.dbc load error:', e.message); }
-  try { loadAreaNames();             } catch (e) { console.warn('[dbc] AreaTable.dbc load error:', e.message); }
-  try { loadRaceNames();             } catch (e) { console.warn('[dbc] ChrRaces.dbc load error:', e.message); }
-  try { loadClassNames();            } catch (e) { console.warn('[dbc] ChrClasses.dbc load error:', e.message); }
-  try { loadFactionNames();          } catch (e) { console.warn('[dbc] Faction.dbc load error:', e.message); }
-  try { loadAchievementCategories(); } catch (e) { console.warn('[dbc] Achievement_Category.dbc load error:', e.message); }
-  try { loadAchievements();          } catch (e) { console.warn('[dbc] Achievement.dbc load error:', e.message); }
-  try { loadCharTitles();            } catch (e) { console.warn('[dbc] CharTitles.dbc load error:', e.message); }
-  try { loadBattlegroundNames();     } catch (e) { console.warn('[dbc] BattlemasterList.dbc load error:', e.message); }
-  try { loadAuctionHouses();          } catch (e) { console.warn('[dbc] AuctionHouse.dbc load error:', e.message); }
-  try { loadSpellNames();            } catch (e) { console.warn('[dbc] Spell.dbc load error:', e.message); }
+  try { loadMapNames();              } catch (e) { log.warn('Map.dbc load error:', e.message); }
+  try { loadAreaNames();             } catch (e) { log.warn('AreaTable.dbc load error:', e.message); }
+  try { loadRaceNames();             } catch (e) { log.warn('ChrRaces.dbc load error:', e.message); }
+  try { loadClassNames();            } catch (e) { log.warn('ChrClasses.dbc load error:', e.message); }
+  try { loadFactionNames();          } catch (e) { log.warn('Faction.dbc load error:', e.message); }
+  try { loadAchievementCategories(); } catch (e) { log.warn('Achievement_Category.dbc load error:', e.message); }
+  try { loadAchievements();          } catch (e) { log.warn('Achievement.dbc load error:', e.message); }
+  try { loadCharTitles();            } catch (e) { log.warn('CharTitles.dbc load error:', e.message); }
+  try { loadBattlegroundNames();     } catch (e) { log.warn('BattlemasterList.dbc load error:', e.message); }
+  try { loadAuctionHouses();          } catch (e) { log.warn('AuctionHouse.dbc load error:', e.message); }
+  try { loadSpellNames();            } catch (e) { log.warn('Spell.dbc load error:', e.message); }
 }
 
 module.exports = {

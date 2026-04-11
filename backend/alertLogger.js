@@ -7,6 +7,7 @@
  */
 
 const { dashPool } = require('./db');
+const logger = require('./logger')('alertLogger');
 
 const CREATE_TABLE = `
   CREATE TABLE IF NOT EXISTS \`alerts\` (
@@ -49,7 +50,7 @@ async function log(type, severity, title, description = null, metadata = null) {
       [type, severity, title, description, metadata !== null ? JSON.stringify(metadata) : null]
     );
   } catch (err) {
-    console.error('[alertLogger] Failed to log alert:', err.message);
+    logger.error('Failed to log alert:', err.message);
   }
 }
 
