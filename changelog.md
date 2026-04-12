@@ -1,5 +1,13 @@
 # Changelog
 
+## dcc202f — Add Electron-based Launcher app
+
+**Author**: Kitzunu | **Date**: 2026-04-12 11:26:38 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/dcc202f0f20b3a86c0ce263742648d8f02518e89
+
+Introduce an optional desktop launcher (Electron) for managing dashboard services. Adds a new launcher/ app (index.html, renderer.js, preload.js, styles.css), launcher package.json and package-lock.json, and docs/launcher.md describing usage and features. Update README to document the new npm run launcher command and add /launcher/node_modules to .gitignore. Root package.json updated to integrate the launcher (scripts/deps). This provides per-service start/stop controls, game server management, real-time logs, and settings for auto-start/tray behavior.
+
+<!-- entry-separator -->
+
 ## 37977c0 — Add configurable Discord alert cooldown
 
 **Author**: Kitzunu | **Date**: 2026-04-12 03:08:35 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/37977c079c23c8382c12974c8b4b38ffb70172e0
