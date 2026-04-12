@@ -1,5 +1,13 @@
 # Changelog
 
+## 37977c0 — Add configurable Discord alert cooldown
+
+**Author**: Kitzunu | **Date**: 2026-04-12 03:08:35 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/37977c079c23c8382c12974c8b4b38ffb70172e0
+
+Introduce a configurable alert cooldown for Discord notifications. Added 'discord.alert_cooldown' defaulting to 5 minutes in dashboardSettings.js and a cooldownReady helper in backend/discord.js to rate-limit repeated alerts (used for resource thresholds, agent disconnects, and latency alerts). Updated the settings UI to expose the new numeric setting and removed the hardcoded "5 minute" phrasing from the threshold description. Docs updated to explain the configurable cooldown (including that 0 disables cooldown) and to clarify event-driven alerts are not affected.
+
+<!-- entry-separator -->
+
 ## cb50e47 — Add multi-realm DB support and realm middleware
 
 **Author**: Kitzunu | **Date**: 2026-04-12 02:44:16 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/cb50e47381172c331f5b510012361f2c23303cd7
