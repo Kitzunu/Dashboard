@@ -9,10 +9,10 @@
     "build": "electron-builder --win portable"
   },
   "dependencies": {
-    "electron-store": "^8.2.0"
+    "electron-store": "^11.0.2"
   },
   "devDependencies": {
-    "electron": "^35.1.2",
+    "electron": "^41.2.0",
     "electron-builder": "^26.0.12"
   },
   "build": {

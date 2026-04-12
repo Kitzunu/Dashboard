@@ -13,7 +13,7 @@ worldservers.json
 /out-tsc
 /app-builds
 /release
-main.js
+/main.js
 src/**/*.js
 !src/karma.conf.js
 *.js.map
