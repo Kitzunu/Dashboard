@@ -10,6 +10,21 @@ const { URL }  = require('url');
 const settings = require('./dashboardSettings');
 const wsConfig = require('./worldservers');
 
+// ── Cooldown tracking ────────────────────────────────────────────────────────
+
+const _lastSent = {};  // key → timestamp (ms)
+
+async function cooldownReady(key) {
+  const raw     = await settings.get('discord.alert_cooldown');
+  const minutes = raw !== null && raw !== undefined ? Number(raw) : 5;
+  if (minutes <= 0) return true;                       // cooldown disabled
+  const now  = Date.now();
+  const last = _lastSent[key] || 0;
+  if (now - last < minutes * 60_000) return false;
+  _lastSent[key] = now;
+  return true;
+}
+
 /** Map a server id to a human-readable display name. */
 function resolveDisplayName(server) {
   if (server === 'authserver') return 'Auth Server';
@@ -125,6 +140,8 @@ async function sendThresholdBreach(resource, pct, threshold) {
   if (!(await isGloballyEnabled())) return;
   if (!(await settings.getBoolean('discord.alert_threshold'))) return;
 
+  if (!(await cooldownReady(`threshold_${resource}`))) return;
+
   const label       = resource === 'cpu' ? 'CPU' : 'Memory';
   const template    = (await settings.get('discord.message_threshold')) || '**{resource}** usage is at **{pct}%** (threshold: {threshold}%).';
   const description = interpolate(template, { resource: label, pct, threshold });
@@ -138,6 +155,8 @@ async function sendAgentDisconnect() {
   if (!(await isGloballyEnabled())) return;
   if (!(await settings.getBoolean('discord.alert_agent_disconnect'))) return;
 
+  if (!(await cooldownReady('agent_disconnect'))) return;
+
   const template = (await settings.get('discord.message_agent_disconnect')) || 'The server agent has disconnected. Game servers may be unmanaged.';
 
   await postWebhook(url, await buildPayload(buildEmbed('🔴 Agent Disconnected', template, COLORS.red)));
@@ -148,6 +167,8 @@ async function sendLatencyAlert(severity, meanMs, threshold) {
   if (!url) return;
   if (!(await isGloballyEnabled())) return;
   if (!(await settings.getBoolean('discord.alert_threshold'))) return;
+
+  if (!(await cooldownReady(`latency_${severity}`))) return;
 
   const label       = severity === 'critical' ? 'Critical' : 'Warning';
   const color       = severity === 'critical' ? COLORS.red : COLORS.orange;

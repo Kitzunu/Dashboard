@@ -193,14 +193,16 @@ The export produces a file named `<CharacterName>_<GUID>_<timestamp>.sql`. When 
 
 Six alert types are supported, each with an independent toggle in **Settings → Discord Alerts**:
 
-| Alert              | Trigger                                                                | Cooldown           |
-| ------------------ | ---------------------------------------------------------------------- | ------------------ |
-| Server offline     | A worldserver or authserver transitions from running → offline         | 5 min per server   |
-| Server online      | A worldserver or authserver transitions from offline → running         | 5 min per server   |
-| Server stop        | A worldserver or authserver is manually stopped from the dashboard     | 5 min per server   |
-| Resource threshold | CPU or memory usage exceeds the configured threshold                   | 5 min per resource |
-| Agent disconnect   | Server agent loses its SSE connection to the dashboard                 | 5 min              |
-| Latency threshold  | Mean TCP latency to a worldserver exceeds the warn or critical threshold | 5 min per level  |
+| Alert              | Trigger                                                                | Cooldown              |
+| ------------------ | ---------------------------------------------------------------------- | --------------------- |
+| Server offline     | A worldserver or authserver transitions from running → offline         | None (event-driven)   |
+| Server online      | A worldserver or authserver transitions from offline → running         | None (event-driven)   |
+| Server stop        | A worldserver or authserver is manually stopped from the dashboard     | None (event-driven)   |
+| Resource threshold | CPU or memory usage exceeds the configured threshold                   | Configurable (default 5 min) |
+| Agent disconnect   | Server agent loses its SSE connection to the dashboard                 | Configurable (default 5 min) |
+| Latency threshold  | Mean TCP latency to a worldserver exceeds the warn or critical threshold | Configurable (default 5 min) |
+
+The **Alert cooldown** setting (in minutes) controls the minimum time between repeated alerts of the same type. Set to `0` to disable the cooldown. Event-driven alerts (server offline/online/stop) fire once per state change and are not affected by the cooldown.
 
 Use the **Send Test Message** button in Settings to verify the webhook is working.
 

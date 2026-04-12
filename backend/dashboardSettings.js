@@ -22,6 +22,7 @@ const DEFAULTS = {
   'discord.message_server_online':      '**{server}** is online.',
   'discord.alert_threshold':            'true',
   'discord.message_threshold':          '**{resource}** usage is at **{pct}%** (threshold: {threshold}%).',
+  'discord.alert_cooldown':             '5',
   'discord.alert_agent_disconnect':     'true',
   'discord.message_agent_disconnect':   'The server agent has disconnected. Game servers may be unmanaged.',
 };

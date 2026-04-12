@@ -143,6 +143,15 @@ const SETTING_DEFS = [
         placeholder: 'https://example.com/avatar.png',
       },
       {
+        key: 'discord.alert_cooldown',
+        label: 'Alert cooldown (minutes)',
+        description: 'Minimum minutes between repeated alerts of the same type (e.g. threshold, latency). Does not affect one-time event alerts like server crash or online.',
+        type: 'number',
+        min: 0,
+        max: 1440,
+        default: '5',
+      },
+      {
         key: 'discord.alert_server_crash',
         label: 'Server offline alert',
         description: 'Send an alert when worldserver or authserver goes offline unexpectedly.',
@@ -187,7 +196,7 @@ const SETTING_DEFS = [
       {
         key: 'discord.alert_threshold',
         label: 'Resource threshold alert',
-        description: 'Send an alert when CPU or memory usage exceeds the configured threshold. Repeats at most once every 5 minutes.',
+        description: 'Send an alert when CPU or memory usage exceeds the configured threshold.',
         type: 'boolean',
         default: 'true',
       },
