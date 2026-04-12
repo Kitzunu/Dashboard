@@ -1,5 +1,32 @@
 # Changelog
 
+## a3e8dc6 — Bump axios from 1.14.0 to 1.15.0 in the npm_and_yarn group across 1 directory (#61)
+
+**Author**: dependabot[bot] | **Date**: 2026-04-12 11:38:05 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/a3e8dc6009e84e7431986986531bda3188fb6066
+
+Bump axios in the npm_and_yarn group across 1 directory
+
+Bumps the npm_and_yarn group with 1 update in the / directory: [axios](https://github.com/axios/axios).
+
+
+Updates `axios` from 1.14.0 to 1.15.0
+- [Release notes](https://github.com/axios/axios/releases)
+- [Changelog](https://github.com/axios/axios/blob/v1.x/CHANGELOG.md)
+- [Commits](https://github.com/axios/axios/compare/v1.14.0...v1.15.0)
+
+---
+updated-dependencies:
+- dependency-name: axios
+  dependency-version: 1.15.0
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## 75d8eec — Bump launcher electron and electron-store
 
 **Author**: Kitzunu | **Date**: 2026-04-12 11:35:34 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/75d8eec2c90e8823ae64f1ab7d7e969d6f3ce742
