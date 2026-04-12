@@ -6,7 +6,7 @@
 const path    = require('path');
 const fs      = require('fs');
 const { execFile } = require('child_process');
-const { dashPool } = require('./db');
+const { dashPool, getAllRealmDbNames } = require('./db');
 const processManager = require('./processManager');
 const log = require('./logger')('scheduler');
 
@@ -48,11 +48,7 @@ async function runBackup(task) {
   const config    = task.config || {};
   const databases = config.databases && config.databases.length
     ? config.databases
-    : [
-        process.env.AUTH_DB        || 'acore_auth',
-        process.env.WORLD_DB       || 'acore_world',
-        process.env.CHARACTERS_DB  || 'acore_characters',
-      ];
+    : getAllRealmDbNames();
 
   const backupDir = process.env.BACKUP_PATH || path.join(__dirname, '../backups');
   if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });

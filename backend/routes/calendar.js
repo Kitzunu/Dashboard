@@ -1,6 +1,6 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
-const { dashPool, charPool, worldPool } = require('../db');
+const { dashPool } = require('../db');
 const { audit } = require('../audit');
 
 const router = express.Router();
@@ -117,7 +117,7 @@ router.delete('/events/:id', requireGMLevel(2), async (req, res) => {
 // Returns active/upcoming WoW game holiday events (holiday > 0) from acore_world.game_event
 router.get('/game-events', requireGMLevel(1), async (req, res) => {
   try {
-    const [rows] = await worldPool.query(
+    const [rows] = await req.worldPool.query(
       `SELECT eventEntry, start_time, end_time, occurence, length,
               holiday, description, world_event
        FROM game_event
@@ -142,7 +142,7 @@ router.get('/ingame-events', requireGMLevel(1), async (req, res) => {
   const toTs   = Math.floor(new Date(to).getTime()   / 1000);
 
   try {
-    const [rows] = await charPool.query(
+    const [rows] = await req.charPool.query(
       `SELECT ce.id, ce.creator, ce.title, ce.description, ce.type,
               ce.dungeon, ce.eventtime, ce.flags,
               c.name AS creator_name

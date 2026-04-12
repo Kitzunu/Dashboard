@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { charPool, authPool } = require('../db');
+const { authPool } = require('../db');
 const { requireGMLevel } = require('../middleware/auth');
 const { audit } = require('../audit');
 const path = require('path');
@@ -62,7 +62,7 @@ function formatInsert(tableName, row) {
 }
 
 // Check whether a table exists in the characters DB
-async function tableExists(tableName) {
+async function tableExists(charPool, tableName) {
   const [rows] = await charPool.query(
     'SELECT COUNT(*) AS cnt FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?',
     [tableName]
@@ -70,7 +70,7 @@ async function tableExists(tableName) {
   return rows[0].cnt > 0;
 }
 
-async function generateDump(guid) {
+async function generateDump(charPool, guid) {
   const lines = [];
 
   lines.push("-- IMPORTANT NOTE: THIS DUMPFILE IS MADE FOR USE WITH THE 'PDUMP' COMMAND ONLY - EITHER THROUGH INGAME CHAT OR ON CONSOLE!");
@@ -80,7 +80,7 @@ async function generateDump(guid) {
 
   // --- Simple GUID tables ---
   for (const table of GUID_TABLES) {
-    if (!await tableExists(table)) continue;
+    if (!await tableExists(charPool, table)) continue;
     const [rows] = await charPool.query(`SELECT * FROM \`${table}\` WHERE guid = ?`, [guid]);
     for (const row of rows) lines.push(formatInsert(table, row));
   }
@@ -98,7 +98,7 @@ async function generateDump(guid) {
       { name: 'pet_spell_cooldown', col: 'guid' },
     ];
     for (const { name, col } of petTables) {
-      if (!await tableExists(name)) continue;
+      if (!await tableExists(charPool, name)) continue;
       const [rows] = await charPool.query(`SELECT * FROM \`${name}\` WHERE \`${col}\` IN (?)`, [petIds]);
       for (const row of rows) lines.push(formatInsert(name, row));
     }
@@ -125,7 +125,7 @@ async function generateDump(guid) {
     const [items] = await charPool.query('SELECT * FROM `item_instance` WHERE guid IN (?)', [allItemGuids]);
     for (const row of items) lines.push(formatInsert('item_instance', row));
 
-    if (await tableExists('character_gifts')) {
+    if (await tableExists(charPool, 'character_gifts')) {
       const [gifts] = await charPool.query('SELECT * FROM `character_gifts` WHERE item_guid IN (?)', [allItemGuids]);
       for (const row of gifts) lines.push(formatInsert('character_gifts', row));
     }
@@ -322,7 +322,7 @@ function remapValue(val, colName, guidType, { newCharGuid, accountId, itemMap, m
 }
 
 // Query the next-available GUID offsets from the live DB
-async function getGuidOffsets() {
+async function getGuidOffsets(charPool) {
   const [[cr]] = await charPool.query('SELECT COALESCE(MAX(guid),0)+1 AS v FROM characters');
   const [[ir]] = await charPool.query('SELECT COALESCE(MAX(guid),0)+1 AS v FROM item_instance');
   const [[mr]] = await charPool.query('SELECT COALESCE(MAX(id),0)+1   AS v FROM mail');
@@ -338,7 +338,7 @@ async function getGuidOffsets() {
 }
 
 // Load a dump into the characters DB
-async function loadDump(dumpContent, { accountId, characterName = '', characterGuid = 0 }) {
+async function loadDump(charPool, dumpContent, { accountId, characterName = '', characterGuid = 0 }) {
   // Validate account exists
   const [[acct]] = await authPool.query('SELECT id FROM account WHERE id = ?', [accountId]);
   if (!acct) throw new Error('Account not found');
@@ -350,7 +350,7 @@ async function loadDump(dumpContent, { accountId, characterName = '', characterG
   if (cnt >= 10) throw new Error('Account already has the maximum of 10 characters');
 
   // Get GUID offsets
-  const offsets = await getGuidOffsets();
+  const offsets = await getGuidOffsets(charPool);
 
   // Determine new character GUID
   let newCharGuid = (characterGuid > 0) ? characterGuid : offsets.char;
@@ -496,7 +496,7 @@ router.post('/load', requireGMLevel(2), async (req, res) => {
   }
 
   try {
-    const result = await loadDump(dumpContent, {
+    const result = await loadDump(req.charPool, dumpContent, {
       accountId: parseInt(accountId, 10),
       characterName,
       characterGuid: parseInt(characterGuid, 10) || 0,
@@ -521,10 +521,10 @@ router.post('/:guid', requireGMLevel(2), async (req, res) => {
   const { filePath } = req.body || {};
 
   try {
-    const [[char]] = await charPool.query('SELECT name FROM `characters` WHERE guid = ?', [guid]);
+    const [[char]] = await req.charPool.query('SELECT name FROM `characters` WHERE guid = ?', [guid]);
     if (!char) return res.status(404).json({ error: 'Character not found' });
 
-    const dumpContent = await generateDump(guid);
+    const dumpContent = await generateDump(req.charPool, guid);
 
     if (filePath) {
       const resolved = path.resolve(filePath);
@@ -547,3 +547,5 @@ router.post('/:guid', requireGMLevel(2), async (req, res) => {
 });
 
 module.exports = router;
+module.exports.generateDump = generateDump;
+module.exports.loadDump = loadDump;

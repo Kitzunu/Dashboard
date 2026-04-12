@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
+import ServerSelector from './ServerSelector.jsx';
 
 const TYPES = ['text', 'items', 'money'];
 const TYPE_LABELS = { text: 'Mail', items: 'Items', money: 'Money' };
@@ -96,6 +97,7 @@ export default function MailPage() {
   const [money, setMoney]     = useState(0);
   const [items, setItems]     = useState([{ id: '', count: 1 }]);
   const [sending, setSending] = useState(false);
+  const [server, setServer]   = useState(null);
 
   const addItem = () => {
     if (items.length >= 12) return; // mailbox cap
@@ -125,16 +127,17 @@ export default function MailPage() {
     setSending(true);
     try {
       if (type === 'money') {
-        await api.sendMailMoney(player.trim(), subject.trim(), body.trim(), money);
+        await api.sendMailMoney(player.trim(), subject.trim(), body.trim(), money, server);
       } else if (type === 'items') {
         await api.sendMailItems(
           player.trim(),
           subject.trim(),
           body.trim(),
-          items.map((it) => ({ id: parseInt(it.id, 10), count: parseInt(it.count, 10) }))
+          items.map((it) => ({ id: parseInt(it.id, 10), count: parseInt(it.count, 10) })),
+          server
         );
       } else {
-        await api.sendMail(player.trim(), subject.trim(), body.trim());
+        await api.sendMail(player.trim(), subject.trim(), body.trim(), server);
       }
       toast(`Mail sent to ${player.trim()}`);
       // Reset form but keep player/subject for convenience
@@ -155,6 +158,7 @@ export default function MailPage() {
           <h2 className="page-title">Send In-Game Mail</h2>
           <p className="page-sub">Send mail, items, or money directly to a player's mailbox</p>
         </div>
+        <ServerSelector value={server} onChange={setServer} />
       </div>
 
       <div className="mail-compose">

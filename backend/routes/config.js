@@ -4,6 +4,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const { audit } = require('../audit');
 const dashboardSettings = require('../dashboardSettings');
+const wsConfig = require('../worldservers');
 const log = require('../logger')('config');
 
 const router = express.Router();
@@ -34,27 +35,47 @@ async function walkDir(dir, baseDir, map) {
 }
 
 // If CONFIG_PATH is set, all .conf files in that directory (and subdirectories)
-// are loaded. Otherwise falls back to deriving paths from exe locations.
+// are loaded. Otherwise falls back to deriving paths from exe locations and
+// worldservers.json realm directories.
 async function getConfigMap() {
   const map = {};
 
   const configDir = process.env.CONFIG_PATH;
   if (configDir) {
     await walkDir(configDir, configDir, map);
-    return map;
   }
 
   // No CONFIG_PATH — derive paths from exe locations
-  const worldConf = process.env.WORLDSERVER_PATH
-    ? path.join(path.dirname(process.env.WORLDSERVER_PATH), 'worldserver.conf')
-    : null;
+  if (!configDir) {
+    const worldConf = process.env.WORLDSERVER_PATH
+      ? path.join(path.dirname(process.env.WORLDSERVER_PATH), 'worldserver.conf')
+      : null;
 
-  const authConf = process.env.AUTHSERVER_PATH
-    ? path.join(path.dirname(process.env.AUTHSERVER_PATH), 'authserver.conf')
-    : null;
+    const authConf = process.env.AUTHSERVER_PATH
+      ? path.join(path.dirname(process.env.AUTHSERVER_PATH), 'authserver.conf')
+      : null;
 
-  if (worldConf) map['worldserver'] = worldConf;
-  if (authConf)  map['authserver']  = authConf;
+    if (worldConf) map['worldserver'] = worldConf;
+    if (authConf)  map['authserver']  = authConf;
+  }
+
+  // Also scan each realm's directory from worldservers.json
+  const realms = wsConfig.load();
+  const scannedDirs = new Set(configDir ? [path.resolve(configDir)] : []);
+  for (const realm of realms) {
+    if (!realm.dir) continue;
+    const realmDir = path.resolve(realm.dir);
+    if (scannedDirs.has(realmDir)) continue;
+    scannedDirs.add(realmDir);
+    // Prefix realm config names with realm name to avoid collisions
+    const prefix = realms.length > 1 ? `${realm.name}/` : '';
+    const realmMap = {};
+    await walkDir(realmDir, realmDir, realmMap);
+    for (const [name, filePath] of Object.entries(realmMap)) {
+      const key = `${prefix}${name}`;
+      if (!map[key]) map[key] = filePath;
+    }
+  }
 
   return map;
 }

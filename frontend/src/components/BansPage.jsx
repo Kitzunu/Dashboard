@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { formatUnixDate as fmt } from '../utils/format.js';
+import RealmSelector from './RealmSelector.jsx';
+import { useServerStatus } from '../context/ServerContext.jsx';
 
 // ── Ban modal ────────────────────────────────────────────────────────────────
 function BanModal({ onConfirm, onClose }) {
@@ -210,6 +212,7 @@ const TABS = ['accounts', 'characters', 'ips'];
 const TAB_LABELS = { accounts: 'Account', characters: 'Character', ips: 'IP' };
 
 export default function BansPage() {
+  const { selectedRealmId } = useServerStatus();
   const [data, setData] = useState({ accounts: [], characters: [], ips: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -219,7 +222,7 @@ export default function BansPage() {
 
   const loadBans = useCallback(async () => {
     try {
-      const d = await api.getBans();
+      const d = await api.getBans(selectedRealmId);
       setData(d);
       setError('');
     } catch (err) {
@@ -227,7 +230,7 @@ export default function BansPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedRealmId]);
 
   useEffect(() => { loadBans(); }, [loadBans]);
 
@@ -251,7 +254,7 @@ export default function BansPage() {
     setUnbanTarget(null);
     try {
       if (type === 'accounts')   await api.unbanAccount(row.id);
-      if (type === 'characters') await api.unbanCharacter(row.guid);
+      if (type === 'characters') await api.unbanCharacter(row.guid, selectedRealmId);
       if (type === 'ips')        await api.unbanIp(row.ip);
 
       const label = row.username || row.name || row.ip;
@@ -285,7 +288,8 @@ export default function BansPage() {
           <h2 className="page-title">Active Bans</h2>
           <p className="page-sub">Manage account, character, and IP bans</p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <RealmSelector />
           <button className="btn btn-danger" onClick={() => setShowBanModal(true)}>
             Issue Ban
           </button>

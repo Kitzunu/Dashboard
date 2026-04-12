@@ -8,7 +8,7 @@ const { audit } = require('../audit');
 const MAX_GM_LEVEL = 6;
 
 router.post('/ban', requireGMLevel(3), async (req, res) => {
-  const { targets, duration, reason } = req.body;
+  const { targets, duration, reason, server } = req.body;
   if (!Array.isArray(targets) || !targets.length) {
     return res.status(400).json({ error: 'targets array is required' });
   }
@@ -22,7 +22,7 @@ router.post('/ban', requireGMLevel(3), async (req, res) => {
         results.push({ target, success: false, error: 'Invalid type' });
         continue;
       }
-      await processManager.sendCommand(`.ban ${type} ${target} ${duration} ${reason}`);
+      await processManager.sendCommand(`.ban ${type} ${target} ${duration} ${reason}`, server || undefined);
       results.push({ target, success: true });
     } catch (err) {
       results.push({ target, success: false, error: err.message });
@@ -33,14 +33,14 @@ router.post('/ban', requireGMLevel(3), async (req, res) => {
 });
 
 router.post('/kick', requireGMLevel(3), async (req, res) => {
-  const { names, reason } = req.body;
+  const { names, reason, server } = req.body;
   if (!Array.isArray(names) || !names.length) {
     return res.status(400).json({ error: 'names array is required' });
   }
   const results = [];
   for (const name of names) {
     try {
-      await processManager.sendCommand(`.kick ${name} ${reason || ''}`);
+      await processManager.sendCommand(`.kick ${name} ${reason || ''}`, server || undefined);
       results.push({ target: name, success: true });
     } catch (err) {
       results.push({ target: name, success: false, error: err.message });
@@ -51,7 +51,7 @@ router.post('/kick', requireGMLevel(3), async (req, res) => {
 });
 
 router.post('/mail', requireGMLevel(3), async (req, res) => {
-  const { recipients, subject, body, type, items, money } = req.body;
+  const { recipients, subject, body, type, items, money, server } = req.body;
   if (!Array.isArray(recipients) || !recipients.length) {
     return res.status(400).json({ error: 'recipients array is required' });
   }
@@ -69,7 +69,7 @@ router.post('/mail', requireGMLevel(3), async (req, res) => {
       } else {
         cmd = `.send mail ${recipient} "${subject}" "${body || ''}"`;
       }
-      await processManager.sendCommand(cmd);
+      await processManager.sendCommand(cmd, server || undefined);
       results.push({ target: recipient, success: true });
     } catch (err) {
       results.push({ target: recipient, success: false, error: err.message });

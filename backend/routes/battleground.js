@@ -1,5 +1,4 @@
 const express  = require('express');
-const { charPool } = require('../db');
 const { requireGMLevel } = require('../middleware/auth');
 const { audit } = require('../audit');
 const dbc = require('../dbc');
@@ -46,8 +45,8 @@ router.get('/history', requireGMLevel(1), async (req, res) => {
 
     dataSql += ' ORDER BY date DESC LIMIT ? OFFSET ?';
 
-    const [[{ total }]] = await charPool.query(countSql, params);
-    const [rows]        = await charPool.query(dataSql, [...params, limit, offset]);
+    const [[{ total }]] = await req.charPool.query(countSql, params);
+    const [rows]        = await req.charPool.query(dataSql, [...params, limit, offset]);
 
     // Enrich rows with BG type names from DBC
     const enriched = rows.map((r) => ({ ...r, typeName: bgTypeName(r.type) }));
@@ -68,7 +67,7 @@ router.get('/history/:id', requireGMLevel(1), async (req, res) => {
   if (!bgId) return res.status(400).json({ error: 'Invalid battleground ID' });
 
   try {
-    const [[match]] = await charPool.query(`
+    const [[match]] = await req.charPool.query(`
       SELECT id, winner_faction, bracket_id, type, date
       FROM pvpstats_battlegrounds
       WHERE id = ?
@@ -79,7 +78,7 @@ router.get('/history/:id', requireGMLevel(1), async (req, res) => {
     // Enrich with BG type name from DBC
     match.typeName = bgTypeName(match.type);
 
-    const [players] = await charPool.query(`
+    const [players] = await req.charPool.query(`
       SELECT pp.character_guid AS guid,
              c.name, c.class, c.race, c.level,
              pp.winner,
@@ -112,11 +111,11 @@ router.get('/deserters', requireGMLevel(1), async (req, res) => {
   const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
 
   try {
-    const [[{ total }]] = await charPool.query(
+    const [[{ total }]] = await req.charPool.query(
       'SELECT COUNT(*) AS total FROM battleground_deserters'
     );
 
-    const [rows] = await charPool.query(`
+    const [rows] = await req.charPool.query(`
       SELECT bd.guid, bd.type, bd.datetime,
              c.name, c.class, c.race, c.level
       FROM battleground_deserters bd
@@ -141,7 +140,7 @@ router.delete('/deserters/:guid', requireGMLevel(2), async (req, res) => {
   if (!guid || guid <= 0) return res.status(400).json({ error: 'Invalid character GUID' });
 
   try {
-    const [result] = await charPool.query(
+    const [result] = await req.charPool.query(
       'DELETE FROM battleground_deserters WHERE guid = ?',
       [guid]
     );
@@ -167,7 +166,7 @@ router.get('/stats', requireGMLevel(1), async (req, res) => {
     // Total matches and win distribution by faction
     // Note: AzerothCore stores winner_faction as NULL for draws, so we must
     // check IS NULL explicitly (SQL NOT IN does not match NULL values).
-    const [[totals]] = await charPool.query(`
+    const [[totals]] = await req.charPool.query(`
       SELECT COUNT(*) AS totalMatches,
              SUM(CASE WHEN winner_faction = 0 THEN 1 ELSE 0 END) AS allianceWins,
              SUM(CASE WHEN winner_faction = 1 THEN 1 ELSE 0 END) AS hordeWins,
@@ -176,7 +175,7 @@ router.get('/stats', requireGMLevel(1), async (req, res) => {
     `);
 
     // Per-BG-type breakdown
-    const [byType] = await charPool.query(`
+    const [byType] = await req.charPool.query(`
       SELECT type,
              COUNT(*) AS matches,
              SUM(CASE WHEN winner_faction = 0 THEN 1 ELSE 0 END) AS allianceWins,

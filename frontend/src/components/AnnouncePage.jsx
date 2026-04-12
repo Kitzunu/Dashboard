@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
+import ServerSelector from './ServerSelector.jsx';
 
 const TYPES = ['announce', 'notify'];
 const MAX_LEN = 200;
@@ -23,6 +24,7 @@ export default function AnnouncePage() {
   const [type, setType]       = useState('announce');
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [server, setServer]   = useState(null);
   const [history, setHistory] = useState([]);
   const [histLoading, setHistLoading] = useState(true);
   const [histError, setHistError]     = useState('');
@@ -46,7 +48,7 @@ export default function AnnouncePage() {
     if (!trimmed) return;
     setSending(true);
     try {
-      await api.sendAnnouncement(type, trimmed);
+      await api.sendAnnouncement(type, trimmed, server);
       toast(`${type === 'announce' ? 'Announcement' : 'Notification'} sent`);
       setMessage('');
       await loadHistory();
@@ -72,6 +74,7 @@ export default function AnnouncePage() {
           <h2 className="page-title">Announcements</h2>
           <p className="page-sub">Broadcast messages to online players</p>
         </div>
+        <ServerSelector value={server} onChange={setServer} />
       </div>
 
       {/* ── Compose ── */}

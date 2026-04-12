@@ -11,6 +11,16 @@ router.get('/list', async (req, res) => {
   res.json(wsConfig.load().map((ws) => ({ id: ws.id, name: ws.name })));
 });
 
+// GET /api/servers/realms — return realm configs including database names (for backups UI)
+router.get('/realms', requireGMLevel(3), async (req, res) => {
+  res.json(wsConfig.load().map((ws) => ({
+    id: ws.id,
+    name: ws.name,
+    characterDb: ws.characterDb,
+    worldDb: ws.worldDb,
+  })));
+});
+
 router.get('/status', async (req, res) => {
   try {
     const status = await processManager.getAllStatus();

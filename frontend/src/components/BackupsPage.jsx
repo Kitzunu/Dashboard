@@ -50,19 +50,29 @@ function RestoreModal({ file, onConfirm, onClose, busy }) {
   );
 }
 
-function CreateBackupModal({ onConfirm, onClose, busy }) {
-  const defaultDbs = [
-    { name: 'acore_auth', checked: true },
-    { name: 'acore_characters', checked: true },
-    { name: 'acore_world', checked: true },
-  ];
-  const [dbs, setDbs] = useState(defaultDbs);
+function CreateBackupModal({ onConfirm, onClose, busy, realmDbs, realmConfigs }) {
+  const [dbs, setDbs] = useState(() => realmDbs.map((name) => ({ name, checked: true })));
 
   const toggle = (i) => {
     setDbs((prev) => prev.map((d, j) => j === i ? { ...d, checked: !d.checked } : d));
   };
 
   const selectedDbs = dbs.filter((d) => d.checked).map((d) => d.name);
+
+  // Build a map of db name → realm labels for display
+  const dbRealmMap = {};
+  if (realmConfigs?.length > 1) {
+    for (const r of realmConfigs) {
+      if (r.characterDb) {
+        if (!dbRealmMap[r.characterDb]) dbRealmMap[r.characterDb] = [];
+        dbRealmMap[r.characterDb].push(r.name);
+      }
+      if (r.worldDb) {
+        if (!dbRealmMap[r.worldDb]) dbRealmMap[r.worldDb] = [];
+        dbRealmMap[r.worldDb].push(r.name);
+      }
+    }
+  }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -75,6 +85,9 @@ function CreateBackupModal({ onConfirm, onClose, busy }) {
               <label key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
                 <input type="checkbox" checked={d.checked} onChange={() => toggle(i)} />
                 <span className="mono" style={{ fontSize: 13 }}>{d.name}</span>
+                {dbRealmMap[d.name] && (
+                  <span className="td-muted" style={{ fontSize: 11 }}>({dbRealmMap[d.name].join(', ')})</span>
+                )}
               </label>
             ))}
           </div>
@@ -99,6 +112,22 @@ export default function BackupsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [busy, setBusy] = useState(false);
   const [dbFilter, setDbFilter] = useState('');
+  const [realmDbs, setRealmDbs] = useState(['acore_auth', 'acore_characters', 'acore_world']);
+  const [realmConfigs, setRealmConfigs] = useState([]);
+
+  useEffect(() => {
+    api.getRealms()
+      .then((realms) => {
+        setRealmConfigs(realms);
+        const names = new Set(['acore_auth']);
+        for (const r of realms) {
+          names.add(r.characterDb);
+          names.add(r.worldDb);
+        }
+        setRealmDbs([...names]);
+      })
+      .catch(() => {});
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -255,7 +284,7 @@ export default function BackupsPage() {
         <RestoreModal file={restoreFile} onConfirm={handleRestore} onClose={() => setRestoreFile(null)} busy={busy} />
       )}
       {showCreate && (
-        <CreateBackupModal onConfirm={handleCreate} onClose={() => setShowCreate(false)} busy={busy} />
+        <CreateBackupModal onConfirm={handleCreate} onClose={() => setShowCreate(false)} busy={busy} realmDbs={realmDbs} realmConfigs={realmConfigs} />
       )}
     </div>
   );

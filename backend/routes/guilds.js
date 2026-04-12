@@ -1,5 +1,4 @@
 const express  = require('express');
-const { charPool, worldPool } = require('../db');
 const { requireGMLevel } = require('../middleware/auth');
 
 const router = express.Router();
@@ -7,7 +6,7 @@ const router = express.Router();
 // GET /api/guilds — list all guilds with leader name and member count
 router.get('/', requireGMLevel(1), async (req, res) => {
   try {
-    const [guilds] = await charPool.query(`
+    const [guilds] = await req.charPool.query(`
       SELECT g.guildid, g.name, g.leaderguid,
              c.name          AS leaderName,
              COUNT(gm.guid)  AS memberCount,
@@ -32,7 +31,7 @@ router.get('/:id', requireGMLevel(1), async (req, res) => {
   if (!guildId) return res.status(400).json({ error: 'Invalid guild ID' });
 
   try {
-    const [[guild]] = await charPool.query(`
+    const [[guild]] = await req.charPool.query(`
       SELECT g.guildid, g.name, g.leaderguid,
              c.name AS leaderName,
              g.BankMoney, g.createdate, g.motd, g.info,
@@ -45,7 +44,7 @@ router.get('/:id', requireGMLevel(1), async (req, res) => {
 
     if (!guild) return res.status(404).json({ error: 'Guild not found' });
 
-    const [members] = await charPool.query(`
+    const [members] = await req.charPool.query(`
       SELECT gm.guid, c.name, c.class, c.level, c.race,
              gm.rank, gr.rname AS rankName, gm.pnote, gm.offnote
       FROM guild_member gm
@@ -55,14 +54,14 @@ router.get('/:id', requireGMLevel(1), async (req, res) => {
       ORDER BY gm.rank ASC, c.name ASC
     `, [guildId]);
 
-    const [ranks] = await charPool.query(`
+    const [ranks] = await req.charPool.query(`
       SELECT rid, rname, rights, BankMoneyPerDay
       FROM guild_rank
       WHERE guildid = ?
       ORDER BY rid ASC
     `, [guildId]);
 
-    const [eventLog] = await charPool.query(`
+    const [eventLog] = await req.charPool.query(`
       SELECT gel.EventType, gel.PlayerGuid1, gel.PlayerGuid2, gel.NewRank, gel.TimeStamp,
              c1.name AS player1Name, c2.name AS player2Name
       FROM   guild_eventlog gel
@@ -85,7 +84,7 @@ router.get('/:id/bank', requireGMLevel(1), async (req, res) => {
   if (!guildId) return res.status(400).json({ error: 'Invalid guild ID' });
 
   try {
-    const [tabs] = await charPool.query(`
+    const [tabs] = await req.charPool.query(`
       SELECT TabId, TabName, TabIcon, TabText
       FROM guild_bank_tab
       WHERE guildid = ?
@@ -93,7 +92,7 @@ router.get('/:id/bank', requireGMLevel(1), async (req, res) => {
     `, [guildId]);
 
     // Bank event log (item deposits/withdrawals/moves per tab)
-    const [eventLog] = await charPool.query(`
+    const [eventLog] = await req.charPool.query(`
       SELECT gbel.TabId, gbel.EventType, gbel.PlayerGuid, gbel.ItemOrMoney,
              gbel.ItemStackCount, gbel.DestTabId, gbel.TimeStamp,
              c.name AS playerName
@@ -105,7 +104,7 @@ router.get('/:id/bank', requireGMLevel(1), async (req, res) => {
     `, [guildId]);
 
     // Money log (TabId = 255 in AzerothCore)
-    const [moneyLog] = await charPool.query(`
+    const [moneyLog] = await req.charPool.query(`
       SELECT gbel.EventType, gbel.PlayerGuid, gbel.ItemOrMoney, gbel.TimeStamp,
              c.name AS playerName
       FROM guild_bank_eventlog gbel
@@ -115,7 +114,7 @@ router.get('/:id/bank', requireGMLevel(1), async (req, res) => {
       LIMIT 200
     `, [guildId]);
 
-    const [items] = await charPool.query(`
+    const [items] = await req.charPool.query(`
       SELECT gbi.TabId, gbi.SlotId, ii.itemEntry, ii.count,
              ii.enchantments, ii.randomPropertyId
       FROM guild_bank_item gbi
@@ -132,7 +131,7 @@ router.get('/:id/bank', requireGMLevel(1), async (req, res) => {
     ])];
     let itemTemplates = [];
     if (allEntryIds.length > 0) {
-      [itemTemplates] = await worldPool.query(
+      [itemTemplates] = await req.worldPool.query(
         `SELECT entry, name, Quality, stackable FROM item_template WHERE entry IN (?)`,
         [allEntryIds]
       );

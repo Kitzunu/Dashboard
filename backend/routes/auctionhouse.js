@@ -1,6 +1,5 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
-const { charPool, worldPool } = require('../db');
 const { audit } = require('../audit');
 const dbc = require('../dbc');
 
@@ -96,7 +95,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     // Count total
-    const [[{ total }]] = await charPool.query(
+    const [[{ total }]] = await req.charPool.query(
       `SELECT COUNT(*) AS total
        FROM auctionhouse a
        LEFT JOIN characters seller ON seller.guid = a.itemowner
@@ -105,7 +104,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
     );
 
     // Fetch page — join item_instance to get itemEntry and count
-    const [rows] = await charPool.query(
+    const [rows] = await req.charPool.query(
       `SELECT
          a.id, a.houseid, a.itemguid,
          ii.itemEntry, ii.count AS itemCount,
@@ -130,7 +129,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
     const itemEntries = [...new Set(rows.map((r) => r.itemEntry).filter(Boolean))];
     let itemMap = {};
     if (itemEntries.length > 0) {
-      const [items] = await worldPool.query(
+      const [items] = await req.worldPool.query(
         'SELECT entry, name, Quality FROM item_template WHERE entry IN (?)',
         [itemEntries]
       );
@@ -187,7 +186,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
 
 router.get('/stats', requireGMLevel(1), async (req, res) => {
   try {
-    const [[stats]] = await charPool.query(`
+    const [[stats]] = await req.charPool.query(`
       SELECT
         COUNT(*)                                AS totalListings,
         COALESCE(SUM(buyoutprice), 0)           AS totalBuyoutValue,
@@ -197,7 +196,7 @@ router.get('/stats', requireGMLevel(1), async (req, res) => {
       FROM auctionhouse
     `);
 
-    const [houseRows] = await charPool.query(`
+    const [houseRows] = await req.charPool.query(`
       SELECT houseid, COUNT(*) AS count
       FROM auctionhouse
       GROUP BY houseid
@@ -230,7 +229,7 @@ router.delete('/:id', requireGMLevel(2), async (req, res) => {
 
   try {
     // Fetch auction details for audit log before deletion
-    const [[auction]] = await charPool.query(
+    const [[auction]] = await req.charPool.query(
       `SELECT a.id, ii.itemEntry, a.itemowner
        FROM auctionhouse a
        LEFT JOIN item_instance ii ON ii.guid = a.itemguid
@@ -239,7 +238,7 @@ router.delete('/:id', requireGMLevel(2), async (req, res) => {
     );
     if (!auction) return res.status(404).json({ error: 'Auction not found' });
 
-    await charPool.query('DELETE FROM auctionhouse WHERE id = ?', [id]);
+    await req.charPool.query('DELETE FROM auctionhouse WHERE id = ?', [id]);
 
     audit(req, 'auctionhouse.remove', `auctionId=${id} itemEntry=${auction.itemEntry} seller=${auction.itemowner}`);
     res.json({ success: true });

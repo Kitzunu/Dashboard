@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../App.jsx';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
+import { useServerStatus } from '../context/ServerContext.jsx';
+import RealmSelector from './RealmSelector.jsx';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const LAG_TYPE_OPTIONS = [
@@ -164,6 +166,7 @@ function ClearAllModal({ count, onConfirm, onClose, busy }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function LagReportsPage() {
   const { auth } = useAuth();
+  const { selectedRealmId } = useServerStatus();
   const canDelete = auth.gmlevel >= 2;
   const canClear  = auth.gmlevel >= 3;
 
@@ -184,7 +187,7 @@ export default function LagReportsPage() {
   const fetchReports = useCallback(async (p, lf, ml) => {
     setLoading(true);
     try {
-      const data = await api.getLagReports(p, lf, ml);
+      const data = await api.getLagReports(p, lf, ml, selectedRealmId);
       setReports(data.reports);
       setTotalPages(data.pages);
       setTotalCount(data.total);
@@ -193,22 +196,22 @@ export default function LagReportsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedRealmId]);
 
   const fetchStats = useCallback(async () => {
     setStatsLoading(true);
     try {
-      const s = await api.getLagStats();
+      const s = await api.getLagStats(selectedRealmId);
       setStats(s);
     } catch {
       // stats are optional — don't toast
     } finally {
       setStatsLoading(false);
     }
-  }, []);
+  }, [selectedRealmId]);
 
-  useEffect(() => { fetchReports(page, lagFilter, minLatency); }, [page, lagFilter, minLatency, fetchReports]);
-  useEffect(() => { fetchStats(); }, [fetchStats]);
+  useEffect(() => { fetchReports(page, lagFilter, minLatency); }, [page, lagFilter, minLatency, selectedRealmId, fetchReports]);
+  useEffect(() => { fetchStats(); }, [selectedRealmId, fetchStats]);
 
   const handleLagFilterChange = (val) => { setLagFilter(val); setPage(1); };
   const handleMinLatChange    = (val) => { setMinLatency(val); setPage(1); };
@@ -217,7 +220,7 @@ export default function LagReportsPage() {
     e.stopPropagation();
     setDeletingId(id);
     try {
-      await api.deleteLagReport(id);
+      await api.deleteLagReport(id, selectedRealmId);
       setReports((prev) => prev.filter((r) => r.id !== id));
       setTotalCount((c) => c - 1);
       if (stats) setStats((s) => ({ ...s, total: s.total - 1 }));
@@ -231,7 +234,7 @@ export default function LagReportsPage() {
   const handleClearAll = async () => {
     setClearing(true);
     try {
-      const result = await api.clearLagReports();
+      const result = await api.clearLagReports(selectedRealmId);
       toast(`Cleared ${result.deleted} lag report${result.deleted !== 1 ? 's' : ''}`);
       setReports([]);
       setTotalCount(0);
@@ -257,6 +260,7 @@ export default function LagReportsPage() {
       <div className="page-header">
         <h2 className="page-title">Lag Reports</h2>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <RealmSelector />
           <button className="btn btn-ghost btn-xs" onClick={() => setShowTopLists((v) => !v)}>
             {showTopLists ? '▲ Hide Stats' : '▼ Show Stats'}
           </button>

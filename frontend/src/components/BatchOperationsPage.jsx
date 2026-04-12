@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
+import ServerSelector from './ServerSelector.jsx';
 
 const OPERATIONS = [
   { id: 'kick', label: 'Batch Kick', minFields: ['names', 'reason'] },
@@ -138,6 +139,7 @@ export default function BatchOperationsPage() {
   const [operation, setOperation] = useState('kick');
   const [busy, setBusy] = useState(false);
   const [results, setResults] = useState(null);
+  const [server, setServer] = useState(null);
 
   // Kick state
   const [kickNames, setKickNames] = useState('');
@@ -175,17 +177,17 @@ export default function BatchOperationsPage() {
       if (operation === 'kick') {
         const names = parseList(kickNames);
         if (!names.length) { toast('Enter at least one player name', 'error'); return; }
-        res = await api.batchKick(names, kickReason);
+        res = await api.batchKick(names, kickReason, server);
       } else if (operation === 'ban') {
         const targets = parseList(banTargets).map((t) => ({ type: banType, target: t }));
         if (!targets.length) { toast('Enter at least one target', 'error'); return; }
         if (!banReason) { toast('Reason is required', 'error'); return; }
-        res = await api.batchBan(targets, banDuration, banReason);
+        res = await api.batchBan(targets, banDuration, banReason, server);
       } else if (operation === 'mail') {
         const recipients = parseList(mailRecipients);
         if (!recipients.length) { toast('Enter at least one recipient', 'error'); return; }
         if (!mailSubject) { toast('Subject is required', 'error'); return; }
-        res = await api.batchMail({ recipients, subject: mailSubject, body: mailBody, type: 'text' });
+        res = await api.batchMail({ recipients, subject: mailSubject, body: mailBody, type: 'text', server });
       } else if (operation === 'gmlevel') {
         const accountIds = parseList(gmAccountIds).map((s) => parseInt(s, 10)).filter((n) => n > 0);
         if (!accountIds.length) { toast('Enter at least one account ID', 'error'); return; }
@@ -210,6 +212,7 @@ export default function BatchOperationsPage() {
           <h2 className="page-title">Batch Operations</h2>
           <p className="page-sub">Perform bulk actions on multiple players or accounts</p>
         </div>
+        <ServerSelector value={server} onChange={setServer} />
       </div>
 
       <div className="batch-operations-card">

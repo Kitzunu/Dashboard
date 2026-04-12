@@ -3,6 +3,8 @@ import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { FALLBACK_CLASSES, FALLBACK_RACES, FALLBACK_BATTLEGROUNDS } from '../constants.js';
 import { useAuth } from '../App.jsx';
+import { useServerStatus } from '../context/ServerContext.jsx';
+import RealmSelector from './RealmSelector.jsx';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -41,17 +43,17 @@ function formatNumber(n) {
 
 // ── Match detail modal ────────────────────────────────────────────────────────
 
-function MatchDetailModal({ matchId, onClose, onViewCharacter }) {
+function MatchDetailModal({ matchId, onClose, onViewCharacter, realmId }) {
   const [match, setMatch]     = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    api.getBattlegroundMatch(matchId)
+    api.getBattlegroundMatch({ matchId, realmId })
       .then(setMatch)
       .catch((err) => toast(err.message, 'error'))
       .finally(() => setLoading(false));
-  }, [matchId]);
+  }, [matchId, realmId]);
 
   if (loading) {
     return (
@@ -180,7 +182,7 @@ function FactionTable({ label, players, badgeClass, onViewCharacter }) {
 
 // ── History tab ───────────────────────────────────────────────────────────────
 
-function HistoryTab({ onViewCharacter }) {
+function HistoryTab({ onViewCharacter, realmId }) {
   const [data, setData]         = useState({ total: 0, rows: [] });
   const [loading, setLoading]   = useState(true);
   const [notice, setNotice]     = useState('');
@@ -204,7 +206,7 @@ function HistoryTab({ onViewCharacter }) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const opts = { limit: pageSize, offset };
+      const opts = { limit: pageSize, offset, realmId };
       if (typeFilter !== '') opts.type = parseInt(typeFilter, 10);
       const result = await api.getBattlegroundHistory(opts);
       setData({ total: result.total, rows: result.rows || [] });
@@ -214,7 +216,7 @@ function HistoryTab({ onViewCharacter }) {
     } finally {
       setLoading(false);
     }
-  }, [offset, typeFilter]);
+  }, [offset, typeFilter, realmId]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -312,6 +314,7 @@ function HistoryTab({ onViewCharacter }) {
           matchId={selectedMatch}
           onClose={() => setSelectedMatch(null)}
           onViewCharacter={onViewCharacter}
+          realmId={realmId}
         />
       )}
     </>
@@ -320,7 +323,7 @@ function HistoryTab({ onViewCharacter }) {
 
 // ── Deserters tab ─────────────────────────────────────────────────────────────
 
-function DesertersTab({ auth, onViewCharacter }) {
+function DesertersTab({ auth, onViewCharacter, realmId }) {
   const [data, setData]       = useState({ total: 0, rows: [] });
   const [loading, setLoading] = useState(true);
   const [notice, setNotice]   = useState('');
@@ -330,7 +333,7 @@ function DesertersTab({ auth, onViewCharacter }) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await api.getBattlegroundDeserters({ limit: pageSize, offset });
+      const result = await api.getBattlegroundDeserters({ limit: pageSize, offset, realmId });
       setData({ total: result.total, rows: result.rows || [] });
       if (result.notice) setNotice(result.notice);
     } catch (err) {
@@ -338,14 +341,14 @@ function DesertersTab({ auth, onViewCharacter }) {
     } finally {
       setLoading(false);
     }
-  }, [offset]);
+  }, [offset, realmId]);
 
   useEffect(() => { load(); }, [load]);
 
   const handleRemove = async (guid, name) => {
     if (!confirm(`Remove all deserter entries for ${name || `GUID ${guid}`}?`)) return;
     try {
-      await api.removeBattlegroundDeserter(guid);
+      await api.removeBattlegroundDeserter(guid, realmId);
       toast(`Deserter entries removed for ${name || `GUID ${guid}`}`, 'success');
       await load();
     } catch (err) {
@@ -439,21 +442,21 @@ function DesertersTab({ auth, onViewCharacter }) {
 
 // ── Stats tab ─────────────────────────────────────────────────────────────────
 
-function StatsTab() {
+function StatsTab({ realmId }) {
   const [stats, setStats]     = useState(null);
   const [loading, setLoading] = useState(true);
   const [notice, setNotice]   = useState('');
 
   useEffect(() => {
     setLoading(true);
-    api.getBattlegroundStats()
+    api.getBattlegroundStats({ realmId })
       .then((data) => {
         setStats(data);
         if (data.notice) setNotice(data.notice);
       })
       .catch((err) => toast(err.message, 'error'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [realmId]);
 
   if (loading) return <div className="empty-state">Loading…</div>;
   if (notice) return <div className="empty-state">{notice}</div>;
@@ -549,12 +552,14 @@ const TABS = ['History', 'Deserters', 'Stats'];
 
 export default function BattlegroundPage({ onViewCharacter }) {
   const { auth } = useAuth();
+  const { selectedRealmId } = useServerStatus();
   const [activeTab, setActiveTab] = useState('History');
 
   return (
     <div className="page">
       <div className="page-header">
         <h1 className="page-title">Battlegrounds</h1>
+        <RealmSelector />
       </div>
 
       <div className="ban-tabs">
@@ -569,9 +574,9 @@ export default function BattlegroundPage({ onViewCharacter }) {
         ))}
       </div>
 
-      {activeTab === 'History'   && <HistoryTab onViewCharacter={onViewCharacter} />}
-      {activeTab === 'Deserters' && <DesertersTab auth={auth} onViewCharacter={onViewCharacter} />}
-      {activeTab === 'Stats'     && <StatsTab />}
+      {activeTab === 'History'   && <HistoryTab onViewCharacter={onViewCharacter} realmId={selectedRealmId} />}
+      {activeTab === 'Deserters' && <DesertersTab auth={auth} onViewCharacter={onViewCharacter} realmId={selectedRealmId} />}
+      {activeTab === 'Stats'     && <StatsTab realmId={selectedRealmId} />}
     </div>
   );
 }

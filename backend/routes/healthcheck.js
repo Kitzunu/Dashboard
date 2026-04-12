@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const os = require('os');
 const { requireGMLevel } = require('../middleware/auth');
-const { dashPool, charPool, authPool, worldPool } = require('../db');
+const { dashPool, authPool, getAllRealmIds, getRealmPools } = require('../db');
+const wsConfig = require('../worldservers');
 const processManager = require('../processManager');
 const serverBridge = require('../serverBridge');
 
@@ -31,15 +32,15 @@ router.get('/', requireGMLevel(3), async (req, res) => {
   try {
     const [auth, char, world, dash] = await Promise.all([
       testPool('auth', authPool),
-      testPool('characters', charPool),
-      testPool('world', worldPool),
+      testPool('characters', req.charPool),
+      testPool('world', req.worldPool),
       testPool('dashboard', dashPool),
     ]);
 
     const connections = [
       getPoolConnections('auth', authPool),
-      getPoolConnections('characters', charPool),
-      getPoolConnections('world', worldPool),
+      getPoolConnections('characters', req.charPool),
+      getPoolConnections('world', req.worldPool),
       getPoolConnections('dashboard', dashPool),
     ];
 
@@ -62,6 +63,70 @@ router.get('/', requireGMLevel(3), async (req, res) => {
     res.json({
       database: [auth, char, world, dash],
       connections,
+      system,
+      agent,
+      serverBridge: { connected: serverBridge.isConnected() },
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/healthcheck/all — health for all realm pools
+router.get('/all', requireGMLevel(3), async (req, res) => {
+  try {
+    const realmIds = getAllRealmIds();
+    const realms = [];
+
+    // Shared pools
+    const [authResult, dashResult] = await Promise.all([
+      testPool('auth', authPool),
+      testPool('dashboard', dashPool),
+    ]);
+    const sharedPools = [authResult, dashResult];
+    const sharedConnections = [
+      getPoolConnections('auth', authPool),
+      getPoolConnections('dashboard', dashPool),
+    ];
+
+    for (const id of realmIds) {
+      const ws = wsConfig.getById(id);
+      const pools = getRealmPools(id);
+      const [charResult, worldResult] = await Promise.all([
+        testPool(`characters (${ws?.characterDb || id})`, pools.charPool),
+        testPool(`world (${ws?.worldDb || id})`, pools.worldPool),
+      ]);
+      realms.push({
+        id,
+        name: ws?.name || id,
+        database: [charResult, worldResult],
+        connections: [
+          getPoolConnections(`characters (${ws?.characterDb || id})`, pools.charPool),
+          getPoolConnections(`world (${ws?.worldDb || id})`, pools.worldPool),
+        ],
+      });
+    }
+
+    const system = {
+      nodeVersion: process.version,
+      uptime: process.uptime(),
+      memoryUsage: process.memoryUsage(),
+      pid: process.pid,
+      platform: os.platform(),
+      cpuCount: os.cpus().length,
+    };
+
+    let agent = {};
+    try {
+      agent = await processManager.getAllStatus();
+    } catch {
+      agent = { error: 'Agent unreachable' };
+    }
+
+    res.json({
+      sharedPools,
+      sharedConnections,
+      realms,
       system,
       agent,
       serverBridge: { connected: serverBridge.isConnected() },

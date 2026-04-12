@@ -61,6 +61,7 @@ const playerHistory      = require('./playerHistory');
 const resourceHistory    = require('./resourceHistory');
 const latencyMonitor     = require('./latencyMonitor');
 const { authenticateToken } = require('./middleware/auth');
+const realmDb = require('./middleware/realmDb');
 const ipAllowlist = require('./middleware/ipAllowlist');
 const processManager = require('./processManager');
 const serverBridge   = require('./serverBridge');
@@ -116,6 +117,9 @@ app.use('/img', require('express').static(require('path').join(__dirname, 'publi
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, bridge: serverBridge.isConnected() });
 });
+
+// Realm DB middleware — attaches req.charPool / req.worldPool based on ?realmId
+app.use('/api', realmDb);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/servers', authenticateToken, serverRoutes);
@@ -238,18 +242,41 @@ dbc.init();
 scheduler.init();
 
 // Poll player count every 30 s and store in rolling history
-const { charPool, authPool, worldPool } = require('./db');
+const { authPool, getRealmPools, getAllRealmIds, getDefaultRealmId } = require('./db');
 const os = require('os');
 const thresholds = require('./thresholds');
+
+// Cached per-realm player counts (updated by emitOverview, used by analytics recording)
+let _lastPlayersByRealm = {};
 
 async function emitOverview() {
   // Each query is wrapped individually so a single DB failure doesn't abort the whole push
   let playerCount = 0, ticketCount = 0, banCount = 0, motd = '', version = null, agentStatus = {};
-  try { const [[r]] = await charPool.query('SELECT COUNT(*) AS count FROM characters WHERE online = 1'); playerCount = Number(r.count); } catch {}
-  try { const [[r]] = await charPool.query('SELECT COUNT(*) AS count FROM gm_ticket WHERE type = 0');   ticketCount = Number(r.count); } catch {}
+  const playersByRealm = {};
+
+  // Aggregate player + ticket counts across all realms
+  for (const id of getAllRealmIds()) {
+    try {
+      const { charPool } = getRealmPools(id);
+      const [[r]] = await charPool.query('SELECT COUNT(*) AS count FROM characters WHERE online = 1');
+      const count = Number(r.count);
+      playerCount += count;
+      playersByRealm[id] = count;
+    } catch {
+      playersByRealm[id] = 0;
+    }
+    try {
+      const { charPool } = getRealmPools(id);
+      const [[r]] = await charPool.query('SELECT COUNT(*) AS count FROM gm_ticket WHERE type = 0');
+      ticketCount += Number(r.count);
+    } catch {}
+  }
+
+  _lastPlayersByRealm = playersByRealm;
+
   try { const [[r]] = await authPool.query('SELECT COUNT(*) AS count FROM account_banned WHERE active = 1'); banCount = Number(r.count); } catch {}
   try { const [[r]] = await authPool.query('SELECT text FROM motd LIMIT 1'); motd = r?.text ?? ''; } catch {}
-  try { const [[r]] = await worldPool.query('SELECT core_version, core_revision, db_version, cache_id FROM version'); version = r ?? null; } catch {}
+  try { const { worldPool } = getRealmPools(getDefaultRealmId()); const [[r]] = await worldPool.query('SELECT core_version, core_revision, db_version, cache_id FROM version'); version = r ?? null; } catch {}
   try { agentStatus = await processManager.getAllStatus(); } catch {}
 
   const totalMem = os.totalmem();
@@ -270,7 +297,7 @@ async function emitOverview() {
     servers,
     worldservers: wsConfig.load().map((ws) => ({ id: ws.id, name: ws.name })),
     dashboard: { backendUptime: process.uptime(), agentConnected: serverBridge.isConnected(), agentUptime: agentStatus.uptime ?? null },
-    players:   { current: playerCount },
+    players:   { current: playerCount, byRealm: playersByRealm },
     tickets:   { open:    ticketCount },
     bans:      { active:  banCount },
     system:    { totalMem, freeMem, memPct, cpuUsage: latest?.cpu ?? 0, cpuCount: os.cpus().length, platform: os.platform() },
@@ -285,8 +312,15 @@ async function emitOverview() {
 
 async function pollPlayerCount() {
   try {
-    const [rows] = await charPool.query('SELECT COUNT(*) AS count FROM characters WHERE online = 1');
-    playerHistory.record(Number(rows[0].count));
+    let total = 0;
+    for (const id of getAllRealmIds()) {
+      try {
+        const { charPool } = getRealmPools(id);
+        const [[r]] = await charPool.query('SELECT COUNT(*) AS count FROM characters WHERE online = 1');
+        total += Number(r.count);
+      } catch {}
+    }
+    playerHistory.record(total);
   } catch {}
 }
 pollPlayerCount();
@@ -315,7 +349,7 @@ function pollResources() {
     if (!pollResources._lastAnalytics || Date.now() - pollResources._lastAnalytics >= ANALYTICS_INTERVAL_MS) {
       pollResources._lastAnalytics = Date.now();
       const latestPlayer = playerHistory.getHistory().slice(-1)[0];
-      analyticsRoutes.recordSnapshot(latestPlayer ? latestPlayer.count : 0, cpu, memory);
+      analyticsRoutes.recordSnapshot(latestPlayer ? latestPlayer.count : 0, cpu, memory, _lastPlayersByRealm);
     }
     // Threshold breach Discord alerts + DB logging
     const t = await thresholds.load();

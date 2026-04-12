@@ -1,6 +1,5 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
-const { charPool } = require('../db');
 const processManager = require('../processManager');
 const log = require('../logger')('tickets');
 
@@ -21,7 +20,7 @@ const TICKET_SELECT = `
 // GET /api/tickets/count — open ticket count for sidebar badge
 router.get('/count', requireGMLevel(1), async (req, res) => {
   try {
-    const [rows] = await charPool.query(
+    const [rows] = await req.charPool.query(
       `SELECT COUNT(*) AS count FROM gm_ticket WHERE type = 0`
     );
     res.json({ count: Number(rows[0].count) });
@@ -33,7 +32,7 @@ router.get('/count', requireGMLevel(1), async (req, res) => {
 // GET /api/tickets — open tickets only
 router.get('/', requireGMLevel(1), async (req, res) => {
   try {
-    const [rows] = await charPool.query(
+    const [rows] = await req.charPool.query(
       `${TICKET_SELECT} ${OPEN_WHERE} ORDER BY t.createTime DESC LIMIT 200`
     );
     res.json(rows);
@@ -46,7 +45,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
 // GET /api/tickets/all — all tickets including closed
 router.get('/all', requireGMLevel(2), async (req, res) => {
   try {
-    const [rows] = await charPool.query(
+    const [rows] = await req.charPool.query(
       `${TICKET_SELECT} ORDER BY t.createTime DESC LIMIT 200`
     );
     res.json(rows);
@@ -105,7 +104,7 @@ router.post('/:id/deescalate', requireGMLevel(1), async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (!id) return res.status(400).json({ error: 'Invalid ticket ID' });
   try {
-    await charPool.query('UPDATE gm_ticket SET escalated = 0 WHERE id = ?', [id]);
+    await req.charPool.query('UPDATE gm_ticket SET escalated = 0 WHERE id = ?', [id]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -4,6 +4,7 @@ import { toast } from '../toast.js';
 import { FALLBACK_RACES, FALLBACK_CLASSES } from '../constants.js';
 import { useAuth } from '../App.jsx';
 import { useServerStatus } from '../context/ServerContext.jsx';
+import RealmSelector from './RealmSelector.jsx';
 
 function KickModal({ name, onConfirm, onClose }) {
   const [reason, setReason] = useState('');
@@ -112,7 +113,7 @@ function BanModal({ player, onConfirm, onClose }) {
 
 export default function PlayersPage({ onViewCharacter }) {
   const { auth } = useAuth();
-  const { serverStatus } = useServerStatus();
+  const { serverStatus, selectedRealmId } = useServerStatus();
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -136,7 +137,7 @@ export default function PlayersPage({ onViewCharacter }) {
 
   const loadPlayers = useCallback(async () => {
     try {
-      const data = await api.getPlayers();
+      const data = await api.getPlayers(selectedRealmId);
       setPlayers(data);
       setError('');
     } catch (err) {
@@ -144,7 +145,7 @@ export default function PlayersPage({ onViewCharacter }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedRealmId]);
 
   useEffect(() => {
     if (!worldOnline) {
@@ -195,9 +196,12 @@ export default function PlayersPage({ onViewCharacter }) {
           <h2 className="page-title">Online Players</h2>
           <p className="page-sub">Auto-refreshes every 30 seconds</p>
         </div>
-        <button className="btn btn-secondary" onClick={loadPlayers} disabled={!worldOnline}>
-          Refresh
-        </button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <RealmSelector />
+          <button className="btn btn-secondary" onClick={loadPlayers} disabled={!worldOnline}>
+            Refresh
+          </button>
+        </div>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}

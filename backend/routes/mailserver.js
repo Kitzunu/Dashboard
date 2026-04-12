@@ -1,6 +1,5 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
-const { charPool } = require('../db');
 const { audit } = require('../audit');
 
 const router = express.Router();
@@ -13,7 +12,7 @@ const FACTIONS        = ['Alliance', 'Horde'];
 // GET /api/mailserver  — list all templates with aggregate counts
 router.get('/', requireGMLevel(2), async (req, res) => {
   try {
-    const [rows] = await charPool.query(
+    const [rows] = await req.charPool.query(
       `SELECT t.id, t.subject, t.moneyA, t.moneyH, t.active,
               COUNT(DISTINCT i.id)   AS itemCount,
               COUNT(DISTINCT c.id)   AS conditionCount,
@@ -41,15 +40,15 @@ router.get('/', requireGMLevel(2), async (req, res) => {
 router.get('/:id', requireGMLevel(2), async (req, res) => {
   const id = parseInt(req.params.id, 10);
   try {
-    const [[template]] = await charPool.query(
+    const [[template]] = await req.charPool.query(
       'SELECT * FROM mail_server_template WHERE id = ?', [id]
     );
     if (!template) return res.status(404).json({ error: 'Template not found' });
 
-    const [items]      = await charPool.query(
+    const [items]      = await req.charPool.query(
       'SELECT * FROM mail_server_template_items WHERE templateID = ? ORDER BY id', [id]
     );
-    const [conditions] = await charPool.query(
+    const [conditions] = await req.charPool.query(
       'SELECT * FROM mail_server_template_conditions WHERE templateID = ? ORDER BY id', [id]
     );
 
@@ -66,7 +65,7 @@ router.post('/', requireGMLevel(3), async (req, res) => {
   if (!body    || !body.trim())    return res.status(400).json({ error: 'Body is required' });
 
   try {
-    const [result] = await charPool.query(
+    const [result] = await req.charPool.query(
       'INSERT INTO mail_server_template (subject, body, moneyA, moneyH, active) VALUES (?, ?, ?, ?, ?)',
       [subject.trim(), body.trim(), Math.max(0, parseInt(moneyA) || 0), Math.max(0, parseInt(moneyH) || 0), active ? 1 : 0]
     );
@@ -85,7 +84,7 @@ router.put('/:id', requireGMLevel(3), async (req, res) => {
   if (!body    || !body.trim())    return res.status(400).json({ error: 'Body is required' });
 
   try {
-    await charPool.query(
+    await req.charPool.query(
       'UPDATE mail_server_template SET subject=?, body=?, moneyA=?, moneyH=?, active=? WHERE id=?',
       [subject.trim(), body.trim(), Math.max(0, parseInt(moneyA) || 0), Math.max(0, parseInt(moneyH) || 0), active ? 1 : 0, id]
     );
@@ -100,7 +99,7 @@ router.put('/:id', requireGMLevel(3), async (req, res) => {
 router.delete('/:id', requireGMLevel(3), async (req, res) => {
   const id = parseInt(req.params.id, 10);
   try {
-    await charPool.query('DELETE FROM mail_server_template WHERE id = ?', [id]);
+    await req.charPool.query('DELETE FROM mail_server_template WHERE id = ?', [id]);
     audit(req, 'mailserver.template_delete', `id=${id}`);
     res.json({ success: true });
   } catch (err) {
@@ -121,10 +120,10 @@ router.post('/:id/items', requireGMLevel(3), async (req, res) => {
 
   try {
     // Confirm template exists
-    const [[tpl]] = await charPool.query('SELECT id FROM mail_server_template WHERE id = ?', [templateID]);
+    const [[tpl]] = await req.charPool.query('SELECT id FROM mail_server_template WHERE id = ?', [templateID]);
     if (!tpl) return res.status(404).json({ error: 'Template not found' });
 
-    const [result] = await charPool.query(
+    const [result] = await req.charPool.query(
       'INSERT INTO mail_server_template_items (templateID, faction, item, itemCount) VALUES (?, ?, ?, ?)',
       [templateID, faction, parseInt(item), Math.max(1, parseInt(itemCount) || 1)]
     );
@@ -138,7 +137,7 @@ router.post('/:id/items', requireGMLevel(3), async (req, res) => {
 router.delete('/:id/items/:itemId', requireGMLevel(3), async (req, res) => {
   const itemId = parseInt(req.params.itemId, 10);
   try {
-    await charPool.query('DELETE FROM mail_server_template_items WHERE id = ?', [itemId]);
+    await req.charPool.query('DELETE FROM mail_server_template_items WHERE id = ?', [itemId]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -155,10 +154,10 @@ router.post('/:id/conditions', requireGMLevel(3), async (req, res) => {
   if (!CONDITION_TYPES.includes(conditionType)) return res.status(400).json({ error: 'Invalid condition type' });
 
   try {
-    const [[tpl]] = await charPool.query('SELECT id FROM mail_server_template WHERE id = ?', [templateID]);
+    const [[tpl]] = await req.charPool.query('SELECT id FROM mail_server_template WHERE id = ?', [templateID]);
     if (!tpl) return res.status(404).json({ error: 'Template not found' });
 
-    const [result] = await charPool.query(
+    const [result] = await req.charPool.query(
       'INSERT INTO mail_server_template_conditions (templateID, conditionType, conditionValue, conditionState) VALUES (?, ?, ?, ?)',
       [templateID, conditionType, Math.max(0, parseInt(conditionValue) || 0), Math.max(0, parseInt(conditionState) || 0)]
     );
@@ -172,7 +171,7 @@ router.post('/:id/conditions', requireGMLevel(3), async (req, res) => {
 router.delete('/:id/conditions/:condId', requireGMLevel(3), async (req, res) => {
   const condId = parseInt(req.params.condId, 10);
   try {
-    await charPool.query('DELETE FROM mail_server_template_conditions WHERE id = ?', [condId]);
+    await req.charPool.query('DELETE FROM mail_server_template_conditions WHERE id = ?', [condId]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -185,7 +184,7 @@ router.delete('/:id/conditions/:condId', requireGMLevel(3), async (req, res) => 
 router.get('/:id/recipients', requireGMLevel(2), async (req, res) => {
   const id = parseInt(req.params.id, 10);
   try {
-    const [rows] = await charPool.query(
+    const [rows] = await req.charPool.query(
       `SELECT r.guid, c.name AS charName, c.race, c.class, c.level
        FROM mail_server_character r
        LEFT JOIN characters c ON c.guid = r.guid

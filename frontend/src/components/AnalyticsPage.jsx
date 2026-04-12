@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
+import RealmSelector from './RealmSelector.jsx';
+import { useServerStatus } from '../context/ServerContext.jsx';
 
 const METRIC_TYPES = [
   { value: 'player_count', label: 'Player Count' },
@@ -124,12 +126,16 @@ function SimpleChart({ data, label, color }) {
 }
 
 export default function AnalyticsPage() {
+  const { selectedRealmId, worldservers } = useServerStatus();
+  const multiRealm = worldservers.length > 1;
   const [metricType, setMetricType] = useState('player_count');
   const [resolution, setResolution] = useState('hourly');
   const [dateRange, setDateRange] = useState(1);
   const [data, setData] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Only pass realmId for player_count when multiple realms exist
+  const realmIdParam = multiRealm && metricType === 'player_count' ? selectedRealmId : undefined;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -137,7 +143,7 @@ export default function AnalyticsPage() {
       const to = new Date().toISOString();
       const from = new Date(Date.now() - dateRange * 86400000).toISOString();
       const [chartData, summaryData] = await Promise.all([
-        api.getAnalytics(metricType, from, to, resolution),
+        api.getAnalytics(metricType, from, to, resolution, realmIdParam),
         api.getAnalyticsSummary(),
       ]);
       setData(chartData.data || []);
@@ -147,7 +153,7 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false);
     }
-  }, [metricType, resolution, dateRange]);
+  }, [metricType, resolution, dateRange, realmIdParam]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -164,7 +170,10 @@ export default function AnalyticsPage() {
           <h2 className="page-title">Historical Analytics</h2>
           <p className="page-sub">Long-term trends and statistics</p>
         </div>
-        <button className="btn btn-secondary" onClick={load} disabled={loading}>Refresh</button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {metricType === 'player_count' && <RealmSelector />}
+          <button className="btn btn-secondary" onClick={load} disabled={loading}>Refresh</button>
+        </div>
       </div>
 
       {/* Summary Cards */}

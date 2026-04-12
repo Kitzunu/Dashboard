@@ -1,6 +1,6 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
-const { authPool, charPool } = require('../db');
+const { authPool } = require('../db');
 const processManager = require('../processManager');
 const { audit } = require('../audit');
 
@@ -54,7 +54,7 @@ router.get('/:id', requireGMLevel(2), async (req, res) => {
     );
     if (!account) return res.status(404).json({ error: 'Account not found' });
 
-    const [characters] = await charPool.query(
+    const [characters] = await req.charPool.query(
       `SELECT guid, name, race, \`class\`, level, zone, online, totaltime
        FROM characters WHERE account = ? ORDER BY level DESC`,
       [id]
@@ -192,24 +192,24 @@ router.delete('/:id', requireGMLevel(3), async (req, res) => {
   }
 });
 
-// POST /api/accounts/mute  { name, minutes, reason }
+// POST /api/accounts/mute  { name, minutes, reason, server }
 router.post('/mute', requireGMLevel(3), (req, res) => {
-  const { name, minutes, reason } = req.body;
+  const { name, minutes, reason, server } = req.body;
   if (!name?.trim()) return res.status(400).json({ error: 'Character name is required' });
   const mins = parseInt(minutes, 10);
   if (!mins || mins < 1) return res.status(400).json({ error: 'Duration must be at least 1 minute' });
   if (!reason?.trim()) return res.status(400).json({ error: 'Reason is required' });
-  const result = processManager.sendCommand(`mute ${name.trim()} ${mins} ${reason.trim()}`);
+  const result = processManager.sendCommand(`mute ${name.trim()} ${mins} ${reason.trim()}`, server || undefined);
   if (!result.success) return res.status(503).json({ error: result.error });
   audit(req, 'account.mute', `name=${name.trim()} minutes=${mins} reason=${reason.trim()}`);
   res.json({ success: true });
 });
 
-// POST /api/accounts/unmute  { name }
+// POST /api/accounts/unmute  { name, server }
 router.post('/unmute', requireGMLevel(3), (req, res) => {
-  const { name } = req.body;
+  const { name, server } = req.body;
   if (!name?.trim()) return res.status(400).json({ error: 'Character name is required' });
-  const result = processManager.sendCommand(`unmute ${name.trim()}`);
+  const result = processManager.sendCommand(`unmute ${name.trim()}`, server || undefined);
   if (!result.success) return res.status(503).json({ error: result.error });
   audit(req, 'account.unmute', `name=${name.trim()}`);
   res.json({ success: true });

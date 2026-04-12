@@ -32,6 +32,13 @@ async function request(method, path, body) {
   return res.json();
 }
 
+/** Append realmId query param if provided */
+function rp(path, realmId) {
+  if (!realmId) return path;
+  const sep = path.includes('?') ? '&' : '?';
+  return `${path}${sep}realmId=${encodeURIComponent(realmId)}`;
+}
+
 export const api = {
   logout: (reason = 'manual') => request('POST', '/api/auth/logout', { reason }),
   login: (username, password) =>
@@ -46,41 +53,41 @@ export const api = {
 
   sendCommand: (command, server) => request('POST', '/api/console/command', { command, server }),
 
-  getPlayers: () => request('GET', '/api/players'),
+  getPlayers: (realmId) => request('GET', rp('/api/players', realmId)),
   kickPlayer: (name, reason) => request('POST', `/api/players/${encodeURIComponent(name)}/kick`, { reason }),
   banPlayer: (name, duration, reason, type = 'character', target) =>
     request('POST', `/api/players/${encodeURIComponent(name)}/ban`, { type, target: target || name, duration, reason }),
 
-  dbQuery: (query, database) => request('POST', '/api/db/query', { query, database }),
+  dbQuery: (query, database, realmId) => request('POST', rp('/api/db/query', realmId), { query, database }),
 
-  getPlayerCount: () => request('GET', '/api/players/count'),
+  getPlayerCount: (realmId) => request('GET', rp('/api/players/count', realmId)),
 
-  getTickets:      ()        => request('GET',  '/api/tickets'),
-  getAllTickets:    ()        => request('GET',  '/api/tickets/all'),
-  getTicketCount:  ()        => request('GET',  '/api/tickets/count'),
-  closeTicket:     (id)          => request('POST', `/api/tickets/${id}/close`),
-  respondTicket:   (id, response) => request('POST', `/api/tickets/${id}/respond`, { response }),
-  commentTicket:   (id, comment)  => request('POST', `/api/tickets/${id}/comment`, { comment }),
-  assignTicket:    (id, gm)       => request('POST', `/api/tickets/${id}/assign`,  { gm }),
-  unassignTicket:  (id)      => request('POST', `/api/tickets/${id}/unassign`),
-  escalateTicket:  (id)      => request('POST', `/api/tickets/${id}/escalate`),
-  deescalateTicket:(id)      => request('POST', `/api/tickets/${id}/deescalate`),
+  getTickets:      (realmId)      => request('GET',  rp('/api/tickets', realmId)),
+  getAllTickets:    (realmId)      => request('GET',  rp('/api/tickets/all', realmId)),
+  getTicketCount:  (realmId)      => request('GET',  rp('/api/tickets/count', realmId)),
+  closeTicket:     (id, realmId)          => request('POST', rp(`/api/tickets/${id}/close`, realmId)),
+  respondTicket:   (id, response, realmId) => request('POST', rp(`/api/tickets/${id}/respond`, realmId), { response }),
+  commentTicket:   (id, comment, realmId)  => request('POST', rp(`/api/tickets/${id}/comment`, realmId), { comment }),
+  assignTicket:    (id, gm, realmId)       => request('POST', rp(`/api/tickets/${id}/assign`, realmId),  { gm }),
+  unassignTicket:  (id, realmId)      => request('POST', rp(`/api/tickets/${id}/unassign`, realmId)),
+  escalateTicket:  (id, realmId)      => request('POST', rp(`/api/tickets/${id}/escalate`, realmId)),
+  deescalateTicket:(id, realmId)      => request('POST', rp(`/api/tickets/${id}/deescalate`, realmId)),
 
-  getOverview: () => request('GET', '/api/overview'),
+  getOverview: (realmId) => request('GET', rp('/api/overview', realmId)),
 
   getThresholds: ()      => request('GET', '/api/thresholds'),
   saveThresholds: (data) => request('PUT', '/api/thresholds', data),
 
-  getAnnouncements:  ()                   => request('GET',  '/api/announcements/history'),
-  sendAnnouncement:  (type, message)      => request('POST', '/api/announcements', { type, message }),
+  getAnnouncements:  ()                         => request('GET',  '/api/announcements/history'),
+  sendAnnouncement:  (type, message, server)   => request('POST', '/api/announcements', { type, message, server }),
 
   getAutobroadcasts:    ()           => request('GET',    '/api/autobroadcast'),
   createAutobroadcast:  (text, weight) => request('POST', '/api/autobroadcast', { text, weight }),
   updateAutobroadcast:  (id, text, weight) => request('PUT', `/api/autobroadcast/${id}`, { text, weight }),
   deleteAutobroadcast:  (id)         => request('DELETE', `/api/autobroadcast/${id}`),
 
-  searchAccounts:    (q, page = 1) => request('GET',   `/api/accounts?q=${encodeURIComponent(q)}&page=${page}`),
-  getAccount:        (id)         => request('GET',   `/api/accounts/${id}`),
+  searchAccounts:    (q, page = 1) => request('GET', `/api/accounts?q=${encodeURIComponent(q)}&page=${page}`),
+  getAccount:        (id, realmId) => request('GET', rp(`/api/accounts/${id}`, realmId)),
   createAccount:     (username, password) => request('POST', '/api/accounts', { username, password }),
   setGMLevel:        (id, gmlevel)    => request('PATCH',   `/api/accounts/${id}/gmlevel`,   { gmlevel }),
   setAccountLock:    (id, locked)     => request('PATCH',   `/api/accounts/${id}/lock`,      { locked }),
@@ -89,17 +96,17 @@ export const api = {
   setAccountFlags:   (id, flags)      => request('PATCH',   `/api/accounts/${id}/flags`,     { flags }),
   resetPassword:     (id, password)   => request('POST',    `/api/accounts/${id}/password`,  { password }),
   deleteAccount:     (id)             => request('DELETE',  `/api/accounts/${id}`),
-  muteCharacter:     (name, minutes, reason) => request('POST', '/api/accounts/mute',   { name, minutes, reason }),
-  unmuteCharacter:   (name)           => request('POST',    '/api/accounts/unmute',     { name }),
+  muteCharacter:     (name, minutes, reason, server) => request('POST', '/api/accounts/mute',   { name, minutes, reason, server }),
+  unmuteCharacter:   (name, server)           => request('POST',    '/api/accounts/unmute',     { name, server }),
 
   getMOTD:         ()                     => request('GET',  '/api/servertools/motd'),
   setMOTD:         (motd, server)        => request('PUT',  '/api/servertools/motd', { motd, server }),
   restartServer:   (delay, server)       => request('POST', '/api/servertools/restart', { delay, server }),
   cancelRestart:   (server)              => request('POST', '/api/servertools/restart/cancel', { server }),
 
-  sendMail:        (player, subject, body)          => request('POST', '/api/mail', { type: 'text', player, subject, body }),
-  sendMailItems:   (player, subject, body, items)   => request('POST', '/api/mail', { type: 'items', player, subject, body, items }),
-  sendMailMoney:   (player, subject, body, money)   => request('POST', '/api/mail', { type: 'money', player, subject, body, money }),
+  sendMail:        (player, subject, body, server)          => request('POST', '/api/mail', { type: 'text', player, subject, body, server }),
+  sendMailItems:   (player, subject, body, items, server)   => request('POST', '/api/mail', { type: 'items', player, subject, body, items, server }),
+  sendMailMoney:   (player, subject, body, money, server)   => request('POST', '/api/mail', { type: 'money', player, subject, body, money, server }),
 
   getConfigs:      ()             => request('GET', '/api/config'),
   getConfig:       (name)         => request('GET', `/api/config/${name}`),
@@ -115,26 +122,26 @@ export const api = {
   getDBCAuctionHouses: () => request('GET', '/api/dbc/auctionhouses'),
 
   // Mail Server Templates
-  getMailServerTemplates:  ()          => request('GET',    '/api/mailserver'),
-  getMailServerTemplate:   (id)        => request('GET',    `/api/mailserver/${id}`),
-  createMailServerTemplate:(data)      => request('POST',   '/api/mailserver', data),
-  updateMailServerTemplate:(id, data)  => request('PUT',    `/api/mailserver/${id}`, data),
-  deleteMailServerTemplate:(id)        => request('DELETE', `/api/mailserver/${id}`),
-  addMailServerItem:       (id, data)  => request('POST',   `/api/mailserver/${id}/items`, data),
-  deleteMailServerItem:    (id, itemId)=> request('DELETE', `/api/mailserver/${id}/items/${itemId}`),
-  addMailServerCondition:  (id, data)  => request('POST',   `/api/mailserver/${id}/conditions`, data),
-  deleteMailServerCondition:(id, condId)=>request('DELETE', `/api/mailserver/${id}/conditions/${condId}`),
-  getMailServerRecipients: (id)        => request('GET',    `/api/mailserver/${id}/recipients`),
+  getMailServerTemplates:  (realmId)          => request('GET',    rp('/api/mailserver', realmId)),
+  getMailServerTemplate:   (id, realmId)      => request('GET',    rp(`/api/mailserver/${id}`, realmId)),
+  createMailServerTemplate:(data, realmId)    => request('POST',   rp('/api/mailserver', realmId), data),
+  updateMailServerTemplate:(id, data, realmId)=> request('PUT',    rp(`/api/mailserver/${id}`, realmId), data),
+  deleteMailServerTemplate:(id, realmId)      => request('DELETE', rp(`/api/mailserver/${id}`, realmId)),
+  addMailServerItem:       (id, data, realmId)=> request('POST',   rp(`/api/mailserver/${id}/items`, realmId), data),
+  deleteMailServerItem:    (id, itemId, realmId)=> request('DELETE', rp(`/api/mailserver/${id}/items/${itemId}`, realmId)),
+  addMailServerCondition:  (id, data, realmId)=> request('POST',   rp(`/api/mailserver/${id}/conditions`, realmId), data),
+  deleteMailServerCondition:(id, condId, realmId)=>request('DELETE', rp(`/api/mailserver/${id}/conditions/${condId}`, realmId)),
+  getMailServerRecipients: (id, realmId)      => request('GET',    rp(`/api/mailserver/${id}/recipients`, realmId)),
 
-  getLagReports: (page, lagType, minLatency) => {
+  getLagReports: (page, lagType, minLatency, realmId) => {
     const params = new URLSearchParams({ page: page || 1 });
     if (lagType != null && lagType !== 'all') params.set('lagType', lagType);
     if (minLatency > 0) params.set('minLatency', minLatency);
-    return request('GET', `/api/lagreports?${params}`);
+    return request('GET', rp(`/api/lagreports?${params}`, realmId));
   },
-  getLagStats:      ()   => request('GET',    '/api/lagreports/stats'),
-  deleteLagReport:  (id) => request('DELETE', `/api/lagreports/${id}`),
-  clearLagReports:  ()   => request('DELETE', '/api/lagreports'),
+  getLagStats:      (realmId)   => request('GET', rp('/api/lagreports/stats', realmId)),
+  deleteLagReport:  (id, realmId) => request('DELETE', rp(`/api/lagreports/${id}`, realmId)),
+  clearLagReports:  (realmId)   => request('DELETE', rp('/api/lagreports', realmId)),
 
   getSettings:        ()      => request('GET', '/api/settings'),
   saveSettings:       (data)  => request('PUT', '/api/settings', data),
@@ -148,25 +155,25 @@ export const api = {
   getAuditLog: (page = 1, { user = '', actions = [], success = '', search = '' } = {}) =>
     request('GET', `/api/audit-log?page=${page}&user=${encodeURIComponent(user)}&actions=${encodeURIComponent(actions.join(','))}&success=${success}&search=${encodeURIComponent(search)}`),
 
-  getSpamReports: (page = 1, type = 'all', search = '') =>
-    request('GET', `/api/spamreports?page=${page}&type=${encodeURIComponent(type)}&search=${encodeURIComponent(search)}`),
-  deleteSpamReport: (id) => request('DELETE', `/api/spamreports/${id}`),
-  clearSpamReports: () => request('DELETE', '/api/spamreports'),
+  getSpamReports: (page = 1, type = 'all', search = '', realmId) =>
+    request('GET', rp(`/api/spamreports?page=${page}&type=${encodeURIComponent(type)}&search=${encodeURIComponent(search)}`, realmId)),
+  deleteSpamReport: (id, realmId) => request('DELETE', rp(`/api/spamreports/${id}`, realmId)),
+  clearSpamReports: (realmId) => request('DELETE', rp('/api/spamreports', realmId)),
 
-  getChannels:       () => request('GET', '/api/channels'),
-  getChannel:        (id) => request('GET', `/api/channels/${id}`),
-  unbanChannelPlayer:(channelId, guid) => request('DELETE', `/api/channels/${channelId}/bans/${guid}`),
-  deleteChannel:     (id) => request('DELETE', `/api/channels/${id}`),
+  getChannels:       (realmId) => request('GET', rp('/api/channels', realmId)),
+  getChannel:        (id, realmId) => request('GET', rp(`/api/channels/${id}`, realmId)),
+  unbanChannelPlayer:(channelId, guid, realmId) => request('DELETE', rp(`/api/channels/${channelId}/bans/${guid}`, realmId)),
+  deleteChannel:     (id, realmId) => request('DELETE', rp(`/api/channels/${id}`, realmId)),
 
-  getBugReports:  (page, feedbackType, state, search) => {
+  getBugReports:  (page, feedbackType, state, search, realmId) => {
     const params = new URLSearchParams({ page: page || 1 });
     if (feedbackType != null && feedbackType !== 'all') params.set('feedbackType', feedbackType);
     if (state  != null && state  !== 'all') params.set('state',  state);
     if (search != null && search !== '')    params.set('search', search);
-    return request('GET', `/api/bugreports?${params}`);
+    return request('GET', rp(`/api/bugreports?${params}`, realmId));
   },
-  getBugReport:      (id)   => request('GET',   `/api/bugreports/${id}`),
-  updateBugReport:   (id, updates) => request('PATCH', `/api/bugreports/${id}`, updates),
+  getBugReport:      (id, realmId)   => request('GET', rp(`/api/bugreports/${id}`, realmId)),
+  updateBugReport:   (id, updates, realmId) => request('PATCH', rp(`/api/bugreports/${id}`, realmId), updates),
 
   getMutes:   ()   => request('GET',    '/api/mutes'),
   unmute:     (id) => request('DELETE', `/api/mutes/${id}`),
@@ -177,36 +184,36 @@ export const api = {
   deleteScheduledTask:  (id)      => request('DELETE', `/api/scheduled-tasks/${id}`),
   runScheduledTask:     (id)      => request('POST',   `/api/scheduled-tasks/${id}/run`),
 
-  searchCharacters: (q)    => request('GET', `/api/characters/search?q=${encodeURIComponent(q)}`),
-  getCharacter:     (guid) => request('GET', `/api/characters/${guid}`),
+  searchCharacters: (q, realmId)    => request('GET', rp(`/api/characters/search?q=${encodeURIComponent(q)}`, realmId)),
+  getCharacter:     (guid, realmId) => request('GET', rp(`/api/characters/${guid}`, realmId)),
 
-  getGuilds:     ()   => request('GET', '/api/guilds'),
-  getGuild:      (id) => request('GET', `/api/guilds/${id}`),
-  getGuildBank:  (id) => request('GET', `/api/guilds/${id}/bank`),
+  getGuilds:     (realmId)   => request('GET', rp('/api/guilds', realmId)),
+  getGuild:      (id, realmId) => request('GET', rp(`/api/guilds/${id}`, realmId)),
+  getGuildBank:  (id, realmId) => request('GET', rp(`/api/guilds/${id}/bank`, realmId)),
 
-  getArenaTeams: ()   => request('GET', '/api/arena'),
-  getArenaTeam:  (id) => request('GET', `/api/arena/${id}`),
-  getArenaMatches: (id) => request('GET', `/api/arena/${id}/matches`),
-  createArenaTeam: (data) => request('POST', '/api/arena', data),
-  updateArenaTeam: (id, data) => request('PATCH', `/api/arena/${id}`, data),
-  removeArenaMember: (id, guid) => request('DELETE', `/api/arena/${id}/members/${guid}`),
-  deleteArenaTeam: (id) => request('DELETE', `/api/arena/${id}`),
+  getArenaTeams: (realmId)   => request('GET', rp('/api/arena', realmId)),
+  getArenaTeam:  (id, realmId) => request('GET', rp(`/api/arena/${id}`, realmId)),
+  getArenaMatches: (id, realmId) => request('GET', rp(`/api/arena/${id}/matches`, realmId)),
+  createArenaTeam: (data, realmId) => request('POST', rp('/api/arena', realmId), data),
+  updateArenaTeam: (id, data, realmId) => request('PATCH', rp(`/api/arena/${id}`, realmId), data),
+  removeArenaMember: (id, guid, realmId) => request('DELETE', rp(`/api/arena/${id}/members/${guid}`, realmId)),
+  deleteArenaTeam: (id, realmId) => request('DELETE', rp(`/api/arena/${id}`, realmId)),
 
-  getBattlegroundHistory: ({ limit = 50, offset = 0, type, bracket } = {}) => {
+  getBattlegroundHistory: ({ limit = 50, offset = 0, type, bracket, realmId } = {}) => {
     const params = new URLSearchParams();
     if (limit)     params.set('limit',   limit);
     if (offset)    params.set('offset',  offset);
     if (type != null)    params.set('type',    type);
     if (bracket != null) params.set('bracket', bracket);
-    return request('GET', `/api/battleground/history?${params}`);
+    return request('GET', rp(`/api/battleground/history?${params}`, realmId));
   },
-  getBattlegroundMatch:     (id) => request('GET', `/api/battleground/history/${id}`),
-  getBattlegroundDeserters: ({ limit = 50, offset = 0 } = {}) => {
+  getBattlegroundMatch:     (id, realmId) => request('GET', rp(`/api/battleground/history/${id}`, realmId)),
+  getBattlegroundDeserters: ({ limit = 50, offset = 0, realmId } = {}) => {
     const params = new URLSearchParams({ limit, offset });
-    return request('GET', `/api/battleground/deserters?${params}`);
+    return request('GET', rp(`/api/battleground/deserters?${params}`, realmId));
   },
-  removeBattlegroundDeserter: (guid) => request('DELETE', `/api/battleground/deserters/${guid}`),
-  getBattlegroundStats: () => request('GET', '/api/battleground/stats'),
+  removeBattlegroundDeserter: (guid, realmId) => request('DELETE', rp(`/api/battleground/deserters/${guid}`, realmId)),
+  getBattlegroundStats: (realmId) => request('GET', rp('/api/battleground/stats', realmId)),
 
   getAlerts: (page = 1, { severity = '', type = '' } = {}) => {
     const params = new URLSearchParams({ page });
@@ -237,11 +244,11 @@ export const api = {
   pdumpListFiles: () => request('GET', '/api/pdump/list-files'),
 
   // pdump load — import a dump (content string or server-side filePath)
-  pdumpLoad: (body) => request('POST', '/api/pdump/load', body),
+  pdumpLoad: (body, realmId) => request('POST', rp('/api/pdump/load', realmId), body),
 
   // pdump — save to server path (returns JSON)
-  pdumpSave: (guid, filePath) =>
-    request('POST', `/api/pdump/${guid}`, { filePath }),
+  pdumpSave: (guid, filePath, realmId) =>
+    request('POST', rp(`/api/pdump/${guid}`, realmId), { filePath }),
 
   // pdump — download to browser (returns a Blob + suggested filename)
   pdumpDownload: async (guid) => {
@@ -266,9 +273,9 @@ export const api = {
     return { blob, filename };
   },
 
-  getNameFilters:    ()           => request('GET',    '/api/namefilters'),
-  addNameFilter:     (type, name) => request('POST',   `/api/namefilters/${type}`, { name }),
-  removeNameFilter:  (type, name) => request('DELETE', `/api/namefilters/${type}/${encodeURIComponent(name)}`),
+  getNameFilters:    (realmId)           => request('GET',    rp('/api/namefilters', realmId)),
+  addNameFilter:     (type, name, realmId) => request('POST',   rp(`/api/namefilters/${type}`, realmId), { name }),
+  removeNameFilter:  (type, name, realmId) => request('DELETE', rp(`/api/namefilters/${type}/${encodeURIComponent(name)}`, realmId)),
 
   getChangelog: () => request('GET', '/api/changelog'),
 
@@ -277,15 +284,15 @@ export const api = {
   createCalendarEvent:   (data)     => request('POST',   '/api/calendar/events', data),
   updateCalendarEvent:   (id, data) => request('PUT',    `/api/calendar/events/${id}`, data),
   deleteCalendarEvent:   (id)       => request('DELETE', `/api/calendar/events/${id}`),
-  getGameEvents:         ()         => request('GET',    '/api/calendar/game-events'),
-  getIngameCalendarEvents: (from, to) => request('GET', `/api/calendar/ingame-events?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`),
+  getGameEvents:         (realmId)         => request('GET', rp('/api/calendar/game-events', realmId)),
+  getIngameCalendarEvents: (from, to, realmId) => request('GET', rp(`/api/calendar/ingame-events?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, realmId)),
   getRaidResets:          ()         => request('GET',    '/api/calendar/raid-resets'),
 
-  getBans: () => request('GET', '/api/bans'),
+  getBans: (realmId) => request('GET', rp('/api/bans', realmId)),
   banTarget: (type, target, duration, reason) =>
     request('POST', '/api/bans', { type, target, duration, reason }),
   unbanAccount:   (id)   => request('DELETE', `/api/bans/accounts/${id}`),
-  unbanCharacter: (guid) => request('DELETE', `/api/bans/characters/${guid}`),
+  unbanCharacter: (guid, realmId) => request('DELETE', rp(`/api/bans/characters/${guid}`, realmId)),
   unbanIp:        (ip)   => request('DELETE', `/api/bans/ips/${encodeURIComponent(ip)}`),
 
   // Backup Management
@@ -309,17 +316,20 @@ export const api = {
 
   // Health Check
   getHealthCheck: () => request('GET', '/api/healthcheck'),
+  getHealthCheckAll: () => request('GET', '/api/healthcheck/all'),
 
   // Batch Operations
-  batchBan:     (targets, duration, reason) => request('POST', '/api/batch/ban', { targets, duration, reason }),
-  batchKick:    (names, reason)             => request('POST', '/api/batch/kick', { names, reason }),
+  batchBan:     (targets, duration, reason, server) => request('POST', '/api/batch/ban', { targets, duration, reason, server }),
+  batchKick:    (names, reason, server)             => request('POST', '/api/batch/kick', { names, reason, server }),
   batchMail:    (data)                      => request('POST', '/api/batch/mail', data),
   batchGMLevel: (accountIds, gmlevel)       => request('POST', '/api/batch/gmlevel', { accountIds, gmlevel }),
 
   // Character Transfer
-  transferCharacter: (characterGuid, targetAccountId) =>
-    request('POST', '/api/character-transfer/transfer', { characterGuid, targetAccountId }),
-  validateTransfer:  (guid) => request('GET', `/api/character-transfer/validate/${guid}`),
+  transferCharacter: (characterGuid, targetAccountId, realmId) =>
+    request('POST', rp('/api/character-transfer/transfer', realmId), { characterGuid, targetAccountId }),
+  transferCharacterCrossRealm: (characterGuid, targetAccountId, sourceRealmId, destRealmId) =>
+    request('POST', '/api/character-transfer/transfer-cross-realm', { characterGuid, targetAccountId, sourceRealmId, destRealmId }),
+  validateTransfer:  (guid, realmId) => request('GET', rp(`/api/character-transfer/validate/${guid}`, realmId)),
   searchTransferAccounts: (q) => request('GET', `/api/character-transfer/search-accounts?q=${encodeURIComponent(q)}`),
 
   // Notifications
@@ -328,9 +338,10 @@ export const api = {
   markNotificationsRead:(lastSeenId) => request('POST', '/api/notifications/mark-read', { lastSeenId }),
 
   // Analytics
-  getAnalytics:       (type, from, to, resolution) => {
+  getAnalytics:       (type, from, to, resolution, realmId) => {
     const params = new URLSearchParams({ type, from, to });
     if (resolution) params.set('resolution', resolution);
+    if (realmId) params.set('realmId', realmId);
     return request('GET', `/api/analytics?${params}`);
   },
   getAnalyticsSummary: () => request('GET', '/api/analytics/summary'),
@@ -341,12 +352,15 @@ export const api = {
   revokeAllSessions: (exceptTokenHash) => request('DELETE', '/api/sessions', { exceptTokenHash }),
 
   // Auction House
-  getAuctionListings: ({ page = 1, limit = 50, search = '', faction = '', sort = 'time', order = 'asc' } = {}) => {
+  getAuctionListings: ({ page = 1, limit = 50, search = '', faction = '', sort = 'time', order = 'asc', realmId } = {}) => {
     const params = new URLSearchParams({ page, limit, sort, order });
     if (search) params.set('search', search);
     if (faction) params.set('faction', faction);
-    return request('GET', `/api/auctionhouse?${params}`);
+    return request('GET', rp(`/api/auctionhouse?${params}`, realmId));
   },
-  getAuctionStats:    ()   => request('GET', '/api/auctionhouse/stats'),
-  removeAuction:      (id) => request('DELETE', `/api/auctionhouse/${id}`),
+  getAuctionStats:    (realmId)   => request('GET', rp('/api/auctionhouse/stats', realmId)),
+  removeAuction:      (id, realmId) => request('DELETE', rp(`/api/auctionhouse/${id}`, realmId)),
+
+  // Realm info (for backups)
+  getRealms: () => request('GET', '/api/servers/realms'),
 };

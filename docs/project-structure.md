@@ -5,7 +5,8 @@ Dashboard/
 ├── backend/
 │   ├── middleware/
 │   │   ├── auth.js                # JWT verification and GM level guards
-│   │   └── ipAllowlist.js         # IP allowlist enforcement
+│   │   ├── ipAllowlist.js         # IP allowlist enforcement
+│   │   └── realmDb.js             # Per-request realm database pool attachment
 │   ├── routes/
 │   │   ├── accounts.js            # Account management
 │   │   ├── alertsRoutes.js        # System alerts list, batch delete, filter-scoped clear
@@ -51,13 +52,14 @@ Dashboard/
 │   │   ├── spamreports.js         # Spam report browser
 │   │   ├── thresholds.js          # Alert threshold read/write
 │   │   └── tickets.js             # GM ticket CRUD
-│   ├── audit.js                   # Audit log helper (fire-and-forget write to acore_dashboard)
 │   ├── alertLogger.js             # Writes system alerts to the dashboard DB alerts table
+│   ├── audit.js                   # Audit log helper (fire-and-forget write to acore_dashboard)
 │   ├── dashboardSettings.js       # Dashboard settings persistence (acore_dashboard.settings)
 │   ├── discord.js                 # Discord webhook sender (server offline/online/stop, thresholds, latency, agent disconnect)
 │   ├── db.js                      # MySQL connection pools (auth, world, characters, dashboard)
 │   ├── dbc.js                     # WotLK DBC binary parser
 │   ├── latencyMonitor.js          # TCP latency sampling + rolling stats
+│   ├── logger.js                  # Custom logger styled after AzerothCore's Log4j appender
 │   ├── playerHistory.js           # Rolling player count history buffer
 │   ├── resourceHistory.js         # Rolling CPU and memory history buffer
 │   ├── run.js                     # Backend runner — restarts server.js on exit code 42
@@ -113,10 +115,13 @@ Dashboard/
 │       │   ├── NameFiltersPage.jsx
 │       │   ├── NotificationBell.jsx
 │       │   ├── PlayersPage.jsx
+│       │   ├── RealmSelector.jsx        # Realm picker for database-scoped pages
 │       │   ├── ScheduledTasksPage.jsx
+│       │   ├── ServerSelector.jsx       # Server picker for command-targeted pages
 │       │   ├── ServersPage.jsx
 │       │   ├── SessionsPage.jsx
 │       │   ├── SettingsPage.jsx
+│       │   ├── SortTh.jsx               # Sortable table header component
 │       │   ├── SpamReportsPage.jsx
 │       │   └── TicketsPage.jsx
 │       ├── styles/
@@ -156,15 +161,29 @@ Dashboard/
 │       │       ├── tickets.css    # Tickets page
 │       │       └── transfer.css   # Character Transfer and Batch Operations
 │       ├── ansi.js                # ANSI SGR colour parser
-│       ├── constants.js           # Shared constants (races, classes, GM labels, quality colors)
 │       ├── api.js                 # Fetch wrapper with JWT auth and 401 handling
 │       ├── App.jsx                # Auth context (useAuth), ServerProvider wrapper, and page routing
+│       ├── constants.js           # Shared constants (races, classes, GM labels, quality colors)
 │       ├── index.css              # Entry point — @import chain for all style layers
+│       ├── main.jsx               # React entry point (ReactDOM.createRoot)
 │       ├── socket.js              # Socket.IO client (connect/disconnect/get)
 │       └── toast.js               # Global toast notification helper
+├── docs/                          # Detailed documentation
 ├── sql/
 │   └── acore_dashboard.sql        # One-time setup: creates acore_dashboard DB, grants access, creates audit_logs table
 ├── .env.example
+├── changelog.md                   # Auto-generated changelog (updated by CI)
 ├── worldservers.json.example      # Template for multi-worldserver configuration
 └── package.json                   # Root scripts (start, install:all)
 ```
+
+## Architecture
+
+The frontend uses React with two shared contexts:
+
+- **`AuthContext`** (`src/App.jsx`) — user auth state (`token`, `username`, `gmlevel`). Consumed via `useAuth()`.
+- **`ServerContext`** (`src/context/ServerContext.jsx`) — WebSocket connection, server running state, worldserver list, player/ticket counts, and selected realm. Consumed via `useSocket()` and `useServerStatus()`.
+
+Shared hooks live in `src/hooks/`:
+- **`useLocalStorage(key, default)`** — `useState` backed by `localStorage` with JSON serialization.
+- **`usePaginatedData(fetchFn)`** — Manages `rows`, `total`, `pages`, `page`, `loading`, and a loading-wrapped `fetch` function for paginated API endpoints.

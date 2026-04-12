@@ -2,8 +2,6 @@
 
 A web-based management dashboard for [AzerothCore](https://www.azerothcore.org/) servers. Monitor server status, manage players, stream live console output, handle GM tickets, edit config files, and more — all from your browser.
 
-📖 **[Full Documentation](docs/index.md)**
-
 ## Requirements
 
 - [Node.js](https://nodejs.org/) v18 or later
@@ -49,46 +47,19 @@ npm start
 
 Then open [http://localhost:5173](http://localhost:5173) and log in with your AzerothCore account credentials.
 
-## Quick Reference
+## Documentation
 
 | Topic | Link |
 | --- | --- |
 | Features | [docs/features.md](docs/features.md) |
 | Configuration | [docs/configuration.md](docs/configuration.md) |
+| Multi-Realm | [docs/multi-realm.md](docs/multi-realm.md) |
 | Access Levels | [docs/access-levels.md](docs/access-levels.md) |
 | Audit Log | [docs/audit-log.md](docs/audit-log.md) |
 | Running | [docs/running.md](docs/running.md) |
 | Pages | [docs/pages.md](docs/pages.md) |
 | Project Structure | [docs/project-structure.md](docs/project-structure.md) |
 | Notes & Credits | [docs/notes.md](docs/notes.md) |
-
-## Console Logging
-
-The backend uses a custom logger (`backend/logger.js`) styled after AzerothCore's Log4j appender with the same color mapping from the default `worldserver.conf`:
-
-| Level | Color | ANSI |
-| --- | --- | --- |
-| FATAL | Red | `\x1b[31m` |
-| ERROR | Bright Red | `\x1b[91m` |
-| WARN | Yellow | `\x1b[33m` |
-| INFO | Cyan | `\x1b[36m` |
-| DEBUG | Magenta | `\x1b[35m` |
-| TRACE | Bright Yellow | `\x1b[93m` |
-
-Output format: `YYYY-MM-DD HH:MM:SS LEVEL [component] message`
-
-Usage: `const log = require('./logger')('component-name');` then call `log.info(...)`, `log.error(...)`, etc.
-
-## Architecture
-
-The frontend uses React with two shared contexts:
-
-- **`AuthContext`** (`src/App.jsx`) — user auth state (`token`, `username`, `gmlevel`). Consumed via `useAuth()`.
-- **`ServerContext`** (`src/context/ServerContext.jsx`) — WebSocket connection, server running state, worldserver list, player/ticket counts. Consumed via `useSocket()` and `useServerStatus()`.
-
-Shared hooks live in `src/hooks/`:
-- **`useLocalStorage(key, default)`** — `useState` backed by `localStorage` with JSON serialization.
-- **`usePaginatedData(fetchFn)`** — Manages `rows`, `total`, `pages`, `page`, `loading`, and a loading-wrapped `fetch` function for paginated API endpoints.
 
 ## Credits
 

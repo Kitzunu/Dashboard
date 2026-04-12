@@ -3,6 +3,8 @@ import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { FALLBACK_CLASSES, FALLBACK_RACES, QUALITY_COLORS } from '../constants.js';
 import { formatUnixDate as fmt } from '../utils/format.js';
+import { useServerStatus } from '../context/ServerContext.jsx';
+import RealmSelector from './RealmSelector.jsx';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -223,7 +225,7 @@ function BankItemLink({ item }) {
 
 const BANK_SECTIONS = ['Info', 'Items', 'Item Log', 'Money Log'];
 
-function BankTab({ guildId, bankMoney }) {
+function BankTab({ guildId, bankMoney, realmId }) {
   const [bank, setBank]           = useState(null);
   const [loading, setLoading]     = useState(true);
   const [activeItemTab, setActiveItemTab] = useState(0);
@@ -231,11 +233,11 @@ function BankTab({ guildId, bankMoney }) {
 
   useEffect(() => {
     setLoading(true);
-    api.getGuildBank(guildId)
+    api.getGuildBank(guildId, realmId)
       .then((data) => { setBank(data); setActiveItemTab(data.tabs[0]?.TabId ?? 0); })
       .catch((err) => toast(err.message, 'error'))
       .finally(() => setLoading(false));
-  }, [guildId]);
+  }, [guildId, realmId]);
 
   // Re-initialize WoWHead tooltips after items render
   useEffect(() => {
@@ -415,6 +417,7 @@ function BankTab({ guildId, bankMoney }) {
 const TABS = ['Members', 'Ranks', 'Bank', 'Event Log'];
 
 export default function GuildsPage({ onViewCharacter }) {
+  const { selectedRealmId } = useServerStatus();
   const [guilds, setGuilds]           = useState([]);
   const [loading, setLoading]         = useState(true);
   const [search, setSearch]           = useState('');
@@ -425,14 +428,14 @@ export default function GuildsPage({ onViewCharacter }) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await api.getGuilds();
+      const data = await api.getGuilds(selectedRealmId);
       setGuilds(data);
     } catch (err) {
       toast(err.message, 'error');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedRealmId]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -440,7 +443,7 @@ export default function GuildsPage({ onViewCharacter }) {
     setDetailLoading(true);
     setActiveTab('Members');
     try {
-      const data = await api.getGuild(guildId);
+      const data = await api.getGuild(guildId, selectedRealmId);
       setSelected(data);
     } catch (err) {
       toast(err.message, 'error');
@@ -462,7 +465,10 @@ export default function GuildsPage({ onViewCharacter }) {
     <div className="page-wrap">
       <div className="page-header">
         <h1 className="page-title">Guilds</h1>
-        <button className="btn btn-ghost btn-sm" onClick={load}>Refresh</button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <RealmSelector />
+          <button className="btn btn-ghost btn-sm" onClick={load}>Refresh</button>
+        </div>
       </div>
 
       <div className="channels-layout">
@@ -570,7 +576,7 @@ export default function GuildsPage({ onViewCharacter }) {
 
               {activeTab === 'Members'   && <MembersTab  members={selected.members} onViewCharacter={onViewCharacter} />}
               {activeTab === 'Ranks'     && <RanksTab    ranks={selected.ranks} />}
-              {activeTab === 'Bank'      && <BankTab     guildId={selected.guildid} bankMoney={selected.BankMoney} />}
+              {activeTab === 'Bank'      && <BankTab     guildId={selected.guildid} bankMoney={selected.BankMoney} realmId={selectedRealmId} />}
               {activeTab === 'Event Log' && <EventLogTab eventLog={selected.eventLog} ranks={selected.ranks} />}
             </>
           )}

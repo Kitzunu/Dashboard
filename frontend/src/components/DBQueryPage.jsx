@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../api.js';
+import RealmSelector from './RealmSelector.jsx';
+import { useServerStatus } from '../context/ServerContext.jsx';
 
 const PRESETS = [
   {
@@ -33,6 +35,7 @@ const DB_OPTIONS   = ['characters', 'auth', 'world'];
 const PAGE_SIZES   = [15, 25, 50, 100, 200, 'All'];
 
 export default function DBQueryPage() {
+  const { selectedRealmId } = useServerStatus();
   const [activePreset, setActivePreset] = useState(null);
   const [query, setQuery]       = useState('');
   const [database, setDatabase] = useState('characters');
@@ -50,7 +53,7 @@ export default function DBQueryPage() {
     setPage(1);
     setPageInput('');
     try {
-      const data = await api.dbQuery(q, db);
+      const data = await api.dbQuery(q, db, selectedRealmId);
       setResult(data);
     } catch (err) {
       setError(err.message);
@@ -80,10 +83,15 @@ export default function DBQueryPage() {
 
   return (
     <div className="page db-page">
-      <h2 className="page-title">Database Query</h2>
-      <p className="page-sub">
-        Requires Administrator (GM level ≥ 3). All queries are audit logged.
-      </p>
+      <div className="page-header">
+        <div>
+          <h2 className="page-title">Database Query</h2>
+          <p className="page-sub">
+            Requires Administrator (GM level ≥ 3). All queries are audit logged.
+          </p>
+        </div>
+        <RealmSelector />
+      </div>
 
       <div className="db-layout">
         <aside className="db-presets">

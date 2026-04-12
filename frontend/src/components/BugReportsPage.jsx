@@ -3,6 +3,8 @@ import { useAuth } from '../App.jsx';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 import SortTh from './SortTh.jsx';
+import { useServerStatus } from '../context/ServerContext.jsx';
+import RealmSelector from './RealmSelector.jsx';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const FEEDBACK_LABELS = { 0: 'Bug', 1: 'Suggestion', 2: 'Survey' };
@@ -51,7 +53,7 @@ function Field({ label, value, mono }) {
 }
 
 // ── Detail modal ──────────────────────────────────────────────────────────────
-function ReportDetailModal({ id, canEdit, onClose, onUpdated }) {
+function ReportDetailModal({ id, canEdit, onClose, onUpdated, realmId }) {
   const [report,   setReport]   = useState(null);
   const [loading,  setLoading]  = useState(true);
   const [busy,     setBusy]     = useState(false);
@@ -61,7 +63,7 @@ function ReportDetailModal({ id, canEdit, onClose, onUpdated }) {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    api.getBugReport(id)
+    api.getBugReport(id, realmId)
       .then((r) => {
         if (cancelled) return;
         setReport(r);
@@ -71,14 +73,14 @@ function ReportDetailModal({ id, canEdit, onClose, onUpdated }) {
       })
       .catch((err) => { if (!cancelled) { toast(err.message, 'error'); setLoading(false); } });
     return () => { cancelled = true; };
-  }, [id]);
+  }, [id, realmId]);
 
   const handleToggleState = async () => {
     if (!report) return;
     const newState = report.state === 1 ? 0 : 1;
     setBusy(true);
     try {
-      await api.updateBugReport(id, { state: newState });
+      await api.updateBugReport(id, { state: newState }, realmId);
       const updated = { ...report, state: newState };
       setReport(updated);
       onUpdated({ id, state: newState });
@@ -93,7 +95,7 @@ function ReportDetailModal({ id, canEdit, onClose, onUpdated }) {
   const handleSaveAssignee = async () => {
     setBusy(true);
     try {
-      await api.updateBugReport(id, { assignee: assignee.trim() || null });
+      await api.updateBugReport(id, { assignee: assignee.trim() || null }, realmId);
       setReport((r) => ({ ...r, assignee: assignee.trim() || null }));
       onUpdated({ id, assignee: assignee.trim() || null });
       toast('Assignee updated');
@@ -107,7 +109,7 @@ function ReportDetailModal({ id, canEdit, onClose, onUpdated }) {
   const handleSaveComment = async () => {
     setBusy(true);
     try {
-      await api.updateBugReport(id, { comment: comment.trim() || null });
+      await api.updateBugReport(id, { comment: comment.trim() || null }, realmId);
       setReport((r) => ({ ...r, comment: comment.trim() || null }));
       onUpdated({ id, comment: comment.trim() || null });
       toast('Comment saved');
@@ -343,6 +345,7 @@ function sortReports(reports, col, dir) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function BugReportsPage() {
   const { auth } = useAuth();
+  const { selectedRealmId } = useServerStatus();
   const canEdit = auth.gmlevel >= 2;
 
   const [reports,    setReports]    = useState([]);
@@ -361,7 +364,7 @@ export default function BugReportsPage() {
   const fetchReports = useCallback(async (p, type, state, q) => {
     setLoading(true);
     try {
-      const data = await api.getBugReports(p, type, state, q);
+      const data = await api.getBugReports(p, type, state, q, selectedRealmId);
       setReports(data.reports);
       setTotalPages(data.pages);
       setTotalCount(data.total);
@@ -370,11 +373,11 @@ export default function BugReportsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedRealmId]);
 
   useEffect(() => {
     fetchReports(page, typeFilter, stateTab, search);
-  }, [page, typeFilter, stateTab, search, fetchReports]);
+  }, [page, typeFilter, stateTab, search, selectedRealmId, fetchReports]);
 
   const handleStateTabChange  = (val) => { setStateTab(val);   setPage(1); };
   const handleTypeFilterChange = (val) => { setTypeFilter(val); setPage(1); };
@@ -404,8 +407,11 @@ export default function BugReportsPage() {
   return (
     <div className="page">
       <div className="page-header">
-        <h2 className="page-title">Bug Reports</h2>
-        <span className="td-muted" style={{ fontSize: 13 }}>{totalCount} report{totalCount !== 1 ? 's' : ''}</span>
+        <div>
+          <h2 className="page-title">Bug Reports</h2>
+          <span className="td-muted" style={{ fontSize: 13 }}>{totalCount} report{totalCount !== 1 ? 's' : ''}</span>
+        </div>
+        <RealmSelector />
       </div>
 
       {/* State tabs */}
@@ -489,7 +495,7 @@ export default function BugReportsPage() {
                             e.stopPropagation();
                             const newState = r.state === 1 ? 0 : 1;
                             try {
-                              await api.updateBugReport(r.id, { state: newState });
+                              await api.updateBugReport(r.id, { state: newState }, selectedRealmId);
                               toast(newState === 0 ? 'Report closed' : 'Report reopened');
                               fetchReports(page, typeFilter, stateTab, search);
                             } catch (err) {
@@ -529,6 +535,7 @@ export default function BugReportsPage() {
           canEdit={canEdit}
           onClose={() => setSelectedId(null)}
           onUpdated={handleUpdated}
+          realmId={selectedRealmId}
         />
       )}
     </div>

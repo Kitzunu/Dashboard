@@ -3,6 +3,8 @@ import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { FALLBACK_CLASSES, FALLBACK_RACES } from '../constants.js';
 import { useAuth } from '../App.jsx';
+import { useServerStatus } from '../context/ServerContext.jsx';
+import RealmSelector from './RealmSelector.jsx';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -113,7 +115,7 @@ function DeleteTeamModal({ team, onConfirm, onClose }) {
 
 // ── Create team modal ─────────────────────────────────────────────────────────
 
-function CreateTeamModal({ onSave, onClose }) {
+function CreateTeamModal({ onSave, onClose, realmId }) {
   const [name, setName]               = useState('');
   const [type, setType]               = useState('2');
   const [captainSearch, setCaptainSearch] = useState('');
@@ -129,7 +131,7 @@ function CreateTeamModal({ onSave, onClose }) {
     if (!captainSearch.trim()) return;
     setSearching(true);
     try {
-      const results = await api.searchCharacters(captainSearch.trim());
+      const results = await api.searchCharacters(captainSearch.trim(), realmId);
       setCaptainResults(Array.isArray(results) ? results : []);
     } catch (err) {
       toast(err.message, 'error');
@@ -330,17 +332,17 @@ function StatsTab({ team }) {
 
 // ── Match History tab ─────────────────────────────────────────────────────────
 
-function MatchHistoryTab({ arenaTeamId }) {
+function MatchHistoryTab({ arenaTeamId, realmId }) {
   const [matches, setMatches]   = useState([]);
   const [loading, setLoading]   = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    api.getArenaMatches(arenaTeamId)
+    api.getArenaMatches(arenaTeamId, realmId)
       .then((data) => setMatches(data))
       .catch((err) => toast(err.message, 'error'))
       .finally(() => setLoading(false));
-  }, [arenaTeamId]);
+  }, [arenaTeamId, realmId]);
 
   if (loading) return <div className="empty-state">Loading match data…</div>;
   if (matches.length === 0) return <div className="empty-state">No match history available.</div>;
@@ -377,6 +379,7 @@ const TABS = ['Members', 'Stats', 'Match History'];
 
 export default function ArenaPage({ onViewCharacter }) {
   const { auth } = useAuth();
+  const { selectedRealmId } = useServerStatus();
   const [teams, setTeams]               = useState([]);
   const [loading, setLoading]           = useState(true);
   const [search, setSearch]             = useState('');
@@ -391,14 +394,14 @@ export default function ArenaPage({ onViewCharacter }) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await api.getArenaTeams();
+      const data = await api.getArenaTeams(selectedRealmId);
       setTeams(data);
     } catch (err) {
       toast(err.message, 'error');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedRealmId]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -406,7 +409,7 @@ export default function ArenaPage({ onViewCharacter }) {
     setDetailLoading(true);
     setActiveTab('Members');
     try {
-      const data = await api.getArenaTeam(arenaTeamId);
+      const data = await api.getArenaTeam(arenaTeamId, selectedRealmId);
       setSelected(data);
     } catch (err) {
       toast(err.message, 'error');
@@ -417,7 +420,7 @@ export default function ArenaPage({ onViewCharacter }) {
 
   const handleCreateTeam = async (data) => {
     try {
-      const result = await api.createArenaTeam(data);
+      const result = await api.createArenaTeam(data, selectedRealmId);
       toast('Arena team created', 'success');
       setShowCreate(false);
       await load();
@@ -429,7 +432,7 @@ export default function ArenaPage({ onViewCharacter }) {
 
   const handleEditTeam = async (data) => {
     try {
-      await api.updateArenaTeam(selected.arenaTeamId, data);
+      await api.updateArenaTeam(selected.arenaTeamId, data, selectedRealmId);
       toast('Arena team updated', 'success');
       setEditTarget(null);
       await openDetail(selected.arenaTeamId);
@@ -441,7 +444,7 @@ export default function ArenaPage({ onViewCharacter }) {
 
   const handleDeleteTeam = async () => {
     try {
-      await api.deleteArenaTeam(deleteTarget.arenaTeamId);
+      await api.deleteArenaTeam(deleteTarget.arenaTeamId, selectedRealmId);
       toast(`Arena team "${deleteTarget.name}" deleted`, 'success');
       setDeleteTarget(null);
       setSelected(null);
@@ -454,7 +457,7 @@ export default function ArenaPage({ onViewCharacter }) {
   const handleRemoveMember = async (guid, name) => {
     if (!confirm(`Remove ${name} from this arena team?`)) return;
     try {
-      await api.removeArenaMember(selected.arenaTeamId, guid);
+      await api.removeArenaMember(selected.arenaTeamId, guid, selectedRealmId);
       toast(`${name} removed from team`, 'success');
       await openDetail(selected.arenaTeamId);
       await load();
@@ -477,7 +480,8 @@ export default function ArenaPage({ onViewCharacter }) {
     <div className="page-wrap">
       <div className="page-header">
         <h1 className="page-title">Arena Teams</h1>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <RealmSelector />
           {auth.gmlevel >= 3 && (
             <button className="btn btn-primary btn-sm" onClick={() => setShowCreate(true)}>Create Team</button>
           )}
@@ -627,7 +631,7 @@ export default function ArenaPage({ onViewCharacter }) {
 
               {activeTab === 'Members'       && <MembersTab members={selected.members} team={selected} auth={auth} onViewCharacter={onViewCharacter} onRemoveMember={handleRemoveMember} />}
               {activeTab === 'Stats'         && <StatsTab   team={selected} />}
-              {activeTab === 'Match History' && <MatchHistoryTab arenaTeamId={selected.arenaTeamId} />}
+              {activeTab === 'Match History' && <MatchHistoryTab arenaTeamId={selected.arenaTeamId} realmId={selectedRealmId} />}
             </>
           )}
         </div>
@@ -638,6 +642,7 @@ export default function ArenaPage({ onViewCharacter }) {
         <CreateTeamModal
           onSave={handleCreateTeam}
           onClose={() => setShowCreate(false)}
+          realmId={selectedRealmId}
         />
       )}
 

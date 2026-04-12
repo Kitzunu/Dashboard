@@ -1,6 +1,5 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
-const { charPool } = require('../db');
 const dbc = require('../dbc');
 
 const router = express.Router();
@@ -49,12 +48,12 @@ router.get('/', requireGMLevel(1), async (req, res) => {
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
   try {
-    const [[{ total }]] = await charPool.query(
+    const [[{ total }]] = await req.charPool.query(
       `SELECT COUNT(*) AS total FROM lag_reports lr ${where}`,
       params
     );
 
-    const [rows] = await charPool.query(
+    const [rows] = await req.charPool.query(
       `SELECT lr.reportId, lr.guid, c.name AS charName,
               lr.lagType, lr.mapId,
               lr.posX, lr.posY, lr.posZ,
@@ -92,7 +91,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
 // GET /api/lagreports/stats — aggregate summary
 router.get('/stats', requireGMLevel(1), async (req, res) => {
   try {
-    const [[stats]] = await charPool.query(
+    const [[stats]] = await req.charPool.query(
       `SELECT COUNT(*)                                         AS total,
               ROUND(AVG(latency))                             AS avgLatency,
               MAX(latency)                                    AS maxLatency,
@@ -106,7 +105,7 @@ router.get('/stats', requireGMLevel(1), async (req, res) => {
     );
 
     // Top 5 most-reporting characters
-    const [topChars] = await charPool.query(
+    const [topChars] = await req.charPool.query(
       `SELECT c.name AS charName, lr.guid, COUNT(*) AS reports, ROUND(AVG(lr.latency)) AS avgLat
        FROM lag_reports lr
        LEFT JOIN characters c ON c.guid = lr.guid
@@ -116,7 +115,7 @@ router.get('/stats', requireGMLevel(1), async (req, res) => {
     );
 
     // Top 5 most-affected maps
-    const [topMaps] = await charPool.query(
+    const [topMaps] = await req.charPool.query(
       `SELECT mapId, COUNT(*) AS reports, ROUND(AVG(latency)) AS avgLat
        FROM lag_reports
        GROUP BY mapId
@@ -146,7 +145,7 @@ router.get('/stats', requireGMLevel(1), async (req, res) => {
 router.delete('/:id', requireGMLevel(2), async (req, res) => {
   const id = parseInt(req.params.id, 10);
   try {
-    await charPool.query('DELETE FROM lag_reports WHERE reportId = ?', [id]);
+    await req.charPool.query('DELETE FROM lag_reports WHERE reportId = ?', [id]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -156,7 +155,7 @@ router.delete('/:id', requireGMLevel(2), async (req, res) => {
 // DELETE /api/lagreports — clear all reports (gm3+)
 router.delete('/', requireGMLevel(3), async (req, res) => {
   try {
-    const [result] = await charPool.query('DELETE FROM lag_reports');
+    const [result] = await req.charPool.query('DELETE FROM lag_reports');
     res.json({ success: true, deleted: result.affectedRows });
   } catch (err) {
     res.status(500).json({ error: err.message });

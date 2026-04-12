@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
+import { useServerStatus } from '../context/ServerContext.jsx';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 // Display order: Mon–Sun. Each entry is [dayIndex (0=Sun…6=Sat), label].
@@ -37,14 +38,14 @@ function fmtDateTime(dt) {
   return new Date(dt).toLocaleString();
 }
 
-function defaultConfig(type) {
-  if (type === 'restart') return { servers: ['worldserver'], delay: 60 };
+function defaultConfig(type, serverNames) {
+  if (type === 'restart') return { servers: serverNames?.length ? [serverNames[0]] : ['worldserver'], delay: 60 };
   if (type === 'backup')  return { databases: ['acore_auth', 'acore_world', 'acore_characters'] };
   return {};
 }
 
 // ── Task modal (create + edit) ────────────────────────────────────────────────
-function TaskModal({ task, onClose, onSaved }) {
+function TaskModal({ task, onClose, onSaved, serverNames }) {
   const editing = !!task;
 
   const [name,    setName]    = useState(task?.name    ?? '');
@@ -57,14 +58,14 @@ function TaskModal({ task, onClose, onSaved }) {
   const [enabled, setEnabled] = useState(task?.enabled !== 0);
   const [config,  setConfig]  = useState(() => {
     if (task?.config) return typeof task.config === 'string' ? JSON.parse(task.config) : task.config;
-    return defaultConfig(task?.type ?? 'backup');
+    return defaultConfig(task?.type ?? 'backup', serverNames);
   });
   const [busy, setBusy] = useState(false);
 
   // Reset config when type changes
   const handleTypeChange = (t) => {
     setType(t);
-    setConfig(defaultConfig(t));
+    setConfig(defaultConfig(t, serverNames));
   };
 
   const toggleDay = (d) =>
@@ -166,7 +167,7 @@ function TaskModal({ task, onClose, onSaved }) {
             <div className="form-group">
               <label>Servers to restart</label>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {['worldserver', 'authserver'].map((s) => (
+                {serverNames.map((s) => (
                   <label key={s} className={`account-flag-item${(config.servers || []).includes(s) ? ' account-flag-active' : ''}`}
                     style={{ cursor: 'pointer' }}>
                     <input type="checkbox"
@@ -260,6 +261,9 @@ function DeleteModal({ task, onConfirm, onClose }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function ScheduledTasksPage() {
+  const { worldservers } = useServerStatus();
+  // Build dynamic server name list: all worldserver IDs + authserver
+  const serverNames = [...worldservers.map((ws) => ws.id), 'authserver'];
   const [tasks,   setTasks]   = useState([]);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState('');
@@ -422,6 +426,7 @@ export default function ScheduledTasksPage() {
           task={editTask === 'new' ? null : editTask}
           onClose={() => setEditTask(null)}
           onSaved={handleSaved}
+          serverNames={serverNames}
         />
       )}
       {deleteTask && (

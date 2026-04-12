@@ -3,6 +3,8 @@ import { useAuth } from '../App.jsx';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 import SortTh from './SortTh.jsx';
+import { useServerStatus } from '../context/ServerContext.jsx';
+import RealmSelector from './RealmSelector.jsx';
 
 const TYPE_TABS = [
   { value: 'all', label: 'All Types' },
@@ -91,11 +93,11 @@ function ConfirmModal({ title, message, confirmLabel = 'Confirm', danger = false
 }
 
 // ── Detail modal ──────────────────────────────────────────────────────────────
-function SpamDetailModal({ report, canDelete, onClose, onDeleted }) {
+function SpamDetailModal({ report, canDelete, onClose, onDeleted, realmId }) {
   const handleDelete = async () => {
     if (!confirm('Delete this spam report?')) return;
     try {
-      await api.deleteSpamReport(report.id);
+      await api.deleteSpamReport(report.id, realmId);
       toast('Report deleted', 'success');
       onDeleted(report.id);
       onClose();
@@ -202,6 +204,7 @@ function Field({ label, value, mono }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function SpamReportsPage() {
   const { auth } = useAuth();
+  const { selectedRealmId } = useServerStatus();
   const canDelete  = auth.gmlevel >= 2;
   const canClearAll = auth.gmlevel >= 3;
 
@@ -221,7 +224,7 @@ export default function SpamReportsPage() {
   const fetchReports = useCallback(async (p, t, s) => {
     setLoading(true);
     try {
-      const data = await api.getSpamReports(p, t, s);
+      const data = await api.getSpamReports(p, t, s, selectedRealmId);
       setReports(data.reports);
       setTotal(data.total);
       setPages(data.pages);
@@ -230,9 +233,9 @@ export default function SpamReportsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedRealmId]);
 
-  useEffect(() => { fetchReports(page, typeFilter, search); }, [page, typeFilter, search]);
+  useEffect(() => { fetchReports(page, typeFilter, search); }, [page, typeFilter, search, selectedRealmId]);
 
   const handleTypeChange = (val) => { setTypeFilter(val); setPage(1); };
   const handleSearch = () => { setSearch(searchInput); setPage(1); };
@@ -250,7 +253,7 @@ export default function SpamReportsPage() {
 
   const handleClearAll = async () => {
     try {
-      await api.clearSpamReports();
+      await api.clearSpamReports(selectedRealmId);
       toast('All spam reports cleared', 'success');
       setPage(1);
       fetchReports(1, typeFilter, search);
@@ -267,6 +270,7 @@ export default function SpamReportsPage() {
       <div className="page-header">
         <h2 className="page-title">Spam Reports</h2>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <RealmSelector />
           <span className="td-muted" style={{ fontSize: 13 }}>{total} report{total !== 1 ? 's' : ''}</span>
           {canClearAll && total > 0 && (
             <button className="btn btn-danger btn-sm" onClick={() => setConfirmClear(true)}>Clear All</button>
@@ -371,6 +375,7 @@ export default function SpamReportsPage() {
           canDelete={canDelete}
           onClose={() => setSelected(null)}
           onDeleted={handleDeleted}
+          realmId={selectedRealmId}
         />
       )}
 

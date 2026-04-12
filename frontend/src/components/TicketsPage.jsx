@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { formatUnixDate as fmt } from '../utils/format.js';
+import { useServerStatus } from '../context/ServerContext.jsx';
+import RealmSelector from './RealmSelector.jsx';
 
 // type: 0 = open, 1 = closed, 2 = character deleted
 function ticketTypeLabel(type) {
@@ -256,6 +258,7 @@ function TicketRow({ ticket: raw, onRespond, onAction, onViewCharacter }) {
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 export default function TicketsPage({ onViewCharacter }) {
+  const { selectedRealmId } = useServerStatus();
   const [tickets, setTickets]             = useState([]);
   const [loading, setLoading]             = useState(true);
   const [error, setError]                 = useState('');
@@ -264,7 +267,7 @@ export default function TicketsPage({ onViewCharacter }) {
 
   const loadTickets = useCallback(async () => {
     try {
-      const data = showAll ? await api.getAllTickets() : await api.getTickets();
+      const data = showAll ? await api.getAllTickets(selectedRealmId) : await api.getTickets(selectedRealmId);
       setTickets(data);
       setError('');
     } catch (err) {
@@ -272,7 +275,7 @@ export default function TicketsPage({ onViewCharacter }) {
     } finally {
       setLoading(false);
     }
-  }, [showAll]);
+  }, [showAll, selectedRealmId]);
 
   useEffect(() => {
     setLoading(true);
@@ -285,11 +288,11 @@ export default function TicketsPage({ onViewCharacter }) {
     setRespondTarget(null);
     try {
       if (response) {
-        const r = await api.respondTicket(id, response);
+        const r = await api.respondTicket(id, response, selectedRealmId);
         if (r.success === false) { toast(r.error || 'Failed to send response', 'error'); return; }
       }
       if (close) {
-        const r = await api.closeTicket(id);
+        const r = await api.closeTicket(id, selectedRealmId);
         if (r.success === false) { toast(r.error || 'Failed to close ticket', 'error'); return; }
         if (!showAll) setTickets((prev) => prev.filter((t) => t.id !== id));
       }
@@ -303,11 +306,11 @@ export default function TicketsPage({ onViewCharacter }) {
   const handleAction = async (id, action, value) => {
     try {
       let r;
-      if (action === 'assign')     r = await api.assignTicket(id, value);
-      if (action === 'unassign')   r = await api.unassignTicket(id);
-      if (action === 'escalate')   r = await api.escalateTicket(id);
-      if (action === 'deescalate') r = await api.deescalateTicket(id);
-      if (action === 'comment')    r = await api.commentTicket(id, value);
+      if (action === 'assign')     r = await api.assignTicket(id, value, selectedRealmId);
+      if (action === 'unassign')   r = await api.unassignTicket(id, selectedRealmId);
+      if (action === 'escalate')   r = await api.escalateTicket(id, selectedRealmId);
+      if (action === 'deescalate') r = await api.deescalateTicket(id, selectedRealmId);
+      if (action === 'comment')    r = await api.commentTicket(id, value, selectedRealmId);
       if (r?.success === false) { toast(r.error || 'Action failed', 'error'); return; }
 
       const actionLabels = {
@@ -343,7 +346,8 @@ export default function TicketsPage({ onViewCharacter }) {
             {!loading && ` — ${tickets.length} ticket${tickets.length !== 1 ? 's' : ''}`}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <RealmSelector />
           <button
             className={`btn ${showAll ? 'btn-secondary' : 'btn-ghost'}`}
             onClick={() => setShowAll((v) => !v)}

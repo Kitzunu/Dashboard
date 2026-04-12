@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
+import { useServerStatus } from '../context/ServerContext.jsx';
+import RealmSelector from './RealmSelector.jsx';
 
 function RemoveModal({ name, type, onConfirm, onClose }) {
   const label = type === 'profanity' ? 'profanity' : 'reserved';
@@ -18,6 +20,7 @@ function RemoveModal({ name, type, onConfirm, onClose }) {
 }
 
 export default function NameFiltersPage() {
+  const { selectedRealmId } = useServerStatus();
   const [profanity, setProfanity]   = useState([]);
   const [reserved,  setReserved]    = useState([]);
   const [loading,   setLoading]     = useState(true);
@@ -32,7 +35,7 @@ export default function NameFiltersPage() {
 
   const load = useCallback(async () => {
     try {
-      const data = await api.getNameFilters();
+      const data = await api.getNameFilters(selectedRealmId);
       setProfanity(data.profanity);
       setReserved(data.reserved);
       setError('');
@@ -41,7 +44,7 @@ export default function NameFiltersPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedRealmId]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -63,7 +66,7 @@ export default function NameFiltersPage() {
     setAdding(true);
     setAddError('');
     try {
-      await api.addNameFilter(tab, name);
+      await api.addNameFilter(tab, name, selectedRealmId);
       setNewName('');
       await load();
     } catch (err) {
@@ -75,7 +78,7 @@ export default function NameFiltersPage() {
 
   const handleRemove = async () => {
     try {
-      await api.removeNameFilter(tab, removeTarget);
+      await api.removeNameFilter(tab, removeTarget, selectedRealmId);
       setRemoveTarget(null);
       await load();
     } catch (err) {
@@ -90,7 +93,10 @@ export default function NameFiltersPage() {
     <div className="page">
       <div className="page-header">
         <h2 className="page-title">Name Filters</h2>
-        <button className="btn btn-secondary" onClick={load}>Refresh</button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <RealmSelector />
+          <button className="btn btn-secondary" onClick={load}>Refresh</button>
+        </div>
       </div>
 
       <div className="tab-bar" style={{ display: 'flex', gap: 8, marginBottom: 16 }}>

@@ -1,6 +1,6 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
-const { charPool } = require('../db');
+
 const { audit } = require('../audit');
 
 const router = express.Router();
@@ -40,7 +40,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
-    const [[{ total }]] = await charPool.query(
+    const [[{ total }]] = await req.charPool.query(
       `SELECT COUNT(*) AS total
        FROM spam_reports s
        LEFT JOIN characters c ON c.guid = s.SpammerGuid
@@ -48,7 +48,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
       params
     );
 
-    const [rows] = await charPool.query(
+    const [rows] = await req.charPool.query(
       `SELECT s.ID, s.SpamType, s.SpammerGuid, s.MailIdOrMessageType,
               s.ChannelId, s.SecondsSinceMessage, s.Description, s.Time,
               c.name AS spammerName
@@ -83,7 +83,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
 router.delete('/:id', requireGMLevel(2), async (req, res) => {
   const id = parseInt(req.params.id, 10);
   try {
-    await charPool.query('DELETE FROM spam_reports WHERE ID = ?', [id]);
+    await req.charPool.query('DELETE FROM spam_reports WHERE ID = ?', [id]);
     audit(req, 'spamreport.delete', `id=${id}`);
     res.json({ success: true });
   } catch (err) {
@@ -94,7 +94,7 @@ router.delete('/:id', requireGMLevel(2), async (req, res) => {
 // DELETE /api/spamreports — clear all reports (GM 3+)
 router.delete('/', requireGMLevel(3), async (req, res) => {
   try {
-    await charPool.query('DELETE FROM spam_reports');
+    await req.charPool.query('DELETE FROM spam_reports');
     audit(req, 'spamreport.clear_all');
     res.json({ success: true });
   } catch (err) {

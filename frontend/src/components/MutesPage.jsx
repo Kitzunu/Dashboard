@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { formatUnixDate as fmt } from '../utils/format.js';
+import ServerSelector from './ServerSelector.jsx';
 
 function fmtRemaining(unix) {
   const secs = Math.max(0, unix - Math.floor(Date.now() / 1000));
@@ -109,6 +110,7 @@ export default function MutesPage() {
   const [error, setError]           = useState('');
   const [showMuteModal, setShowMuteModal]   = useState(false);
   const [unmuteTarget, setUnmuteTarget]     = useState(null); // mute row
+  const [server, setServer]         = useState(null);
 
   const loadMutes = useCallback(async () => {
     try {
@@ -127,7 +129,7 @@ export default function MutesPage() {
   const handleMute = async (charName, minutes, reason) => {
     setShowMuteModal(false);
     try {
-      await api.muteCharacter(charName, minutes, reason);
+      await api.muteCharacter(charName, minutes, reason, server);
       toast(`${charName} muted for ${minutes} minute(s)`);
       setTimeout(loadMutes, 1500);
     } catch (err) {
@@ -154,7 +156,8 @@ export default function MutesPage() {
           <h2 className="page-title">Active Mutes</h2>
           <p className="page-sub">Manage muted accounts</p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <ServerSelector value={server} onChange={setServer} />
           <button className="btn btn-warning" onClick={() => setShowMuteModal(true)}>
             Issue Mute
           </button>

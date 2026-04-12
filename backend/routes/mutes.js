@@ -1,6 +1,6 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
-const { authPool, charPool } = require('../db');
+const { authPool } = require('../db');
 const { audit } = require('../audit');
 
 const router = express.Router();

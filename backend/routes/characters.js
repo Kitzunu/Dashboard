@@ -1,5 +1,4 @@
 const express   = require('express');
-const { charPool, worldPool } = require('../db');
 const { requireGMLevel } = require('../middleware/auth');
 const dbc = require('../dbc');
 
@@ -62,7 +61,7 @@ router.get('/search', requireGMLevel(1), async (req, res) => {
   const q = (req.query.q || '').trim().toLowerCase();
   if (q.length < 2) return res.json([]);
   try {
-    const [rows] = await charPool.query(
+    const [rows] = await req.charPool.query(
       `SELECT guid, name, race, \`class\`, level, online
        FROM characters WHERE LOWER(name) LIKE ? ORDER BY name LIMIT 50`,
       [`${q}%`]
@@ -81,7 +80,7 @@ router.get('/:guid', requireGMLevel(1), async (req, res) => {
 
   try {
     // Base character info
-    const [[char]] = await charPool.query(
+    const [[char]] = await req.charPool.query(
       `SELECT guid, account, name, race, \`class\`, gender, level, money, online,
               totaltime, arenaPoints, totalHonorPoints, totalKills, zone,
               health, power1, power2, power3, power4, power5, power6, power7
@@ -91,7 +90,7 @@ router.get('/:guid', requireGMLevel(1), async (req, res) => {
     if (!char) return res.status(404).json({ error: 'Character not found' });
 
     // Character stats (populated by server on login/logout; may be empty for never-logged-in chars)
-    const [[statsRow]] = await charPool.query(
+    const [[statsRow]] = await req.charPool.query(
       `SELECT maxhealth, maxpower1, maxpower2, maxpower3, maxpower4, maxpower5, maxpower6, maxpower7,
               strength, agility, stamina, intellect, spirit, armor,
               resHoly, resFire, resNature, resFrost, resShadow, resArcane,
@@ -102,7 +101,7 @@ router.get('/:guid', requireGMLevel(1), async (req, res) => {
     );
 
     // All inventory in one shot
-    const [inventory] = await charPool.query(
+    const [inventory] = await req.charPool.query(
       `SELECT ci.bag, ci.slot, ci.item AS itemGuid, ii.itemEntry, ii.count
        FROM character_inventory ci
        JOIN item_instance ii ON ci.item = ii.guid
@@ -135,7 +134,7 @@ router.get('/:guid', requireGMLevel(1), async (req, res) => {
     const allEntries = [...new Set(inventory.map((i) => i.itemEntry))];
     let tplMap = {};
     if (allEntries.length > 0) {
-      const [tpls] = await worldPool.query(
+      const [tpls] = await req.worldPool.query(
         'SELECT entry, name, Quality, class AS itemClass FROM item_template WHERE entry IN (?)',
         [allEntries]
       );
@@ -217,7 +216,7 @@ router.get('/:guid', requireGMLevel(1), async (req, res) => {
 
     // Reputation — names from Faction.dbc
     const factions = dbc.getAllFactions();
-    const [repRows] = await charPool.query(
+    const [repRows] = await req.charPool.query(
       'SELECT faction, standing, flags FROM character_reputation WHERE guid = ? ORDER BY faction ASC',
       [guid]
     );
@@ -234,7 +233,7 @@ router.get('/:guid', requireGMLevel(1), async (req, res) => {
     // Currency (graceful — table may not exist on all builds)
     let currency = [];
     try {
-      const [currRows] = await charPool.query(
+      const [currRows] = await req.charPool.query(
         'SELECT Currency, totalCount, weekCount FROM character_currency WHERE guid = ?',
         [guid]
       );
@@ -247,7 +246,7 @@ router.get('/:guid', requireGMLevel(1), async (req, res) => {
     } catch {}
 
     // Achievements — grouped by category from DBC
-    const [achRows] = await charPool.query(
+    const [achRows] = await req.charPool.query(
       'SELECT achievement, date FROM character_achievement WHERE guid = ? ORDER BY date DESC',
       [guid]
     );
@@ -287,7 +286,7 @@ router.get('/:guid', requireGMLevel(1), async (req, res) => {
 
     // Auras
     const spellDbc = dbc.getAllSpells();
-    const [auraRows] = await charPool.query(
+    const [auraRows] = await req.charPool.query(
       `SELECT spell, stackCount, remainTime, maxDuration, remainCharges
        FROM character_aura WHERE guid = ? ORDER BY spell ASC`,
       [guid]

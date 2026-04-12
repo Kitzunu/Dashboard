@@ -1,6 +1,5 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
-const { charPool } = require('../db');
 const { audit } = require('../audit');
 
 const router = express.Router();
@@ -389,12 +388,12 @@ router.get('/', requireGMLevel(1), async (req, res) => {
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
-    const [[{ total }]] = await charPool.query(
+    const [[{ total }]] = await req.charPool.query(
       `SELECT COUNT(*) AS total FROM bugreport ${where}`,
       params
     );
 
-    const [rows] = await charPool.query(
+    const [rows] = await req.charPool.query(
       `SELECT id, type, content, state, assignee, comment FROM bugreport ${where} ORDER BY id DESC LIMIT ? OFFSET ?`,
       [...params, PAGE_SIZE, offset]
     );
@@ -427,7 +426,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
 router.get('/:id', requireGMLevel(1), async (req, res) => {
   const id = parseInt(req.params.id, 10);
   try {
-    const [[row]] = await charPool.query(
+    const [[row]] = await req.charPool.query(
       'SELECT id, type, content, state, assignee, comment FROM bugreport WHERE id = ?', [id]
     );
     if (!row) return res.status(404).json({ error: 'Report not found' });
@@ -465,7 +464,7 @@ router.patch('/:id', requireGMLevel(2), async (req, res) => {
   params.push(id);
 
   try {
-    await charPool.query(`UPDATE bugreport SET ${updates.join(', ')} WHERE id = ?`, params);
+    await req.charPool.query(`UPDATE bugreport SET ${updates.join(', ')} WHERE id = ?`, params);
     const parts = [];
     if (state    !== undefined) parts.push(`state=${state}`);
     if (assignee !== undefined) parts.push(`assignee=${assignee || 'cleared'}`);

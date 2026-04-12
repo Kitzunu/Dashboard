@@ -8,7 +8,7 @@ const router = express.Router();
 // POST /api/mail
 // body: { type: 'text'|'items'|'money', player, subject, body, items?: [{id,count}], money?: number }
 router.post('/', requireGMLevel(2), (req, res) => {
-  const { type = 'text', player, subject, body, items, money } = req.body;
+  const { type = 'text', player, subject, body, items, money, server } = req.body;
 
   if (!player?.trim())   return res.status(400).json({ error: 'Player name is required' });
   if (!subject?.trim())  return res.status(400).json({ error: 'Subject is required' });
@@ -45,9 +45,9 @@ router.post('/', requireGMLevel(2), (req, res) => {
     command = `send mail ${p} "${s}" "${b}"`;
   }
 
-  const result = processManager.sendCommand(command);
+  const result = processManager.sendCommand(command, server || undefined);
   if (!result.success) return res.status(503).json({ error: result.error });
-  audit(req, 'mail.send', `to=${p} subject=${s} type=${type}`);
+  audit(req, 'mail.send', `to=${p} subject=${s} type=${type} server=${server || 'default'}`);
   res.json({ success: true });
 });
 

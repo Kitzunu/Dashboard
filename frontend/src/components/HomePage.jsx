@@ -522,6 +522,9 @@ export default function HomePage() {
         <StatCard label="Players Online" value={anyWorldRunning ? (players.current ?? 0) : 0} />
         <StatCard label="Open Tickets"   value={tickets.open    ?? 0} />
         <StatCard label="Active Bans"    value={bans.active     ?? 0} />
+        {players.byRealm && worldservers.length > 1 && worldservers.map((ws) => (
+          <StatCard key={ws.id} label={`${ws.name} Players`} value={servers[ws.id]?.running ? (players.byRealm[ws.id] ?? 0) : 0} />
+        ))}
       </div>
 
       {/* Resource graphs */}

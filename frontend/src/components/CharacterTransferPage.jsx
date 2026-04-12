@@ -2,12 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { FALLBACK_RACES, FALLBACK_CLASSES } from '../constants.js';
+import { useServerStatus } from '../context/ServerContext.jsx';
+import RealmSelector from './RealmSelector.jsx';
 
 export default function CharacterTransferPage() {
+  const { selectedRealmId, worldservers } = useServerStatus();
+  const multiRealm = worldservers.length > 1;
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selectedChar, setSelectedChar] = useState(null);
   const [charDetail, setCharDetail] = useState(null);
+  const [destRealmId, setDestRealmId] = useState(selectedRealmId);
   const [targetAccountId, setTargetAccountId] = useState('');
   const [targetAccountName, setTargetAccountName] = useState('');
   const [accountQuery, setAccountQuery] = useState('');
@@ -16,6 +21,7 @@ export default function CharacterTransferPage() {
   const [busy, setBusy] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const acDropdownRef = useRef(null);
+  const isCrossRealm = multiRealm && destRealmId !== selectedRealmId;
 
   // Close account dropdown on outside click
   useEffect(() => {
@@ -32,7 +38,7 @@ export default function CharacterTransferPage() {
   const handleSearch = async () => {
     if (searchQuery.length < 2) return;
     try {
-      const results = await api.searchCharacters(searchQuery);
+      const results = await api.searchCharacters(searchQuery, selectedRealmId);
       setSearchResults(results);
     } catch (e) {
       toast(e.message, 'error');
@@ -42,7 +48,7 @@ export default function CharacterTransferPage() {
   const handleSelect = async (char) => {
     setSelectedChar(char);
     try {
-      const detail = await api.validateTransfer(char.guid);
+      const detail = await api.validateTransfer(char.guid, selectedRealmId);
       setCharDetail(detail);
     } catch (e) {
       toast(e.message, 'error');
@@ -76,8 +82,17 @@ export default function CharacterTransferPage() {
     setShowConfirm(false);
     setBusy(true);
     try {
-      const result = await api.transferCharacter(selectedChar.guid, parseInt(targetAccountId, 10));
-      toast(`${result.character} transferred successfully to account ${result.toAccount}`);
+      let result;
+      if (isCrossRealm) {
+        result = await api.transferCharacterCrossRealm(
+          selectedChar.guid, parseInt(targetAccountId, 10), selectedRealmId, destRealmId
+        );
+        const destName = worldservers.find(ws => ws.id === destRealmId)?.name || destRealmId;
+        toast(`${result.character} transferred to ${destName} (account ${result.toAccount})${result.forceRename ? ' — rename required on next login' : ''}`);
+      } else {
+        result = await api.transferCharacter(selectedChar.guid, parseInt(targetAccountId, 10), selectedRealmId);
+        toast(`${result.character} transferred successfully to account ${result.toAccount}`);
+      }
       setSelectedChar(null);
       setCharDetail(null);
       setTargetAccountId('');
@@ -96,8 +111,9 @@ export default function CharacterTransferPage() {
       <div className="page-header">
         <div>
           <h2 className="page-title">Character Transfer</h2>
-          <p className="page-sub">Transfer characters between accounts</p>
+          <p className="page-sub">Transfer characters between accounts{multiRealm ? ' and realms' : ''}</p>
         </div>
+        <RealmSelector />
       </div>
 
       {/* Search */}
@@ -193,6 +209,25 @@ export default function CharacterTransferPage() {
 
           {charDetail.character.canTransfer && (
             <div className="char-transfer-target">
+              {multiRealm && (
+                <div className="form-group">
+                  <label>Destination Realm</label>
+                  <select className="filter-input" value={destRealmId}
+                    onChange={(e) => setDestRealmId(e.target.value)}
+                    style={{ width: 220 }}>
+                    {worldservers.map((ws) => (
+                      <option key={ws.id} value={ws.id}>
+                        {ws.name}{ws.id === selectedRealmId ? ' (current)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                  {isCrossRealm && (
+                    <span className="td-muted" style={{ fontSize: 12, marginTop: 4, display: 'block' }}>
+                      Cross-realm transfer uses character dump/load. A new GUID will be assigned on the destination realm.
+                    </span>
+                  )}
+                </div>
+              )}
               <div className="form-group" ref={acDropdownRef} style={{ position: 'relative' }}>
                 <label>Target Account</label>
                 <input type="text" value={accountQuery}
@@ -244,6 +279,12 @@ export default function CharacterTransferPage() {
             <div className="modal-body">
               <p>Transfer <strong>{charDetail.character.name}</strong> (GUID {charDetail.character.guid})
                 from account <strong>{charDetail.account?.username}</strong> to account <strong>{targetAccountName || `#${targetAccountId}`}</strong>?</p>
+              {isCrossRealm && (
+                <p style={{ marginTop: 8, color: 'var(--warning, #e8a838)' }}>
+                  Cross-realm transfer from <strong>{worldservers.find(ws => ws.id === selectedRealmId)?.name}</strong> to <strong>{worldservers.find(ws => ws.id === destRealmId)?.name}</strong>.
+                  The character will be removed from the source realm and assigned a new GUID.
+                </p>
+              )}
               <p className="td-muted" style={{ fontSize: 13, marginTop: 8 }}>This action will be audit-logged.</p>
             </div>
             <div className="modal-footer">

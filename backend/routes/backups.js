@@ -5,6 +5,7 @@ const fs = require('fs');
 const { execFile } = require('child_process');
 const { requireGMLevel } = require('../middleware/auth');
 const { audit } = require('../audit');
+const { getAllRealmDbNames } = require('../db');
 
 const BACKUP_PATH = process.env.BACKUP_PATH || path.join(__dirname, '../../backups');
 
@@ -71,11 +72,7 @@ router.post('/create', requireGMLevel(3), async (req, res) => {
   const { databases } = req.body;
   const dbList = Array.isArray(databases) && databases.length
     ? databases
-    : [
-        process.env.AUTH_DB       || 'acore_auth',
-        process.env.WORLD_DB     || 'acore_world',
-        process.env.CHARACTERS_DB || 'acore_characters',
-      ];
+    : getAllRealmDbNames();
 
   const backupDir = BACKUP_PATH;
   await fs.promises.mkdir(backupDir, { recursive: true });

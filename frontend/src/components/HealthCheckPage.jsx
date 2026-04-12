@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
+import { useServerStatus } from '../context/ServerContext.jsx';
 
 function formatUptime(seconds) {
   const d = Math.floor(seconds / 86400);
@@ -26,21 +27,57 @@ function StatusBadge({ status }) {
   return <span className={cls}>{status}</span>;
 }
 
+function PoolTable({ pools, connections }) {
+  return (
+    <div className="table-wrap" style={{ marginBottom: 24 }}>
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>Pool</th>
+            <th>Status</th>
+            <th>Latency</th>
+            <th title="Idle connections available in the pool">Free</th>
+            <th title="Connections currently executing queries">Active</th>
+            <th title="Total connections in the pool (Free + Active)">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pools.map((db, i) => {
+            const conn = connections[i] || {};
+            return (
+              <tr key={db.name}>
+                <td className="td-name">{db.name}</td>
+                <td><StatusBadge status={db.status} /></td>
+                <td className="td-muted">{db.latencyMs} ms</td>
+                <td className="td-muted">{conn.free ?? '—'}</td>
+                <td className="td-muted">{conn.active ?? '—'}</td>
+                <td className="td-muted">{conn.total ?? '—'}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export default function HealthCheckPage() {
+  const { worldservers } = useServerStatus();
+  const multiRealm = worldservers.length > 1;
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(false);
 
   const load = useCallback(async () => {
     try {
-      const result = await api.getHealthCheck();
+      const result = multiRealm ? await api.getHealthCheckAll() : await api.getHealthCheck();
       setData(result);
     } catch (e) {
       toast(e.message, 'error');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [multiRealm]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -73,35 +110,20 @@ export default function HealthCheckPage() {
 
       {/* Database Pools */}
       <h3 style={{ marginBottom: 12 }}>Database Pools</h3>
-      <div className="table-wrap" style={{ marginBottom: 24 }}>
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Pool</th>
-              <th>Status</th>
-              <th>Latency</th>
-              <th title="Idle connections available in the pool">Free</th>
-              <th title="Connections currently executing queries">Active</th>
-              <th title="Total connections in the pool (Free + Active)">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.database.map((db, i) => {
-              const conn = data.connections[i] || {};
-              return (
-                <tr key={db.name}>
-                  <td className="td-name">{db.name}</td>
-                  <td><StatusBadge status={db.status} /></td>
-                  <td className="td-muted">{db.latencyMs} ms</td>
-                  <td className="td-muted">{conn.free ?? '—'}</td>
-                  <td className="td-muted">{conn.active ?? '—'}</td>
-                  <td className="td-muted">{conn.total ?? '—'}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      {multiRealm && data.sharedPools ? (
+        <>
+          <h4 style={{ marginBottom: 8, fontSize: 13, color: 'var(--text-dim)' }}>Shared</h4>
+          <PoolTable pools={data.sharedPools} connections={data.sharedConnections} />
+          {data.realms?.map((realm) => (
+            <div key={realm.id}>
+              <h4 style={{ marginBottom: 8, marginTop: 16, fontSize: 13, color: 'var(--text-dim)' }}>{realm.name}</h4>
+              <PoolTable pools={realm.database} connections={realm.connections} />
+            </div>
+          ))}
+        </>
+      ) : (
+        <PoolTable pools={data.database} connections={data.connections} />
+      )}
 
       {/* System Info */}
       <h3 style={{ marginBottom: 12 }}>System</h3>

@@ -9,8 +9,8 @@ export function useSocket() {
 }
 
 export function useServerStatus() {
-  const { serverStatus, setServerStatus, worldservers, playerCount, ticketCount } = useContext(ServerContext);
-  return { serverStatus, setServerStatus, worldservers, playerCount, ticketCount };
+  const { serverStatus, setServerStatus, worldservers, playerCount, ticketCount, selectedRealmId, setSelectedRealmId } = useContext(ServerContext);
+  return { serverStatus, setServerStatus, worldservers, playerCount, ticketCount, selectedRealmId, setSelectedRealmId };
 }
 
 export function ServerProvider({ token, children }) {
@@ -20,6 +20,7 @@ export function ServerProvider({ token, children }) {
     authserver: { running: false },
   });
   const [worldservers, setWorldservers] = useState([{ id: 'worldserver', name: 'World Server' }]);
+  const [selectedRealmId, setSelectedRealmId] = useState('worldserver');
   const [playerCount, setPlayerCount] = useState(null);
   const [ticketCount, setTicketCount] = useState(null);
   const worldRunningRef = useRef(false);
@@ -33,6 +34,7 @@ export function ServerProvider({ token, children }) {
       .then((list) => {
         if (Array.isArray(list) && list.length > 0) {
           setWorldservers(list);
+          setSelectedRealmId((prev) => list.find((ws) => ws.id === prev) ? prev : list[0].id);
           setServerStatus((prev) => {
             const next = { ...prev };
             for (const ws of list) {
@@ -87,7 +89,7 @@ export function ServerProvider({ token, children }) {
   }, []);
 
   return (
-    <ServerContext.Provider value={{ socket, serverStatus, setServerStatus, worldservers, playerCount, ticketCount }}>
+    <ServerContext.Provider value={{ socket, serverStatus, setServerStatus, worldservers, selectedRealmId, setSelectedRealmId, playerCount, ticketCount }}>
       {children}
     </ServerContext.Provider>
   );

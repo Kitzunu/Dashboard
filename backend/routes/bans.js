@@ -1,6 +1,6 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
-const { authPool, charPool } = require('../db');
+const { authPool } = require('../db');
 const processManager = require('../processManager');
 const { audit } = require('../audit');
 
@@ -17,7 +17,7 @@ router.get('/', requireGMLevel(2), async (req, res) => {
          WHERE ab.active = 1
          ORDER BY ab.bandate DESC LIMIT 200`
       ),
-      charPool.query(
+      req.charPool.query(
         `SELECT cb.guid, c.name, cb.bandate, cb.unbandate, cb.bannedby, cb.banreason
          FROM character_banned cb
          JOIN characters c ON cb.guid = c.guid
@@ -73,7 +73,7 @@ router.delete('/characters/:guid', requireGMLevel(2), async (req, res) => {
   const guid = parseInt(req.params.guid, 10);
   if (!guid) return res.status(400).json({ error: 'Invalid character guid' });
   try {
-    await charPool.query('UPDATE character_banned SET active = 0 WHERE guid = ?', [guid]);
+    await req.charPool.query('UPDATE character_banned SET active = 0 WHERE guid = ?', [guid]);
     audit(req, 'unban.character', `guid=${guid}`);
     res.json({ success: true });
   } catch (err) {

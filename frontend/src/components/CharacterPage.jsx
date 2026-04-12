@@ -2,6 +2,8 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { FALLBACK_RACES, FALLBACK_CLASSES, QUALITY_COLORS } from '../constants.js';
+import { useServerStatus } from '../context/ServerContext.jsx';
+import RealmSelector from './RealmSelector.jsx';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -932,6 +934,7 @@ function ReputationTab({ reputation }) {
 const TABS = ['Overview', 'Stats', 'Equipment', 'Bags', 'Bank', 'Auras', 'Reputation', 'Achievements'];
 
 export default function CharacterPage({ initialGuid = null }) {
+  const { selectedRealmId } = useServerStatus();
   const [query, setQuery]           = useState('');
   const [results, setResults]       = useState([]);
   const [searching, setSearching]   = useState(false);
@@ -956,7 +959,7 @@ export default function CharacterPage({ initialGuid = null }) {
     debounceRef.current = setTimeout(async () => {
       setSearching(true);
       try {
-        const data = await api.searchCharacters(value);
+        const data = await api.searchCharacters(value, selectedRealmId);
         setResults(data);
       } catch (err) {
         toast(err.message, 'error');
@@ -964,13 +967,13 @@ export default function CharacterPage({ initialGuid = null }) {
         setSearching(false);
       }
     }, 300);
-  }, []);
+  }, [selectedRealmId]);
 
   const openDetail = async (guid) => {
     setDetailLoading(true);
     setActiveTab('Overview');
     try {
-      const data = await api.getCharacter(guid);
+      const data = await api.getCharacter(guid, selectedRealmId);
       setSelected(data);
       // Trigger WoWHead tooltip init after render
       setTimeout(() => window.$WowheadPower?.refreshLinks(), 100);
@@ -1004,9 +1007,12 @@ export default function CharacterPage({ initialGuid = null }) {
 
       <div className="page-header">
         <h1 className="page-title">Characters</h1>
-        <button className="btn btn-secondary" style={{ fontSize: 13 }} onClick={() => setShowLoad(true)}>
-          Import Dump
-        </button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <RealmSelector />
+          <button className="btn btn-secondary" style={{ fontSize: 13 }} onClick={() => setShowLoad(true)}>
+            Import Dump
+          </button>
+        </div>
       </div>
 
       <div className="channels-layout">

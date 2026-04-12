@@ -1,6 +1,6 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
-const { charPool, authPool } = require('../db');
+const { authPool } = require('../db');
 const processManager = require('../processManager');
 const dbc = require('../dbc');
 const log = require('../logger')('players');
@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.get('/count', requireGMLevel(1), async (req, res) => {
   try {
-    const [rows] = await charPool.query('SELECT COUNT(*) AS count FROM characters WHERE online = 1');
+    const [rows] = await req.charPool.query('SELECT COUNT(*) AS count FROM characters WHERE online = 1');
     res.json({ count: Number(rows[0].count) });
   } catch {
     res.json({ count: 0 });
@@ -19,7 +19,7 @@ router.get('/count', requireGMLevel(1), async (req, res) => {
 router.get('/', requireGMLevel(1), async (req, res) => {
   try {
     const authDb = process.env.AUTH_DB || 'acore_auth';
-    const [rows] = await charPool.query(
+    const [rows] = await req.charPool.query(
       `SELECT c.guid, c.name, c.race, c.\`class\`, c.level, c.zone, c.account,
               a.username, a.last_ip
        FROM characters c

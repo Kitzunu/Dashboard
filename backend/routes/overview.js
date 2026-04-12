@@ -1,7 +1,7 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const os = require('os');
-const { authPool, charPool, worldPool } = require('../db');
+const { authPool } = require('../db');
 const processManager   = require('../processManager');
 const serverBridge     = require('../serverBridge');
 const playerHistory    = require('../playerHistory');
@@ -19,15 +19,15 @@ router.get('/', requireGMLevel(1), async (req, res) => {
     let cpuUsage = 0, agentStatus = {};
 
     await Promise.all([
-      charPool.query('SELECT COUNT(*) AS count FROM characters WHERE online = 1')
+      req.charPool.query('SELECT COUNT(*) AS count FROM characters WHERE online = 1')
         .then(([[r]]) => { playerCount = Number(r.count); }).catch(() => {}),
-      charPool.query('SELECT COUNT(*) AS count FROM gm_ticket WHERE type = 0')
+      req.charPool.query('SELECT COUNT(*) AS count FROM gm_ticket WHERE type = 0')
         .then(([[r]]) => { ticketCount = Number(r.count); }).catch(() => {}),
       authPool.query('SELECT COUNT(*) AS count FROM account_banned WHERE active = 1')
         .then(([[r]]) => { banCount = Number(r.count); }).catch(() => {}),
       authPool.query('SELECT text FROM motd LIMIT 1')
         .then(([[r]]) => { motd = r?.text ?? ''; }).catch(() => {}),
-      worldPool.query('SELECT core_version, core_revision, db_version, cache_id FROM version')
+      req.worldPool.query('SELECT core_version, core_revision, db_version, cache_id FROM version')
         .then(([[r]]) => { version = r ?? null; }).catch(() => {}),
       (async () => { try { cpuUsage = await getCpuUsage(); } catch {} })(),
       processManager.getAllStatus()

@@ -1,15 +1,18 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
-const { authPool, worldPool, charPool } = require('../db');
+const { authPool } = require('../db');
 const { audit } = require('../audit');
 
 const router = express.Router();
 
-const POOLS = {
-  auth: authPool,
-  world: worldPool,
-  characters: charPool,
-};
+function getPool(req, database) {
+  switch (database) {
+    case 'auth':       return authPool;
+    case 'world':      return req.worldPool;
+    case 'characters': return req.charPool;
+    default:           return req.charPool;
+  }
+}
 
 router.post('/query', requireGMLevel(3), async (req, res) => {
   const { query, database } = req.body;
@@ -17,7 +20,7 @@ router.post('/query', requireGMLevel(3), async (req, res) => {
     return res.status(400).json({ error: 'Query is required' });
   }
 
-  const pool = POOLS[database] || charPool;
+  const pool = getPool(req, database);
 
   audit(req, 'dbquery.execute', `db=${database || 'characters'} query=${query.trim().slice(0, 200)}`);
   try {

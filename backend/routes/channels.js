@@ -1,6 +1,5 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
-const { charPool } = require('../db');
 const { audit } = require('../audit');
 
 const router = express.Router();
@@ -41,7 +40,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
   try {
     let rows;
     try {
-      [rows] = await charPool.query(`
+      [rows] = await req.charPool.query(`
         SELECT c.channelId, c.name, c.team, c.announce, c.ownership,
                c.lastUsed,
                (c.password != '') AS hasPassword,
@@ -53,7 +52,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
       `);
     } catch {
       // channels_bans may not exist — fall back to channels only
-      [rows] = await charPool.query(`
+      [rows] = await req.charPool.query(`
         SELECT channelId, name, team, announce, ownership,
                lastUsed,
                (password != '') AS hasPassword,
@@ -81,7 +80,7 @@ router.get('/', requireGMLevel(1), async (req, res) => {
 router.get('/:id', requireGMLevel(1), async (req, res) => {
   const id = parseInt(req.params.id, 10);
   try {
-    const [[channel]] = await charPool.query(`
+    const [[channel]] = await req.charPool.query(`
       SELECT channelId, name, team, announce, ownership, lastUsed,
              (password != '') AS hasPassword
       FROM channels WHERE channelId = ?
@@ -91,7 +90,7 @@ router.get('/:id', requireGMLevel(1), async (req, res) => {
     // Per-player bans from channels_bans
     let bans = [];
     try {
-      [bans] = await charPool.query(`
+      [bans] = await req.charPool.query(`
         SELECT cb.playerGUID, cb.banTime, ch.name AS charName
         FROM channels_bans cb
         LEFT JOIN characters ch ON ch.guid = cb.playerGUID
@@ -105,7 +104,7 @@ router.get('/:id', requireGMLevel(1), async (req, res) => {
     // Channel-wide rights config from channels_rights (keyed by channel name)
     let rights = null;
     try {
-      const [[cr]] = await charPool.query(
+      const [[cr]] = await req.charPool.query(
         'SELECT flags, speakdelay, joinmessage, delaymessage, moderators FROM channels_rights WHERE name = ?',
         [channel.name]
       );
@@ -148,7 +147,7 @@ router.delete('/:id/bans/:guid', requireGMLevel(2), async (req, res) => {
   const channelId = parseInt(req.params.id, 10);
   const guid      = parseInt(req.params.guid, 10);
   try {
-    await charPool.query(
+    await req.charPool.query(
       'DELETE FROM channels_bans WHERE channelId = ? AND playerGUID = ?',
       [channelId, guid]
     );
@@ -163,8 +162,8 @@ router.delete('/:id/bans/:guid', requireGMLevel(2), async (req, res) => {
 router.delete('/:id', requireGMLevel(3), async (req, res) => {
   const id = parseInt(req.params.id, 10);
   try {
-    try { await charPool.query('DELETE FROM channels_bans WHERE channelId = ?', [id]); } catch {}
-    await charPool.query('DELETE FROM channels WHERE channelId = ?', [id]);
+    try { await req.charPool.query('DELETE FROM channels_bans WHERE channelId = ?', [id]); } catch {}
+    await req.charPool.query('DELETE FROM channels WHERE channelId = ?', [id]);
     audit(req, 'channel.delete', `channelId=${id}`);
     res.json({ success: true });
   } catch (err) {

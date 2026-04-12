@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../App.jsx';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
+import { useServerStatus } from '../context/ServerContext.jsx';
+import RealmSelector from './RealmSelector.jsx';
 
 // ── Money helpers ─────────────────────────────────────────────────────────────
 function copperToGSC(copper) {
@@ -138,7 +140,7 @@ function GeneralTab({ form, onChange, canEdit }) {
 }
 
 // ── Items tab ─────────────────────────────────────────────────────────────────
-function ItemsTab({ templateId, items, onItemAdded, onItemDeleted, canEdit }) {
+function ItemsTab({ templateId, items, onItemAdded, onItemDeleted, canEdit, realmId }) {
   const isNew = templateId == null;
   const [faction,   setFaction]   = useState('Alliance');
   const [itemId,    setItemId]    = useState('');
@@ -156,7 +158,7 @@ function ItemsTab({ templateId, items, onItemAdded, onItemDeleted, canEdit }) {
     }
     setAdding(true);
     try {
-      const res = await api.addMailServerItem(templateId, entry);
+      const res = await api.addMailServerItem(templateId, entry, realmId);
       onItemAdded({ id: res.id, templateID: templateId, ...entry });
       setItemId('');
       setItemCount(1);
@@ -171,7 +173,7 @@ function ItemsTab({ templateId, items, onItemAdded, onItemDeleted, canEdit }) {
   const handleDelete = async (itemEntry) => {
     if (isNew) { onItemDeleted(itemEntry._key); return; }
     try {
-      await api.deleteMailServerItem(templateId, itemEntry.id);
+      await api.deleteMailServerItem(templateId, itemEntry.id, realmId);
       onItemDeleted(itemEntry.id);
       toast('Item removed');
     } catch (err) {
@@ -251,7 +253,7 @@ function ItemsTab({ templateId, items, onItemAdded, onItemDeleted, canEdit }) {
 }
 
 // ── Conditions tab ────────────────────────────────────────────────────────────
-function ConditionsTab({ templateId, conditions, onConditionAdded, onConditionDeleted, canEdit }) {
+function ConditionsTab({ templateId, conditions, onConditionAdded, onConditionDeleted, canEdit, realmId }) {
   const isNew = templateId == null;
   const [condType,  setCondType]  = useState('Level');
   const [condValue, setCondValue] = useState(0);
@@ -274,7 +276,7 @@ function ConditionsTab({ templateId, conditions, onConditionAdded, onConditionDe
     }
     setAdding(true);
     try {
-      const res = await api.addMailServerCondition(templateId, entry);
+      const res = await api.addMailServerCondition(templateId, entry, realmId);
       onConditionAdded({ id: res.id, templateID: templateId, ...entry });
       setCondValue(0);
       setCondState(0);
@@ -289,7 +291,7 @@ function ConditionsTab({ templateId, conditions, onConditionAdded, onConditionDe
   const handleDelete = async (cond) => {
     if (isNew) { onConditionDeleted(cond._key); return; }
     try {
-      await api.deleteMailServerCondition(templateId, cond.id);
+      await api.deleteMailServerCondition(templateId, cond.id, realmId);
       onConditionDeleted(cond.id);
       toast('Condition removed');
     } catch (err) {
@@ -377,12 +379,12 @@ function ConditionsTab({ templateId, conditions, onConditionAdded, onConditionDe
 }
 
 // ── Recipients tab ────────────────────────────────────────────────────────────
-function RecipientsTab({ templateId }) {
+function RecipientsTab({ templateId, realmId }) {
   const [data,    setData]    = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.getMailServerRecipients(templateId)
+    api.getMailServerRecipients(templateId, realmId)
       .then(setData)
       .catch((err) => toast(err.message, 'error'))
       .finally(() => setLoading(false));
@@ -424,7 +426,7 @@ function RecipientsTab({ templateId }) {
 }
 
 // ── Template modal (create or edit) ──────────────────────────────────────────
-function TemplateModal({ templateId, onClose, onSaved, canEdit }) {
+function TemplateModal({ templateId, onClose, onSaved, canEdit, realmId }) {
   const isNew = templateId == null;
 
   const [tab,     setTab]     = useState('general');
@@ -436,7 +438,7 @@ function TemplateModal({ templateId, onClose, onSaved, canEdit }) {
 
   useEffect(() => {
     if (isNew) return;
-    api.getMailServerTemplate(templateId)
+    api.getMailServerTemplate(templateId, realmId)
       .then((data) => {
         setForm({ subject: data.subject, body: data.body, moneyA: data.moneyA, moneyH: data.moneyH, active: data.active });
         setItems(data.items || []);
@@ -452,27 +454,27 @@ function TemplateModal({ templateId, onClose, onSaved, canEdit }) {
     setSaving(true);
     try {
       if (isNew) {
-        const res = await api.createMailServerTemplate(form);
+        const res = await api.createMailServerTemplate(form, realmId);
         const newId = res.id;
         // batch-create any items and conditions staged before save
         let itemCount = 0;
         for (const item of items) {
           try {
-            await api.addMailServerItem(newId, { faction: item.faction, item: item.item, itemCount: item.itemCount });
+            await api.addMailServerItem(newId, { faction: item.faction, item: item.item, itemCount: item.itemCount }, realmId);
             itemCount++;
           } catch {}
         }
         let conditionCount = 0;
         for (const cond of conditions) {
           try {
-            await api.addMailServerCondition(newId, { conditionType: cond.conditionType, conditionValue: cond.conditionValue, conditionState: cond.conditionState });
+            await api.addMailServerCondition(newId, { conditionType: cond.conditionType, conditionValue: cond.conditionValue, conditionState: cond.conditionState }, realmId);
             conditionCount++;
           } catch {}
         }
         toast('Template created');
         onSaved({ id: newId, ...form, itemCount, conditionCount, recipientCount: 0 });
       } else {
-        await api.updateMailServerTemplate(templateId, form);
+        await api.updateMailServerTemplate(templateId, form, realmId);
         toast('Template saved');
         onSaved({ id: templateId, ...form });
       }
@@ -506,9 +508,9 @@ function TemplateModal({ templateId, onClose, onSaved, canEdit }) {
         ) : (
           <>
             {tab === 'general'    && <GeneralTab    form={form} onChange={setForm} canEdit={canEdit} />}
-            {tab === 'items'      && <ItemsTab      templateId={templateId} items={items} onItemAdded={(i) => setItems((p) => [...p, i])} onItemDeleted={(id) => setItems((p) => p.filter((x) => x.id !== id))} canEdit={canEdit} />}
-            {tab === 'conditions' && <ConditionsTab templateId={templateId} conditions={conditions} onConditionAdded={(c) => setConds((p) => [...p, c])} onConditionDeleted={(id) => setConds((p) => p.filter((x) => x.id !== id))} canEdit={canEdit} />}
-            {tab === 'recipients' && <RecipientsTab templateId={templateId} />}
+            {tab === 'items'      && <ItemsTab      templateId={templateId} items={items} onItemAdded={(i) => setItems((p) => [...p, i])} onItemDeleted={(id) => setItems((p) => p.filter((x) => x.id !== id))} canEdit={canEdit} realmId={realmId} />}
+            {tab === 'conditions' && <ConditionsTab templateId={templateId} conditions={conditions} onConditionAdded={(c) => setConds((p) => [...p, c])} onConditionDeleted={(id) => setConds((p) => p.filter((x) => x.id !== id))} canEdit={canEdit} realmId={realmId} />}
+            {tab === 'recipients' && <RecipientsTab templateId={templateId} realmId={realmId} />}
           </>
         )}
 
@@ -558,6 +560,7 @@ function DeleteModal({ template, onConfirm, onClose, busy }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function MailServerPage() {
   const { auth } = useAuth();
+  const { selectedRealmId } = useServerStatus();
   const canEdit = auth.gmlevel >= 3;
 
   const [templates, setTemplates] = useState([]);
@@ -569,14 +572,14 @@ export default function MailServerPage() {
   const fetchTemplates = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await api.getMailServerTemplates();
+      const data = await api.getMailServerTemplates(selectedRealmId);
       setTemplates(data);
     } catch (err) {
       toast(err.message, 'error');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedRealmId]);
 
   useEffect(() => { fetchTemplates(); }, [fetchTemplates]);
 
@@ -593,7 +596,7 @@ export default function MailServerPage() {
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      await api.deleteMailServerTemplate(deleteTarget.id);
+      await api.deleteMailServerTemplate(deleteTarget.id, selectedRealmId);
       setTemplates((prev) => prev.filter((t) => t.id !== deleteTarget.id));
       toast('Template deleted');
       setDeleteTarget(null);
@@ -608,11 +611,14 @@ export default function MailServerPage() {
     <div className="page">
       <div className="page-header">
         <h2 className="page-title">Mail Server Templates</h2>
-        {canEdit && (
-          <button className="btn btn-primary btn-sm" onClick={() => setEditId(null)}>
-            + New Template
-          </button>
-        )}
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <RealmSelector />
+          {canEdit && (
+            <button className="btn btn-primary btn-sm" onClick={() => setEditId(null)}>
+              + New Template
+            </button>
+          )}
+        </div>
       </div>
 
       <p className="td-muted" style={{ marginBottom: 16, fontSize: 13 }}>
@@ -682,6 +688,7 @@ export default function MailServerPage() {
           onClose={() => setEditId(undefined)}
           onSaved={handleSaved}
           canEdit={canEdit}
+          realmId={selectedRealmId}
         />
       )}
 

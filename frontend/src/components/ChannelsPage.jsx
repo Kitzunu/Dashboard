@@ -3,6 +3,8 @@ import { api } from '../api.js';
 import { useAuth } from '../App.jsx';
 import { toast } from '../toast.js';
 import { formatUnixDate as formatDate } from '../utils/format.js';
+import { useServerStatus } from '../context/ServerContext.jsx';
+import RealmSelector from './RealmSelector.jsx';
 
 const TEAM_COLORS = {
   Alliance: 'badge-blue',
@@ -12,6 +14,7 @@ const TEAM_COLORS = {
 
 export default function ChannelsPage() {
   const { auth } = useAuth();
+  const { selectedRealmId } = useServerStatus();
   const [channels, setChannels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -21,21 +24,21 @@ export default function ChannelsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await api.getChannels();
+      const data = await api.getChannels(selectedRealmId);
       setChannels(data);
     } catch (e) {
       toast(e.message, 'error');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedRealmId]);
 
   useEffect(() => { load(); }, [load]);
 
   const openDetail = async (channelId) => {
     setDetailLoading(true);
     try {
-      const data = await api.getChannel(channelId);
+      const data = await api.getChannel(channelId, selectedRealmId);
       setSelected(data);
     } catch (e) {
       toast(e.message, 'error');
@@ -47,9 +50,9 @@ export default function ChannelsPage() {
   const handleUnban = async (channelId, guid, name) => {
     if (!confirm(`Unban ${name} from this channel?`)) return;
     try {
-      await api.unbanChannelPlayer(channelId, guid);
+      await api.unbanChannelPlayer(channelId, guid, selectedRealmId);
       toast(`Unbanned ${name}`, 'success');
-      const data = await api.getChannel(channelId);
+      const data = await api.getChannel(channelId, selectedRealmId);
       setSelected(data);
     } catch (e) {
       toast(e.message, 'error');
@@ -59,7 +62,7 @@ export default function ChannelsPage() {
   const handleDeleteChannel = async (channelId, name) => {
     if (!confirm(`Delete channel "${name}"? This cannot be undone.`)) return;
     try {
-      await api.deleteChannel(channelId);
+      await api.deleteChannel(channelId, selectedRealmId);
       toast(`Channel "${name}" deleted`, 'success');
       setSelected(null);
       load();
@@ -78,7 +81,10 @@ export default function ChannelsPage() {
     <div className="page-wrap">
       <div className="page-header">
         <h1 className="page-title">Chat Channels</h1>
-        <button className="btn btn-ghost btn-sm" onClick={load}>Refresh</button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <RealmSelector />
+          <button className="btn btn-ghost btn-sm" onClick={load}>Refresh</button>
+        </div>
       </div>
 
       <div className="channels-layout">

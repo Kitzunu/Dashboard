@@ -3,6 +3,8 @@ import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { FALLBACK_RACES, FALLBACK_CLASSES, GM_LABELS } from '../constants.js';
 import { useAuth } from '../App.jsx';
+import { useServerStatus } from '../context/ServerContext.jsx';
+import RealmSelector from './RealmSelector.jsx';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const EXPANSION_LABELS = {
@@ -828,6 +830,7 @@ function CreateAccountModal({ onClose, onCreated }) {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function AccountsPage({ onViewCharacter }) {
   const { auth } = useAuth();
+  const { selectedRealmId } = useServerStatus();
   const [query, setQuery]               = useState('');
   const [results, setResults]           = useState([]);
   const [total, setTotal]               = useState(0);
@@ -862,7 +865,7 @@ export default function AccountsPage({ onViewCharacter }) {
 
   const handleViewAccount = async (row) => {
     try {
-      const detail = await api.getAccount(row.id);
+      const detail = await api.getAccount(row.id, selectedRealmId);
       setSelectedAccount(detail);
     } catch (err) {
       toast(err.message, 'error');
@@ -871,7 +874,7 @@ export default function AccountsPage({ onViewCharacter }) {
 
   const handleRefresh = () => {
     if (selectedAccount) {
-      api.getAccount(selectedAccount.id)
+      api.getAccount(selectedAccount.id, selectedRealmId)
         .then((detail) => setSelectedAccount(detail))
         .catch((err) => toast(err.message, 'error'));
     }
@@ -885,11 +888,14 @@ export default function AccountsPage({ onViewCharacter }) {
           <h2 className="page-title">Account Management</h2>
           <p className="page-sub">{total > 0 ? `${total} account${total !== 1 ? 's' : ''}` : 'Accounts'} — search by username, email, or IP</p>
         </div>
-        {canCreateAccount && (
-          <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
-            Create Account
-          </button>
-        )}
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <RealmSelector />
+          {canCreateAccount && (
+            <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
+              Create Account
+            </button>
+          )}
+        </div>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}

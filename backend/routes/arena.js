@@ -1,5 +1,4 @@
 const express  = require('express');
-const { charPool } = require('../db');
 const { requireGMLevel } = require('../middleware/auth');
 const { audit } = require('../audit');
 
@@ -8,7 +7,7 @@ const router = express.Router();
 // GET /api/arena — list all arena teams with captain name and member count
 router.get('/', requireGMLevel(1), async (req, res) => {
   try {
-    const [teams] = await charPool.query(`
+    const [teams] = await req.charPool.query(`
       SELECT at.arenaTeamId, at.name, at.type, at.captainGuid,
              c.name          AS captainName,
              at.rating, at.seasonGames, at.seasonWins,
@@ -34,7 +33,7 @@ router.get('/:id', requireGMLevel(1), async (req, res) => {
   if (!arenaTeamId) return res.status(400).json({ error: 'Invalid arena team ID' });
 
   try {
-    const [[team]] = await charPool.query(`
+    const [[team]] = await req.charPool.query(`
       SELECT at.arenaTeamId, at.name, at.type, at.captainGuid,
              c.name AS captainName,
              at.rating, at.seasonGames, at.seasonWins,
@@ -48,7 +47,7 @@ router.get('/:id', requireGMLevel(1), async (req, res) => {
 
     if (!team) return res.status(404).json({ error: 'Arena team not found' });
 
-    const [members] = await charPool.query(`
+    const [members] = await req.charPool.query(`
       SELECT atm.guid, c.name, c.class, c.level, c.race,
              atm.personalRating,
              atm.weekGames, atm.weekWins,
@@ -73,7 +72,7 @@ router.get('/:id/matches', requireGMLevel(1), async (req, res) => {
   try {
     // character_arena_stats stores per-character per-slot match logs
     // We try to get the match history; the table may not exist on all cores
-    const [matches] = await charPool.query(`
+    const [matches] = await req.charPool.query(`
       SELECT cs.guid, c.name AS charName, c.class, c.race,
              cs.matchMakerRating, cs.maxMMR,
              cs.slot
@@ -122,14 +121,14 @@ router.post('/', requireGMLevel(3), async (req, res) => {
 
   try {
     // Verify captain character exists
-    const [[captainChar]] = await charPool.query(
+    const [[captainChar]] = await req.charPool.query(
       'SELECT guid, name FROM characters WHERE guid = ?',
       [captain]
     );
     if (!captainChar) return res.status(400).json({ error: 'Captain character not found' });
 
     // Check captain is not already in an arena team of the same type
-    const [[existing]] = await charPool.query(`
+    const [[existing]] = await req.charPool.query(`
       SELECT atm.arenaTeamId FROM arena_team_member atm
       JOIN arena_team at ON atm.arenaTeamId = at.arenaTeamId
       WHERE atm.guid = ? AND at.type = ?
@@ -139,19 +138,19 @@ router.post('/', requireGMLevel(3), async (req, res) => {
     }
 
     // Check name uniqueness
-    const [[dup]] = await charPool.query(
+    const [[dup]] = await req.charPool.query(
       'SELECT arenaTeamId FROM arena_team WHERE name = ?',
       [trimmedName]
     );
     if (dup) return res.status(400).json({ error: 'An arena team with that name already exists' });
 
     // Get next arenaTeamId
-    const [[{ nextId }]] = await charPool.query(
+    const [[{ nextId }]] = await req.charPool.query(
       'SELECT COALESCE(MAX(arenaTeamId), 0) + 1 AS nextId FROM arena_team'
     );
 
     // Insert the team
-    await charPool.query(`
+    await req.charPool.query(`
       INSERT INTO arena_team (arenaTeamId, name, captainGuid, type, rating,
         seasonGames, seasonWins, weekGames, weekWins, \`rank\`,
         BackgroundColor, EmblemStyle, EmblemColor, BorderStyle, BorderColor)
@@ -159,7 +158,7 @@ router.post('/', requireGMLevel(3), async (req, res) => {
     `, [nextId, trimmedName, captain, bracketType]);
 
     // Add captain as first member
-    await charPool.query(`
+    await req.charPool.query(`
       INSERT INTO arena_team_member (arenaTeamId, guid, weekGames, weekWins,
         seasonGames, seasonWins, personalRating)
       VALUES (?, ?, 0, 0, 0, 0, 0)
@@ -192,7 +191,7 @@ router.patch('/:id', requireGMLevel(3), async (req, res) => {
     const g = parseInt(captainGuid, 10);
     if (isNaN(g) || g <= 0) return res.status(400).json({ error: 'Invalid captain GUID' });
     // Verify the new captain is a member of the team
-    const [[member]] = await charPool.query(
+    const [[member]] = await req.charPool.query(
       'SELECT guid FROM arena_team_member WHERE arenaTeamId = ? AND guid = ?',
       [arenaTeamId, g]
     );
@@ -208,7 +207,7 @@ router.patch('/:id', requireGMLevel(3), async (req, res) => {
     const details = [];
     if (rating !== undefined) details.push(`rating=${parseInt(rating, 10)}`);
     if (captainGuid !== undefined) details.push(`captainGuid=${parseInt(captainGuid, 10)}`);
-    await charPool.query(
+    await req.charPool.query(
       `UPDATE arena_team SET ${updates.join(', ')} WHERE arenaTeamId = ?`,
       params
     );
@@ -227,7 +226,7 @@ router.delete('/:id/members/:guid', requireGMLevel(2), async (req, res) => {
 
   try {
     // Don't allow removing the captain — they must disband or transfer first
-    const [[team]] = await charPool.query(
+    const [[team]] = await req.charPool.query(
       'SELECT captainGuid FROM arena_team WHERE arenaTeamId = ?',
       [arenaTeamId]
     );
@@ -236,7 +235,7 @@ router.delete('/:id/members/:guid', requireGMLevel(2), async (req, res) => {
       return res.status(400).json({ error: 'Cannot remove the team captain. Transfer captainship first.' });
     }
 
-    await charPool.query(
+    await req.charPool.query(
       'DELETE FROM arena_team_member WHERE arenaTeamId = ? AND guid = ?',
       [arenaTeamId, guid]
     );
@@ -254,14 +253,14 @@ router.delete('/:id', requireGMLevel(3), async (req, res) => {
 
   try {
     // Get team name for audit log before deleting
-    const [[team]] = await charPool.query(
+    const [[team]] = await req.charPool.query(
       'SELECT name FROM arena_team WHERE arenaTeamId = ?',
       [arenaTeamId]
     );
     if (!team) return res.status(404).json({ error: 'Arena team not found' });
 
-    await charPool.query('DELETE FROM arena_team_member WHERE arenaTeamId = ?', [arenaTeamId]);
-    await charPool.query('DELETE FROM arena_team WHERE arenaTeamId = ?', [arenaTeamId]);
+    await req.charPool.query('DELETE FROM arena_team_member WHERE arenaTeamId = ?', [arenaTeamId]);
+    await req.charPool.query('DELETE FROM arena_team WHERE arenaTeamId = ?', [arenaTeamId]);
     audit(req, 'arena.delete', `arenaTeamId=${arenaTeamId} name=${team.name}`);
     res.json({ success: true });
   } catch (err) {

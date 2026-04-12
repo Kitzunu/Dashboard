@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { useAuth } from '../App.jsx';
+import RealmSelector from './RealmSelector.jsx';
+import { useServerStatus } from '../context/ServerContext.jsx';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 const MONTH_NAMES = [
@@ -294,6 +296,7 @@ function CalendarLegend({ filters, onToggle }) {
 // ── Main Page ───────────────────────────────────────────────────────────────
 export default function CalendarPage() {
   const { auth } = useAuth();
+  const { selectedRealmId } = useServerStatus();
   const today = new Date();
   const [viewYear, setViewYear]   = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
@@ -333,8 +336,8 @@ export default function CalendarPage() {
 
       const [customRes, gameRes, ingameRes, raidRes] = await Promise.allSettled([
         api.getCalendarEvents(fromISO, toISO),
-        api.getGameEvents(),
-        api.getIngameCalendarEvents(fromISO, toISO),
+        api.getGameEvents(selectedRealmId),
+        api.getIngameCalendarEvents(fromISO, toISO, selectedRealmId),
         api.getRaidResets(),
       ]);
 
@@ -348,7 +351,7 @@ export default function CalendarPage() {
     } finally {
       setLoading(false);
     }
-  }, [from, to]);
+  }, [from, to, selectedRealmId]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
@@ -506,7 +509,8 @@ export default function CalendarPage() {
           <h2 className="page-title">Calendar</h2>
           <p className="page-sub">Events, raid resets, and game events</p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <RealmSelector />
           {canModerate && (
             <button className="btn btn-primary" onClick={() => { setDefaultStart(null); setEditEvent(null); }}>
               New Event

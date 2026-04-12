@@ -1,5 +1,24 @@
 # Notes
 
+## Console Logging
+
+The backend uses a custom logger (`backend/logger.js`) styled after AzerothCore's Log4j appender with the same color mapping from the default `worldserver.conf`:
+
+| Level | Color | ANSI |
+| --- | --- | --- |
+| FATAL | Red | `\x1b[31m` |
+| ERROR | Bright Red | `\x1b[91m` |
+| WARN | Yellow | `\x1b[33m` |
+| INFO | Cyan | `\x1b[36m` |
+| DEBUG | Magenta | `\x1b[35m` |
+| TRACE | Bright Yellow | `\x1b[93m` |
+
+Output format: `YYYY-MM-DD HH:MM:SS LEVEL [component] message`
+
+Usage: `const log = require('./logger')('component-name');` then call `log.info(...)`, `log.error(...)`, etc.
+
+## Technical Notes
+
 - Game servers are managed by the standalone **server agent** (`serverAgent.js`), not the dashboard backend. Restarting the backend does not stop the game servers — they keep running and the backend reconnects automatically.
 - **Multiple worldservers** — to manage multiple realms from one dashboard, create a `worldservers.json` file (see `worldservers.json.example`). When absent, the dashboard falls back to `.env` variables for a single worldserver with full backward compatibility.
 - **Auto-restart** tracks intentional stops via a flag — it only restarts on unexpected crashes, not manual stops from the dashboard.

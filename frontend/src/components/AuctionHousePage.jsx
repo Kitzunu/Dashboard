@@ -3,6 +3,8 @@ import { api } from '../api.js';
 import { toast } from '../toast.js';
 import { FALLBACK_AUCTION_HOUSES, QUALITY_COLORS } from '../constants.js';
 import { useAuth } from '../App.jsx';
+import { useServerStatus } from '../context/ServerContext.jsx';
+import RealmSelector from './RealmSelector.jsx';
 
 function MoneyDisplay({ money }) {
   if (!money || money.raw === 0) return <span className="td-muted">—</span>;
@@ -119,6 +121,7 @@ function StatsPanel({ stats }) {
 
 export default function AuctionHousePage({ onViewCharacter }) {
   const { auth } = useAuth();
+  const { selectedRealmId } = useServerStatus();
   const [listings, setListings]       = useState([]);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState('');
@@ -155,7 +158,7 @@ export default function AuctionHousePage({ onViewCharacter }) {
   const loadListings = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await api.getAuctionListings({ page, search, faction, sort, order });
+      const data = await api.getAuctionListings({ page, search, faction, sort, order, realmId: selectedRealmId });
       setListings(data.listings || []);
       setTotalPages(data.totalPages || 1);
       setTotal(data.total || 0);
@@ -166,16 +169,16 @@ export default function AuctionHousePage({ onViewCharacter }) {
     } finally {
       setLoading(false);
     }
-  }, [page, search, faction, sort, order]);
+  }, [page, search, faction, sort, order, selectedRealmId]);
 
   const loadStats = useCallback(async () => {
     try {
-      const data = await api.getAuctionStats();
+      const data = await api.getAuctionStats(selectedRealmId);
       setStats(data);
     } catch {
       // Stats are optional; silently ignore
     }
-  }, []);
+  }, [selectedRealmId]);
 
   useEffect(() => { loadListings(); }, [loadListings]);
   useEffect(() => { if (showStats) loadStats(); }, [showStats, loadStats]);
@@ -205,7 +208,7 @@ export default function AuctionHousePage({ onViewCharacter }) {
 
   const handleDelete = async (id) => {
     try {
-      await api.removeAuction(id);
+      await api.removeAuction(id, selectedRealmId);
       toast('Auction removed');
       setDeleteTarget(null);
       await loadListings();
@@ -228,7 +231,8 @@ export default function AuctionHousePage({ onViewCharacter }) {
           <h2 className="page-title">Auction House</h2>
           <p className="page-sub">View and moderate auction house listings ({total.toLocaleString()} total)</p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <RealmSelector />
           <button className="btn btn-secondary" onClick={() => setShowStats((s) => !s)}>
             {showStats ? 'Hide Stats' : 'Stats'}
           </button>
