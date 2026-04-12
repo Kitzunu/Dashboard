@@ -1,5 +1,13 @@
 # Changelog
 
+## cb50e47 — Add multi-realm DB support and realm middleware
+
+**Author**: Kitzunu | **Date**: 2026-04-12 02:44:16 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/cb50e47381172c331f5b510012361f2c23303cd7
+
+Introduce multi-realm support: db.js now loads worldserver config and lazily creates/caches per-realm char/world pools; helper APIs expose default and all realm IDs and DB names. Add middleware (backend/middleware/realmDb.js) that attaches req.charPool, req.worldPool and req.realmId based on ?realmId, and update many route handlers to use these realm-aware pools. Extend analytics to include realm_id (migration + index), support per-realm snapshots and realm filtering. Backups now gather all realm DB names. Add cross-realm character transfer endpoint (uses pdump dump/load) and propagate an optional server parameter to processManager commands; update README/docs and add frontend realm/server selector components to support the new multi-realm/server workflow.
+
+<!-- entry-separator -->
+
 ## 077610f — Add console panel toggles and layout tweaks
 
 **Author**: Kitzunu | **Date**: 2026-04-11 11:46:56 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/077610f3f04b660004a2a61efe7ce19b79e0e82b
