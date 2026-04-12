@@ -1,5 +1,13 @@
 # Changelog
 
+## 75d8eec — Bump launcher electron and electron-store
+
+**Author**: Kitzunu | **Date**: 2026-04-12 11:35:34 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/75d8eec2c90e8823ae64f1ab7d7e969d6f3ce742
+
+Update launcher package dependencies: electron ^35.1.2 -> ^41.2.0 and electron-store ^8.2.0 -> ^11.0.2 in package.json, and regenerate package-lock.json to reflect resolved transitive dependency updates.
+
+<!-- entry-separator -->
+
 ## dcc202f — Add Electron-based Launcher app
 
 **Author**: Kitzunu | **Date**: 2026-04-12 11:26:38 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/dcc202f0f20b3a86c0ce263742648d8f02518e89
