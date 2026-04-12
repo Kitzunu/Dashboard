@@ -47,6 +47,24 @@ npm start
 
 Then open [http://localhost:5173](http://localhost:5173) and log in with your AzerothCore account credentials.
 
+### Launcher App (optional)
+
+Instead of using the terminal, you can use the desktop launcher GUI to manage all services:
+
+```bash
+npm run launcher
+```
+
+This opens an Electron app with:
+- Per-service Start / Stop / Restart controls for dashboard services
+- Game server management (start/stop authserver and worldservers via the Server Agent)
+- Real-time log output for all services and game servers
+- Start All / Stop All buttons
+- Open Dashboard shortcut (opens the browser)
+- Settings for auto-start and minimize-to-tray
+
+See [docs/launcher.md](docs/launcher.md) for details.
+
 ## Documentation
 
 | Topic | Link |

@@ -1,0 +1,31 @@
+{
+  "name": "azerothcore-dashboard-launcher",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Launcher GUI for AzerothCore Dashboard services",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win portable"
+  },
+  "dependencies": {
+    "electron-store": "^8.2.0"
+  },
+  "devDependencies": {
+    "electron": "^35.1.2",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.azerothcore.dashboard-launcher",
+    "productName": "AC Dashboard Launcher",
+    "win": {
+      "target": "portable",
+      "icon": "icon.ico"
+    },
+    "files": [
+      "**/*",
+      "!node_modules/**/README*",
+      "!node_modules/**/CHANGELOG*"
+    ]
+  }
+}
