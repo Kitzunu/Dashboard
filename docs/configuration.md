@@ -1,6 +1,24 @@
 # Configuration
 
-All configuration is done via the `.env` file in the project root.
+All configuration is done via the `.env` file in the project root. An `.env.example` is included as a template — copy it to `.env` and edit the values.
+
+## Contents
+
+- [Server Paths](#server-paths)
+- [Multiple Worldservers](#multiple-worldservers)
+- [Config Files](#config-files)
+- [Database](#database)
+- [Server Agent](#server-agent)
+- [Application](#application)
+- [LAN / Remote Access](#lan--remote-access)
+- [Scheduled Tasks](#scheduled-tasks)
+- [Character Dumps (pdump)](#character-dumps-pdump)
+- [Discord Alerts](#discord-alerts)
+- [Session Idle Timeout](#session-idle-timeout)
+- [Audit Log Retention](#audit-log-retention)
+- [DBC Files (Optional)](#dbc-files-optional)
+
+> Most of these keys can also be edited live from **Settings → Environment (.env)** in the dashboard (Administrator). Changes are written to the `.env` file on disk and take effect after a backend restart.
 
 ## Server Paths
 

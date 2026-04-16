@@ -1,5 +1,56 @@
 # Pages
 
+Detailed reference for every page in the dashboard. For a condensed overview see [Features](features.md).
+
+## Contents
+
+**Server**
+- [Layout](#layout)
+- [Overview](#overview)
+- [Console](#console)
+- [Servers](#servers)
+- [Autobroadcast](#autobroadcast)
+- [Mail Server](#mail-server)
+- [DB Query](#db-query)
+- [Config](#config)
+- [Backups](#backups-administrator-only)
+
+**Game**
+- [Tickets](#tickets)
+- [Bans](#bans)
+- [Mutes](#mutes)
+- [Announcements](#announcements)
+- [Send Mail](#send-mail)
+- [Channels](#channels)
+- [Calendar](#calendar)
+- [Name Filters](#name-filters)
+- [Batch Operations](#batch-operations-administrator-only)
+- [Auction House](#auction-house)
+- [Battlegrounds](#battlegrounds)
+
+**Players**
+- [Players](#players)
+- [Accounts](#accounts)
+- [Characters](#characters)
+- [Guilds](#guilds)
+- [Arena Teams](#arena-teams)
+- [Character Transfer](#character-transfer-administrator-only)
+
+**Reports**
+- [Lag Reports](#lag-reports)
+- [Bug Reports](#bug-reports)
+- [Spam Reports](#spam-reports)
+
+**Dashboard**
+- [Alerts](#alerts) _(see [Features](features.md#dashboard))_
+- [Analytics](#analytics)
+- [Audit Log](#audit-log-administrator-only)
+- [Health Check](#health-check-administrator-only)
+- [Sessions](#sessions-administrator-only)
+- [Settings](#settings-administrator-only)
+- [Dashboard Management](#dashboard-management-administrator-only)
+- [Changelog](#changelog)
+
 ## Layout
 - Sidebar navigation with collapsible groups and page links; selecting a page closes the sidebar on mobile
 - On screens ≤ 768px the sidebar collapses off-screen and a hamburger toggle (☰) button appears in the top-left corner; tapping the overlay or selecting a page closes the sidebar
