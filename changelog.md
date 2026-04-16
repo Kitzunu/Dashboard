@@ -1,5 +1,31 @@
 # Changelog
 
+## 46b3890 — Bump follow-redirects from 1.15.11 to 1.16.0 in the npm_and_yarn group across 1 directory (#62)
+
+**Author**: dependabot[bot] | **Date**: 2026-04-16 20:22:18 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/46b389046f6827843bebb3a8c5c69982a4ead86b
+
+Bump follow-redirects in the npm_and_yarn group across 1 directory
+
+Bumps the npm_and_yarn group with 1 update in the / directory: [follow-redirects](https://github.com/follow-redirects/follow-redirects).
+
+
+Updates `follow-redirects` from 1.15.11 to 1.16.0
+- [Release notes](https://github.com/follow-redirects/follow-redirects/releases)
+- [Commits](https://github.com/follow-redirects/follow-redirects/compare/v1.15.11...v1.16.0)
+
+---
+updated-dependencies:
+- dependency-name: follow-redirects
+  dependency-version: 1.16.0
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## a3e8dc6 — Bump axios from 1.14.0 to 1.15.0 in the npm_and_yarn group across 1 directory (#61)
 
 **Author**: dependabot[bot] | **Date**: 2026-04-12 11:38:05 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/a3e8dc6009e84e7431986986531bda3188fb6066
