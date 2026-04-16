@@ -1,5 +1,20 @@
 # Changelog
 
+## 67454fb — docs: add troubleshooting and update docs
+
+**Author**: Kitzunu | **Date**: 2026-04-16 20:32:00 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/67454fb8720f820ee2c0c3367c43fa3024899bf2
+
+Add a new troubleshooting guide and improve documentation across the repo. Changes include:
+
+- Add docs/troubleshooting.md with common startup, DB, login, agent, config, backup, Discord, LAN/CORS and other troubleshooting steps and fixes.
+- Update README.md: add badges, installation admin SQL snippet, expanded docs table, contributing and license sections, and link to features.
+- Update docs/configuration.md: mention .env.example, add contents index and note about editing .env from the UI.
+- Revise docs/index.md, docs/pages.md and docs/running.md to reorganize navigation, add contents/usage sections, startup/stop instructions, LAN access, and architecture notes.
+
+These edits improve discoverability of help content and clarify installation/startup instructions for users and contributors.
+
+<!-- entry-separator -->
+
 ## 46b3890 — Bump follow-redirects from 1.15.11 to 1.16.0 in the npm_and_yarn group across 1 directory (#62)
 
 **Author**: dependabot[bot] | **Date**: 2026-04-16 20:22:18 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/46b389046f6827843bebb3a8c5c69982a4ead86b
