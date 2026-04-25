@@ -1,5 +1,32 @@
 # Changelog
 
+## 2a8caa8 — Bump postcss from 8.5.8 to 8.5.10 in /frontend in the npm_and_yarn group across 1 directory (#64)
+
+**Author**: dependabot[bot] | **Date**: 2026-04-25 12:49:12 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/2a8caa8b2e1382a06940a8d0ecb1570b2dfe66cc
+
+Bump postcss in /frontend in the npm_and_yarn group across 1 directory
+
+Bumps the npm_and_yarn group with 1 update in the /frontend directory: [postcss](https://github.com/postcss/postcss).
+
+
+Updates `postcss` from 8.5.8 to 8.5.10
+- [Release notes](https://github.com/postcss/postcss/releases)
+- [Changelog](https://github.com/postcss/postcss/blob/main/CHANGELOG.md)
+- [Commits](https://github.com/postcss/postcss/compare/8.5.8...8.5.10)
+
+---
+updated-dependencies:
+- dependency-name: postcss
+  dependency-version: 8.5.10
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## 2a35143 — Bump @xmldom/xmldom from 0.8.12 to 0.8.13 in /launcher in the npm_and_yarn group across 1 directory (#63)
 
 **Author**: dependabot[bot] | **Date**: 2026-04-25 12:43:25 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/2a351433314b3e160988aecd3e1252a69af71fe1
