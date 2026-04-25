@@ -1,5 +1,32 @@
 # Changelog
 
+## 2a35143 — Bump @xmldom/xmldom from 0.8.12 to 0.8.13 in /launcher in the npm_and_yarn group across 1 directory (#63)
+
+**Author**: dependabot[bot] | **Date**: 2026-04-25 12:43:25 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/2a351433314b3e160988aecd3e1252a69af71fe1
+
+Bump @xmldom/xmldom
+
+Bumps the npm_and_yarn group with 1 update in the /launcher directory: [@xmldom/xmldom](https://github.com/xmldom/xmldom).
+
+
+Updates `@xmldom/xmldom` from 0.8.12 to 0.8.13
+- [Release notes](https://github.com/xmldom/xmldom/releases)
+- [Changelog](https://github.com/xmldom/xmldom/blob/master/CHANGELOG.md)
+- [Commits](https://github.com/xmldom/xmldom/compare/0.8.12...0.8.13)
+
+---
+updated-dependencies:
+- dependency-name: "@xmldom/xmldom"
+  dependency-version: 0.8.13
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## 67454fb — docs: add troubleshooting and update docs
 
 **Author**: Kitzunu | **Date**: 2026-04-16 20:32:00 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/67454fb8720f820ee2c0c3367c43fa3024899bf2
