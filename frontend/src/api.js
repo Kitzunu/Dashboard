@@ -363,4 +363,13 @@ export const api = {
 
   // Realm info (for backups)
   getRealms: () => request('GET', '/api/servers/realms'),
+
+  // RBAC (Role-Based Access Control)
+  getRbacRealms:      ()                          => request('GET', '/api/rbac/realms'),
+  getRbacPermissions: ()                          => request('GET', '/api/rbac/permissions'),
+  getRbacAccount:     (id, realmId)               => request('GET', realmId != null ? `/api/rbac/accounts/${id}?realmId=${realmId}` : `/api/rbac/accounts/${id}`),
+  setRbacPermission:  (id, permissionId, granted, realmId) =>
+    request('POST', `/api/rbac/accounts/${id}/permissions`, { permissionId, granted, realmId }),
+  removeRbacPermission: (id, permissionId, realmId) =>
+    request('DELETE', `/api/rbac/accounts/${id}/permissions/${permissionId}?realmId=${realmId}`),
 };

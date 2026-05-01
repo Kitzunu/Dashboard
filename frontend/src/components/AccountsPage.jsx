@@ -374,6 +374,233 @@ function MuteModal({ characterName, onClose, onMuted }) {
   );
 }
 
+// ── RBAC Permissions Section ──────────────────────────────────────────────────
+const ROLE_LABELS = {
+  192: 'Administrator', 193: 'Gamemaster', 194: 'Moderator', 195: 'Player',
+};
+
+function RbacSection({ accountId, canAdmin }) {
+  const [open, setOpen]               = useState(false);
+  const [loading, setLoading]         = useState(false);
+  const [data, setData]               = useState(null);    // { effectiveGmlevel, defaultRole, overrides, effective }
+  const [permissions, setPermissions] = useState(null);    // [{ id, name, linked }]
+  const [realms, setRealms]           = useState([]);      // [{ id, name }]
+  const [realmId, setRealmId]         = useState(-1);      // -1 = all realms
+  const [filter, setFilter]           = useState('');
+  const [adding, setAdding]           = useState(false);
+  const [pickPerm, setPickPerm]       = useState('');
+  const [pickGranted, setPickGranted] = useState(true);
+
+  const reload = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [acct, perms, rl] = await Promise.all([
+        api.getRbacAccount(accountId, realmId === -1 ? null : realmId),
+        permissions ? Promise.resolve({ permissions }) : api.getRbacPermissions(),
+        realms.length ? Promise.resolve({ realms }) : api.getRbacRealms(),
+      ]);
+      setData(acct);
+      if (!permissions) setPermissions(perms.permissions);
+      if (!realms.length) setRealms(rl.realms);
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setLoading(false);
+    }
+  }, [accountId, realmId, permissions, realms]);
+
+  useEffect(() => {
+    if (open) reload();
+  }, [open, reload]);
+
+  const permName = (id) => permissions?.find((p) => p.id === id)?.name ?? `#${id}`;
+
+  // Permissions not yet overridden for the selected realm scope, optionally filtered
+  const addable = (() => {
+    if (!permissions) return [];
+    const scopeRealm = realmId;
+    const overridden = new Set(
+      (data?.overrides || [])
+        .filter((o) => o.realmId === scopeRealm)
+        .map((o) => o.permissionId)
+    );
+    const f = filter.trim().toLowerCase();
+    return permissions
+      .filter((p) => !overridden.has(p.id))
+      .filter((p) => !f || p.name.toLowerCase().includes(f) || String(p.id).includes(f));
+  })();
+
+  const handleAdd = async () => {
+    const pid = parseInt(pickPerm, 10);
+    if (!pid) return;
+    try {
+      await api.setRbacPermission(accountId, pid, pickGranted, realmId);
+      toast(`${pickGranted ? 'Granted' : 'Denied'} ${permName(pid)}`);
+      setPickPerm('');
+      setFilter('');
+      setAdding(false);
+      reload();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  };
+
+  const handleRemove = async (permissionId, rId) => {
+    try {
+      await api.removeRbacPermission(accountId, permissionId, rId);
+      toast(`Removed override ${permName(permissionId)}`);
+      reload();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  };
+
+  const handleToggle = async (permissionId, currentGranted, rId) => {
+    try {
+      await api.setRbacPermission(accountId, permissionId, !currentGranted, rId);
+      reload();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  };
+
+  return (
+    <>
+      <button className="account-section-title account-section-toggle"
+        style={{ marginTop: 20 }} onClick={() => setOpen((v) => !v)}>
+        RBAC Permissions
+        <span className="account-section-chevron">{open ? '▲' : '▼'}</span>
+      </button>
+      {open && (
+        <>
+          {loading && !data ? (
+            <p className="td-muted" style={{ padding: '8px 0' }}>Loading…</p>
+          ) : data && permissions ? (
+            <>
+              <div className="rbac-summary">
+                <div>
+                  <span className="rbac-label">Default role</span>
+                  <span className="badge badge-info">
+                    {ROLE_LABELS[data.defaultRole] ?? `#${data.defaultRole}`}
+                  </span>
+                  <span className="td-muted" style={{ marginLeft: 8, fontSize: 12 }}>
+                    (security level {data.effectiveGmlevel})
+                  </span>
+                </div>
+                <div>
+                  <span className="rbac-label">Realm scope</span>
+                  <select value={realmId}
+                    onChange={(e) => setRealmId(parseInt(e.target.value, 10))}
+                    style={selectStyle}>
+                    <option value={-1}>All realms (-1)</option>
+                    {realms.map((r) => (
+                      <option key={r.id} value={r.id}>#{r.id} — {r.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <p className="rbac-subtitle">Account overrides</p>
+              {data.overrides.length === 0 ? (
+                <p className="td-muted" style={{ fontSize: 13, marginBottom: 12 }}>
+                  No per-account overrides — this account uses defaults inherited from its security level.
+                </p>
+              ) : (
+                <div className="table-wrap" style={{ marginBottom: 12 }}>
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Permission</th>
+                        <th>State</th>
+                        <th>Realm</th>
+                        {canAdmin && <th>Actions</th>}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.overrides.map((o) => (
+                        <tr key={`${o.permissionId}-${o.realmId}`}>
+                          <td>
+                            <span className="td-muted" style={{ marginRight: 6 }}>#{o.permissionId}</span>
+                            {permName(o.permissionId)}
+                          </td>
+                          <td>
+                            {o.granted
+                              ? <span className="badge badge-success">Granted</span>
+                              : <span className="badge badge-danger">Denied</span>}
+                          </td>
+                          <td className="td-muted">{o.realmId === -1 ? 'All' : `#${o.realmId}`}</td>
+                          {canAdmin && (
+                            <td>
+                              <div style={{ display: 'flex', gap: 4 }}>
+                                <button className="btn btn-ghost btn-xs"
+                                  onClick={() => handleToggle(o.permissionId, o.granted, o.realmId)}>
+                                  Toggle
+                                </button>
+                                <button className="btn btn-danger btn-xs"
+                                  onClick={() => handleRemove(o.permissionId, o.realmId)}>
+                                  Remove
+                                </button>
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {canAdmin && (
+                <div style={{ marginBottom: 12 }}>
+                  {!adding ? (
+                    <button className="btn btn-primary btn-xs" onClick={() => setAdding(true)}>
+                      + Add override
+                    </button>
+                  ) : (
+                    <div className="rbac-add-row">
+                      <input type="text" placeholder="Filter permissions…"
+                        value={filter} onChange={(e) => setFilter(e.target.value)}
+                        style={{ flex: 1, minWidth: 160 }} />
+                      <select value={pickPerm} onChange={(e) => setPickPerm(e.target.value)}
+                        style={{ ...selectStyle, flex: 2, minWidth: 220 }}>
+                        <option value="">Select permission ({addable.length})</option>
+                        {addable.slice(0, 200).map((p) => (
+                          <option key={p.id} value={p.id}>#{p.id} — {p.name}</option>
+                        ))}
+                      </select>
+                      <select value={pickGranted ? 'grant' : 'deny'}
+                        onChange={(e) => setPickGranted(e.target.value === 'grant')}
+                        style={selectStyle}>
+                        <option value="grant">Grant</option>
+                        <option value="deny">Deny</option>
+                      </select>
+                      <button className="btn btn-primary btn-xs"
+                        onClick={handleAdd} disabled={!pickPerm}>Apply</button>
+                      <button className="btn btn-ghost btn-xs"
+                        onClick={() => { setAdding(false); setPickPerm(''); setFilter(''); }}>
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <p className="rbac-subtitle">Effective permissions ({data.effective.length})</p>
+              <div className="rbac-effective">
+                {data.effective.map((pid) => (
+                  <span key={pid} className="rbac-perm-chip" title={permName(pid)}>
+                    <span className="td-muted">#{pid}</span> {permName(pid)}
+                  </span>
+                ))}
+              </div>
+            </>
+          ) : null}
+        </>
+      )}
+    </>
+  );
+}
+
 // ── Account Detail Modal ──────────────────────────────────────────────────────
 function AccountDetailModal({ account, auth, onClose, onRefresh, onDeleted, onViewCharacter }) {
   const [detail, setDetail]               = useState(account);
@@ -647,6 +874,9 @@ function AccountDetailModal({ account, auth, onClose, onRefresh, onDeleted, onVi
               )}
             </>
           )}
+
+          {/* RBAC Permissions */}
+          <RbacSection accountId={detail.id} canAdmin={canAdmin} />
 
           {/* Actions */}
           <p className="account-section-title" style={{ marginTop: 20 }}>Actions</p>

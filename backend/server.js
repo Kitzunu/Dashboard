@@ -54,6 +54,7 @@ const notificationsRoutes    = require('./routes/notifications');
 const analyticsRoutes        = require('./routes/analytics');
 const sessionsRoutes         = require('./routes/sessions');
 const auctionhouseRoutes     = require('./routes/auctionhouse');
+const rbacRoutes             = require('./routes/rbac');
 const alertLogger            = require('./alertLogger');
 const scheduler              = require('./scheduler');
 const { startRetentionJob } = require('./audit');
@@ -165,6 +166,7 @@ app.use('/api/notifications',  authenticateToken, notificationsRoutes);
 app.use('/api/analytics',      authenticateToken, analyticsRoutes);
 app.use('/api/sessions',       authenticateToken, sessionsRoutes);
 app.use('/api/auctionhouse',   authenticateToken, auctionhouseRoutes);
+app.use('/api/rbac',           authenticateToken, rbacRoutes);
 
 // Authenticate socket connections with JWT
 io.use((socket, next) => {

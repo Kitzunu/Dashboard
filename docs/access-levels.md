@@ -14,3 +14,13 @@ To grant GM level 3 (Administrator):
 INSERT INTO account_access (id, gmlevel, RealmID)
 SELECT id, 3, -1 FROM account WHERE username = 'YOUR_ACCOUNT';
 ```
+
+## RBAC Permissions
+
+AzerothCore's RBAC system (introduced in PR [#24641](https://github.com/azerothcore/azerothcore-wotlk/pull/24641)) layers fine-grained permissions on top of GM levels. The dashboard's own access control still uses `account_access.gmlevel` — RBAC permissions govern in-game capabilities (chat, channels, character creation, command access, etc.).
+
+The **Accounts** page exposes RBAC visibility and management for each account:
+
+- **Default role** — inherited from the account's security level: `Player` (sec 0), `Moderator` (sec 1), `Gamemaster` (sec 2), `Administrator` (sec 3+).
+- **Effective permissions** — the full set after walking the `rbac_linked_permissions` inheritance graph and applying per-account overrides.
+- **Account overrides** — rows in `rbac_account_permissions`. Administrators can grant or deny individual permissions per realm (or globally with realm `-1`).
