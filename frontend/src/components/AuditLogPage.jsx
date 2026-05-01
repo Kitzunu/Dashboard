@@ -51,6 +51,9 @@ const ALL_ACTIONS = [
   'mail.send',
   'dbquery.execute',
   'settings.save',
+  'rbac.grant',
+  'rbac.deny',
+  'rbac.revoke',
 ];
 
 // Map action prefixes to badge styles
@@ -72,6 +75,7 @@ function actionBadgeClass(action) {
   if (action.startsWith('mailserver.'))              return 'badge badge-gold';
   if (action.startsWith('mail.'))                    return 'badge badge-green';
   if (action.startsWith('dbquery.'))                 return 'badge badge-danger';
+  if (action.startsWith('rbac.'))                    return 'badge badge-blue';
   return 'badge badge-dim';
 }
 

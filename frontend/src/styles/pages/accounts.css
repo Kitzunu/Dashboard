@@ -103,6 +103,12 @@
   border-radius: var(--radius);
 }
 
+.rbac-cat-tabs {
+  display: flex;
+  gap: 4px;
+  flex-basis: 100%;
+}
+
 .rbac-effective {
   display: flex;
   flex-wrap: wrap;

@@ -390,6 +390,7 @@ function RbacSection({ accountId, canAdmin }) {
   const [adding, setAdding]           = useState(false);
   const [pickPerm, setPickPerm]       = useState('');
   const [pickGranted, setPickGranted] = useState(true);
+  const [category, setCategory]       = useState('all'); // all | core | role | command
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -415,6 +416,18 @@ function RbacSection({ accountId, canAdmin }) {
 
   const permName = (id) => permissions?.find((p) => p.id === id)?.name ?? `#${id}`;
 
+  // Permission categories follow the AzerothCore RBAC migration seed ranges:
+  //   1–53     core gameplay/account permissions
+  //   192–199  roles (e.g. Sec Level Administrator, Admin Commands)
+  //   200+     command permissions
+  const inCategory = (id, cat) => {
+    if (cat === 'all') return true;
+    if (cat === 'core')    return id < 192;
+    if (cat === 'role')    return id >= 192 && id < 200;
+    if (cat === 'command') return id >= 200;
+    return true;
+  };
+
   // Permissions not yet overridden for the selected realm scope, optionally filtered
   const addable = (() => {
     if (!permissions) return [];
@@ -427,6 +440,7 @@ function RbacSection({ accountId, canAdmin }) {
     const f = filter.trim().toLowerCase();
     return permissions
       .filter((p) => !overridden.has(p.id))
+      .filter((p) => inCategory(p.id, category))
       .filter((p) => !f || p.name.toLowerCase().includes(f) || String(p.id).includes(f));
   })();
 
@@ -558,6 +572,20 @@ function RbacSection({ accountId, canAdmin }) {
                     </button>
                   ) : (
                     <div className="rbac-add-row">
+                      <div className="rbac-cat-tabs">
+                        {[
+                          { id: 'all',     label: 'All' },
+                          { id: 'core',    label: 'Core' },
+                          { id: 'role',    label: 'Roles' },
+                          { id: 'command', label: 'Commands' },
+                        ].map((c) => (
+                          <button key={c.id} type="button"
+                            className={`btn btn-xs ${category === c.id ? 'btn-primary' : 'btn-ghost'}`}
+                            onClick={() => { setCategory(c.id); setPickPerm(''); }}>
+                            {c.label}
+                          </button>
+                        ))}
+                      </div>
                       <input type="text" placeholder="Filter permissions…"
                         value={filter} onChange={(e) => setFilter(e.target.value)}
                         style={{ flex: 1, minWidth: 160 }} />
@@ -577,7 +605,7 @@ function RbacSection({ accountId, canAdmin }) {
                       <button className="btn btn-primary btn-xs"
                         onClick={handleAdd} disabled={!pickPerm}>Apply</button>
                       <button className="btn btn-ghost btn-xs"
-                        onClick={() => { setAdding(false); setPickPerm(''); setFilter(''); }}>
+                        onClick={() => { setAdding(false); setPickPerm(''); setFilter(''); setCategory('all'); }}>
                         Cancel
                       </button>
                     </div>

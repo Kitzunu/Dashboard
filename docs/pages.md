@@ -113,7 +113,7 @@ Detailed reference for every page in the dashboard. For a condensed overview see
 - **Lock / Unlock** (GM 2+), **Reset Password** (Administrator), **Delete Account** (Administrator)
 - **Mute / Unmute** per character with duration and reason (Administrator)
 - **Account Flags** — view active flags for any account; toggle individual flags (Administrator)
-- **RBAC Permissions** (post-RBAC AzerothCore) — collapsible section showing the default role inherited from the account's security level, per-account overrides from `rbac_account_permissions` (granted / denied per realm), and the full effective permission set after walking the role inheritance graph and applying overrides; Administrator can grant, deny, toggle, and revoke per-realm overrides; realm scope picker with All-realms or any specific realm from `realmlist`
+- **RBAC Permissions** (post-RBAC AzerothCore) — collapsible section showing the default role inherited from the account's security level, per-account overrides from `rbac_account_permissions` (granted / denied per realm), and the full effective permission set after walking the role inheritance graph and applying overrides; Administrator can grant, deny, toggle, and revoke per-realm overrides; realm scope picker with All-realms or any specific realm from `realmlist`; permission picker with category tabs (Core / Roles / Commands) and text filter
 - **Create Account** (Administrator)
 
 ## Autobroadcast
