@@ -1,5 +1,13 @@
 # Changelog
 
+## 3f2b3ec — Add audit logging to backend routes & UI
+
+**Author**: Kitzunu | **Date**: 2026-05-01 15:38:46 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/3f2b3ecff44737635edf9a22a8103aee70ce93ad
+
+Record audit entries for many admin actions across the app. Backend: import and call audit(...) in accounts (set expansion), alerts (delete, clear with filter + affected count), lag reports (delete, clear all), mailserver (item add/delete, condition add/delete), players (kick, ban), servers (autorestart toggle), thresholds (save), tickets (close, respond, comment, assign, unassign, escalate, deescalate). Docs: updated audit-log.md to list the newly audited actions. Frontend: include new actions and badge classifications in AuditLogPage. This improves traceability of changes and admin operations.
+
+<!-- entry-separator -->
+
 ## 528ca9b — Add RBAC permission picker categories
 
 **Author**: Kitzunu | **Date**: 2026-05-01 15:32:48 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/528ca9b64e81f58945858bce4adffdeebe6e8a3c
