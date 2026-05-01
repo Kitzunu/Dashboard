@@ -61,6 +61,7 @@ router.post('/:name/stop', requireGMLevel(3), async (req, res) => {
 router.post('/:name/autorestart', requireGMLevel(3), async (req, res) => {
   const { name } = req.params;
   if (!wsConfig.getValidServers().includes(name)) return res.status(400).json({ error: 'Invalid server name' });
+  audit(req, 'server.autorestart', `server=${name} enabled=${req.body.enabled ? 1 : 0}`);
   res.json(await processManager.setAutoRestart(name, req.body.enabled));
 });
 

@@ -2,6 +2,7 @@ const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const { authPool } = require('../db');
 const processManager = require('../processManager');
+const { audit } = require('../audit');
 const dbc = require('../dbc');
 const log = require('../logger')('players');
 
@@ -42,6 +43,7 @@ router.post('/:name/kick', requireGMLevel(2), (req, res) => {
   const { name } = req.params;
   const { reason } = req.body;
   const cmd = reason ? `.kick ${name} ${reason}` : `.kick ${name}`;
+  audit(req, 'player.kick', `name=${name}${reason ? ` reason=${reason}` : ''}`);
   res.json(processManager.sendCommand(cmd));
 });
 
@@ -56,6 +58,7 @@ router.post('/:name/ban', requireGMLevel(2), (req, res) => {
   }
   // target overrides name param (for account/IP bans from the players page)
   const banTarget = target || name;
+  audit(req, `ban.${type}`, `target=${banTarget} duration=${duration} reason=${reason}`);
   res.json(processManager.sendCommand(`.ban ${type} ${banTarget} ${duration} ${reason}`));
 });
 

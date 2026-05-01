@@ -18,26 +18,39 @@ const ALL_ACTIONS = [
   'server.stop',
   'server.restart',
   'server.restart_cancel',
+  'server.autorestart',
   'ban.account',
   'ban.character',
   'ban.ip',
   'unban.account',
   'unban.character',
   'unban.ip',
+  'player.kick',
   'account.create',
   'account.delete',
   'account.set_gmlevel',
+  'account.set_expansion',
   'account.lock',
   'account.unlock',
   'account.set_email',
   'account.set_password',
+  'account.set_flags',
   'account.mute',
   'account.unmute',
+  'ticket.close',
+  'ticket.respond',
+  'ticket.comment',
+  'ticket.assign',
+  'ticket.unassign',
+  'ticket.escalate',
+  'ticket.deescalate',
   'channel.unban',
   'channel.delete',
   'bugreport.update',
   'spamreport.delete',
   'spamreport.clear_all',
+  'lagreport.delete',
+  'lagreport.clear_all',
   'console.command',
   'announcement.send',
   'motd.set',
@@ -48,9 +61,16 @@ const ALL_ACTIONS = [
   'mailserver.template_create',
   'mailserver.template_update',
   'mailserver.template_delete',
+  'mailserver.item_add',
+  'mailserver.item_delete',
+  'mailserver.condition_add',
+  'mailserver.condition_delete',
   'mail.send',
   'dbquery.execute',
   'settings.save',
+  'thresholds.save',
+  'alert.delete',
+  'alert.clear',
   'rbac.grant',
   'rbac.deny',
   'rbac.revoke',
@@ -63,14 +83,18 @@ function actionBadgeClass(action) {
   if (action === 'logout')                           return 'badge badge-dim';
   if (action.startsWith('server.') || action === 'server.restart' || action === 'server.restart_cancel') return 'badge badge-warn';
   if (action.startsWith('ban.') || action.startsWith('unban.'))   return 'badge badge-red';
+  if (action === 'player.kick')                      return 'badge badge-red';
   if (action.startsWith('account.'))                 return 'badge badge-gold';
+  if (action.startsWith('ticket.'))                  return 'badge badge-blue';
   if (action.startsWith('channel.'))                 return 'badge badge-blue';
-  if (action.startsWith('bugreport.') || action.startsWith('spamreport.')) return 'badge badge-neutral';
+  if (action.startsWith('bugreport.') || action.startsWith('spamreport.') || action.startsWith('lagreport.')) return 'badge badge-neutral';
+  if (action.startsWith('alert.'))                   return 'badge badge-neutral';
   if (action.startsWith('console.'))                 return 'badge badge-danger';
   if (action.startsWith('announcement.'))            return 'badge badge-green';
   if (action === 'motd.set')                         return 'badge badge-warn';
   if (action.startsWith('config.'))                  return 'badge badge-warn';
   if (action.startsWith('settings.'))                return 'badge badge-warn';
+  if (action.startsWith('thresholds.'))              return 'badge badge-warn';
   if (action.startsWith('autobroadcast.'))           return 'badge badge-gold';
   if (action.startsWith('mailserver.'))              return 'badge badge-gold';
   if (action.startsWith('mail.'))                    return 'badge badge-green';

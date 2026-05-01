@@ -1,5 +1,6 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
+const { audit } = require('../audit');
 const dbc = require('../dbc');
 
 const router = express.Router();
@@ -146,6 +147,7 @@ router.delete('/:id', requireGMLevel(2), async (req, res) => {
   const id = parseInt(req.params.id, 10);
   try {
     await req.charPool.query('DELETE FROM lag_reports WHERE reportId = ?', [id]);
+    audit(req, 'lagreport.delete', `id=${id}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -156,6 +158,7 @@ router.delete('/:id', requireGMLevel(2), async (req, res) => {
 router.delete('/', requireGMLevel(3), async (req, res) => {
   try {
     const [result] = await req.charPool.query('DELETE FROM lag_reports');
+    audit(req, 'lagreport.clear_all', `affected=${result.affectedRows}`);
     res.json({ success: true, deleted: result.affectedRows });
   } catch (err) {
     res.status(500).json({ error: err.message });

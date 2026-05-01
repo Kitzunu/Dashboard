@@ -127,6 +127,8 @@ router.post('/:id/items', requireGMLevel(3), async (req, res) => {
       'INSERT INTO mail_server_template_items (templateID, faction, item, itemCount) VALUES (?, ?, ?, ?)',
       [templateID, faction, parseInt(item), Math.max(1, parseInt(itemCount) || 1)]
     );
+    audit(req, 'mailserver.item_add',
+      `template_id=${templateID} item_id=${result.insertId} faction=${faction} item=${parseInt(item)} count=${Math.max(1, parseInt(itemCount) || 1)}`);
     res.json({ success: true, id: result.insertId });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -135,9 +137,11 @@ router.post('/:id/items', requireGMLevel(3), async (req, res) => {
 
 // DELETE /api/mailserver/:id/items/:itemId  — remove item
 router.delete('/:id/items/:itemId', requireGMLevel(3), async (req, res) => {
+  const templateID = parseInt(req.params.id, 10);
   const itemId = parseInt(req.params.itemId, 10);
   try {
     await req.charPool.query('DELETE FROM mail_server_template_items WHERE id = ?', [itemId]);
+    audit(req, 'mailserver.item_delete', `template_id=${templateID} item_id=${itemId}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -157,10 +161,14 @@ router.post('/:id/conditions', requireGMLevel(3), async (req, res) => {
     const [[tpl]] = await req.charPool.query('SELECT id FROM mail_server_template WHERE id = ?', [templateID]);
     if (!tpl) return res.status(404).json({ error: 'Template not found' });
 
+    const valueNum = Math.max(0, parseInt(conditionValue) || 0);
+    const stateNum = Math.max(0, parseInt(conditionState) || 0);
     const [result] = await req.charPool.query(
       'INSERT INTO mail_server_template_conditions (templateID, conditionType, conditionValue, conditionState) VALUES (?, ?, ?, ?)',
-      [templateID, conditionType, Math.max(0, parseInt(conditionValue) || 0), Math.max(0, parseInt(conditionState) || 0)]
+      [templateID, conditionType, valueNum, stateNum]
     );
+    audit(req, 'mailserver.condition_add',
+      `template_id=${templateID} condition_id=${result.insertId} type=${conditionType} value=${valueNum} state=${stateNum}`);
     res.json({ success: true, id: result.insertId });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -169,9 +177,11 @@ router.post('/:id/conditions', requireGMLevel(3), async (req, res) => {
 
 // DELETE /api/mailserver/:id/conditions/:condId  — remove condition
 router.delete('/:id/conditions/:condId', requireGMLevel(3), async (req, res) => {
+  const templateID = parseInt(req.params.id, 10);
   const condId = parseInt(req.params.condId, 10);
   try {
     await req.charPool.query('DELETE FROM mail_server_template_conditions WHERE id = ?', [condId]);
+    audit(req, 'mailserver.condition_delete', `template_id=${templateID} condition_id=${condId}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

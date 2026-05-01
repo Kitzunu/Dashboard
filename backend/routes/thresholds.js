@@ -1,6 +1,7 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const thresholds = require('../thresholds');
+const { audit } = require('../audit');
 
 const router = express.Router();
 
@@ -38,6 +39,8 @@ router.put('/', requireGMLevel(3), async (req, res) => {
 
   try {
     const saved = await thresholds.save({ cpu: cpuVal, memory: memoryVal, graphMinutes: graphMinutesVal, latencyWarn: latencyWarnVal, latencyCritical: latencyCriticalVal });
+    audit(req, 'thresholds.save',
+      `cpu=${cpuVal} memory=${memoryVal} graphMinutes=${graphMinutesVal} latencyWarn=${latencyWarnVal} latencyCritical=${latencyCriticalVal}`);
     res.json(saved);
   } catch (err) {
     res.status(500).json({ error: err.message });

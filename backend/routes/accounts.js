@@ -125,6 +125,7 @@ router.patch('/:id/expansion', requireGMLevel(3), async (req, res) => {
     if (!account) return res.status(404).json({ error: 'Account not found' });
     const result = processManager.sendCommand(`account set addon ${account.username} ${expansion}`);
     if (!result.success) return res.status(503).json({ error: result.error });
+    audit(req, 'account.set_expansion', `account_id=${id} expansion=${expansion}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

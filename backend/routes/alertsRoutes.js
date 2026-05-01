@@ -1,6 +1,7 @@
 const express = require('express');
 const { requireGMLevel } = require('../middleware/auth');
 const { dashPool } = require('../db');
+const { audit } = require('../audit');
 
 const router   = express.Router();
 const PAGE_SIZE = 50;
@@ -48,6 +49,7 @@ router.delete('/', requireGMLevel(3), async (req, res) => {
     const placeholders = ids.map(() => '?').join(',');
     try {
       await dashPool.query(`DELETE FROM alerts WHERE id IN (${placeholders})`, ids);
+      audit(req, 'alert.delete', `ids=${ids.join(',')}`);
       return res.json({ ok: true });
     } catch (err) {
       return res.status(500).json({ error: err.message });
@@ -68,7 +70,13 @@ router.delete('/', requireGMLevel(3), async (req, res) => {
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
   try {
-    await dashPool.query(`DELETE FROM alerts ${where}`, params);
+    const [result] = await dashPool.query(`DELETE FROM alerts ${where}`, params);
+    const filterDesc = [
+      olderThan > 0 ? `olderThan=${olderThan}d` : null,
+      severity ? `severity=${severity}` : null,
+      type ? `type=${type}` : null,
+    ].filter(Boolean).join(' ') || 'all';
+    audit(req, 'alert.clear', `filter=${filterDesc} affected=${result.affectedRows}`);
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -81,6 +89,7 @@ router.delete('/:id', requireGMLevel(3), async (req, res) => {
   if (!id) return res.status(400).json({ error: 'Invalid ID' });
   try {
     await dashPool.query('DELETE FROM alerts WHERE id = ?', [id]);
+    audit(req, 'alert.delete', `id=${id}`);
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
