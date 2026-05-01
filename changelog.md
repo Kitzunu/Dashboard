@@ -1,5 +1,13 @@
 # Changelog
 
+## 528ca9b — Add RBAC permission picker categories
+
+**Author**: Kitzunu | **Date**: 2026-05-01 15:32:48 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/528ca9b64e81f58945858bce4adffdeebe6e8a3c
+
+Introduce category tabs to the Accounts RBAC picker so admins can filter permissions by All/Core/Roles/Commands. Adds category state, an inCategory helper (using AzerothCore RBAC seed ranges), and applies category filtering when listing addable permissions; category resets on cancel. Update docs to mention the permission picker with category tabs and text filter. Also add new audit actions (rbac.grant, rbac.deny, rbac.revoke) and map rbac.* to a blue badge. Include CSS for .rbac-cat-tabs to layout the new tab buttons.
+
+<!-- entry-separator -->
+
 ## 9380b80 — Add RBAC management endpoints and UI
 
 **Author**: Kitzunu | **Date**: 2026-05-01 15:25:16 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/9380b8021a0d7f269283108d44560eacb0be725b
