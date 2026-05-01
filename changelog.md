@@ -1,5 +1,13 @@
 # Changelog
 
+## 9380b80 — Add RBAC management endpoints and UI
+
+**Author**: Kitzunu | **Date**: 2026-05-01 15:25:16 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/9380b8021a0d7f269283108d44560eacb0be725b
+
+Introduce server-side RBAC routes and frontend support for viewing and managing AzerothCore RBAC permissions. Adds backend/routes/rbac.js with endpoints for realms, permissions, account permission resolution (including linked-permission expansion, per-realm overrides, cached catalogue, role mapping, and audit logging) and protects actions with GM-level guards (view = GM2+, modify = GM3+). Wire the router into backend/server.js. Expose corresponding API helpers in frontend/src/api.js and add a RbacSection UI to AccountsPage.jsx (with add/toggle/remove override flows and realm scoping), plus new styles in accounts.css. Update README and docs to mention RBAC functionality and account-page behavior.
+
+<!-- entry-separator -->
+
 ## 2a8caa8 — Bump postcss from 8.5.8 to 8.5.10 in /frontend in the npm_and_yarn group across 1 directory (#64)
 
 **Author**: dependabot[bot] | **Date**: 2026-04-25 12:49:12 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/2a8caa8b2e1382a06940a8d0ecb1570b2dfe66cc
