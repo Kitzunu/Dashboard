@@ -1,5 +1,46 @@
 # Changelog
 
+## 0eae97d — Bump the npm_and_yarn group across 3 directories with 2 updates (#65)
+
+**Author**: dependabot[bot] | **Date**: 2026-05-08 15:54:51 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/0eae97da99bd18a014367692a457d02afc90086c
+
+Bumps the npm_and_yarn group with 1 update in the / directory: [axios](https://github.com/axios/axios).
+Bumps the npm_and_yarn group with 1 update in the /backend directory: [ip-address](https://github.com/beaugunderson/ip-address).
+Bumps the npm_and_yarn group with 1 update in the /launcher directory: [ip-address](https://github.com/beaugunderson/ip-address).
+
+
+Updates `axios` from 1.15.0 to 1.16.0
+- [Release notes](https://github.com/axios/axios/releases)
+- [Changelog](https://github.com/axios/axios/blob/v1.x/CHANGELOG.md)
+- [Commits](https://github.com/axios/axios/compare/v1.15.0...v1.16.0)
+
+Updates `ip-address` from 10.1.0 to 10.2.0
+- [Commits](https://github.com/beaugunderson/ip-address/commits)
+
+Updates `ip-address` from 10.1.0 to 10.2.0
+- [Commits](https://github.com/beaugunderson/ip-address/commits)
+
+---
+updated-dependencies:
+- dependency-name: axios
+  dependency-version: 1.16.0
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+- dependency-name: ip-address
+  dependency-version: 10.2.0
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+- dependency-name: ip-address
+  dependency-version: 10.2.0
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## 3f2b3ec — Add audit logging to backend routes & UI
 
 **Author**: Kitzunu | **Date**: 2026-05-01 15:38:46 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/3f2b3ecff44737635edf9a22a8103aee70ce93ad
