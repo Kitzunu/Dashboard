@@ -1,5 +1,31 @@
 # Changelog
 
+## ae5dd2f — Bump fast-uri from 3.1.0 to 3.1.2 in /launcher in the npm_and_yarn group across 1 directory (#66)
+
+**Author**: dependabot[bot] | **Date**: 2026-05-10 17:09:39 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/ae5dd2fa525ff5c46f156cb50d916fbd5265ff32
+
+Bump fast-uri in /launcher in the npm_and_yarn group across 1 directory
+
+Bumps the npm_and_yarn group with 1 update in the /launcher directory: [fast-uri](https://github.com/fastify/fast-uri).
+
+
+Updates `fast-uri` from 3.1.0 to 3.1.2
+- [Release notes](https://github.com/fastify/fast-uri/releases)
+- [Commits](https://github.com/fastify/fast-uri/compare/v3.1.0...v3.1.2)
+
+---
+updated-dependencies:
+- dependency-name: fast-uri
+  dependency-version: 3.1.2
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## 0eae97d — Bump the npm_and_yarn group across 3 directories with 2 updates (#65)
 
 **Author**: dependabot[bot] | **Date**: 2026-05-08 15:54:51 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/0eae97da99bd18a014367692a457d02afc90086c
