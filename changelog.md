@@ -1,5 +1,55 @@
 # Changelog
 
+## f5535f7 — Bump the npm_and_yarn group across 3 directories with 3 updates (#69)
+
+**Author**: dependabot[bot] | **Date**: 2026-05-30 22:14:13 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/f5535f7dc3294d7c0a3157f26ba3cbbb2aa466bd
+
+Bumps the npm_and_yarn group with 2 updates in the /backend directory: [qs](https://github.com/ljharb/qs) and [ws](https://github.com/websockets/ws).
+Bumps the npm_and_yarn group with 1 update in the /frontend directory: [ws](https://github.com/websockets/ws).
+Bumps the npm_and_yarn group with 1 update in the /launcher directory: [tmp](https://github.com/raszi/node-tmp).
+
+
+Updates `qs` from 6.15.0 to 6.15.2
+- [Changelog](https://github.com/ljharb/qs/blob/main/CHANGELOG.md)
+- [Commits](https://github.com/ljharb/qs/compare/v6.15.0...v6.15.2)
+
+Updates `ws` from 8.18.3 to 8.20.1
+- [Release notes](https://github.com/websockets/ws/releases)
+- [Commits](https://github.com/websockets/ws/compare/8.18.3...8.20.1)
+
+Updates `ws` from 8.18.3 to 8.20.1
+- [Release notes](https://github.com/websockets/ws/releases)
+- [Commits](https://github.com/websockets/ws/compare/8.18.3...8.20.1)
+
+Updates `tmp` from 0.2.5 to 0.2.7
+- [Changelog](https://github.com/raszi/node-tmp/blob/master/CHANGELOG.md)
+- [Commits](https://github.com/raszi/node-tmp/compare/v0.2.5...v0.2.7)
+
+---
+updated-dependencies:
+- dependency-name: qs
+  dependency-version: 6.15.2
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+- dependency-name: ws
+  dependency-version: 8.20.1
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+- dependency-name: ws
+  dependency-version: 8.20.1
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+- dependency-name: tmp
+  dependency-version: 0.2.7
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## ae5dd2f — Bump fast-uri from 3.1.0 to 3.1.2 in /launcher in the npm_and_yarn group across 1 directory (#66)
 
 **Author**: dependabot[bot] | **Date**: 2026-05-10 17:09:39 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/ae5dd2fa525ff5c46f156cb50d916fbd5265ff32
