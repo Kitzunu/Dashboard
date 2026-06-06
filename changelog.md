@@ -1,5 +1,32 @@
 # Changelog
 
+## 6f9457b — Bump react-router from 7.14.0 to 7.16.0 in /frontend in the npm_and_yarn group across 1 directory (#70)
+
+**Author**: dependabot[bot] | **Date**: 2026-06-06 14:20:20 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/6f9457b2d654601f658a0a560505d6beac4252ce
+
+Bump react-router
+
+Bumps the npm_and_yarn group with 1 update in the /frontend directory: [react-router](https://github.com/remix-run/react-router/tree/HEAD/packages/react-router).
+
+
+Updates `react-router` from 7.14.0 to 7.16.0
+- [Release notes](https://github.com/remix-run/react-router/releases)
+- [Changelog](https://github.com/remix-run/react-router/blob/main/packages/react-router/CHANGELOG.md)
+- [Commits](https://github.com/remix-run/react-router/commits/react-router@7.16.0/packages/react-router)
+
+---
+updated-dependencies:
+- dependency-name: react-router
+  dependency-version: 7.16.0
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## f5535f7 — Bump the npm_and_yarn group across 3 directories with 3 updates (#69)
 
 **Author**: dependabot[bot] | **Date**: 2026-05-30 22:14:13 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/f5535f7dc3294d7c0a3157f26ba3cbbb2aa466bd
