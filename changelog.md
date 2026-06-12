@@ -1,5 +1,31 @@
 # Changelog
 
+## 2394e8e — Bump shell-quote from 1.8.3 to 1.8.4 in the npm_and_yarn group across 1 directory (#71)
+
+**Author**: dependabot[bot] | **Date**: 2026-06-12 09:25:55 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/2394e8e9b70f52bd7c346adae670090e2f5f5f0a
+
+Bump shell-quote in the npm_and_yarn group across 1 directory
+
+Bumps the npm_and_yarn group with 1 update in the / directory: [shell-quote](https://github.com/ljharb/shell-quote).
+
+
+Updates `shell-quote` from 1.8.3 to 1.8.4
+- [Changelog](https://github.com/ljharb/shell-quote/blob/main/CHANGELOG.md)
+- [Commits](https://github.com/ljharb/shell-quote/compare/v1.8.3...v1.8.4)
+
+---
+updated-dependencies:
+- dependency-name: shell-quote
+  dependency-version: 1.8.4
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## 6f9457b — Bump react-router from 7.14.0 to 7.16.0 in /frontend in the npm_and_yarn group across 1 directory (#70)
 
 **Author**: dependabot[bot] | **Date**: 2026-06-06 14:20:20 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/6f9457b2d654601f658a0a560505d6beac4252ce
