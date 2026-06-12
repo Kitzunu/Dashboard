@@ -11,7 +11,7 @@
     "launcher": "cd launcher && npm start"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.3",
     "wait-on": "^9.0.4"
   }
 }
