@@ -1,5 +1,48 @@
 # Changelog
 
+## b14e613 — Bump the npm_and_yarn group across 3 directories with 2 updates (#73)
+
+**Author**: dependabot[bot] | **Date**: 2026-06-22 12:18:11 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/b14e613ffc654727d021c8386ef1ca5c7b5d1efd
+
+Bumps the npm_and_yarn group with 1 update in the / directory: [form-data](https://github.com/form-data/form-data).
+Bumps the npm_and_yarn group with 1 update in the /frontend directory: [vite](https://github.com/vitejs/vite/tree/HEAD/packages/vite).
+Bumps the npm_and_yarn group with 1 update in the /launcher directory: [form-data](https://github.com/form-data/form-data).
+
+
+Updates `form-data` from 4.0.5 to 4.0.6
+- [Changelog](https://github.com/form-data/form-data/blob/master/CHANGELOG.md)
+- [Commits](https://github.com/form-data/form-data/compare/v4.0.5...v4.0.6)
+
+Updates `vite` from 8.0.5 to 8.0.16
+- [Release notes](https://github.com/vitejs/vite/releases)
+- [Changelog](https://github.com/vitejs/vite/blob/main/packages/vite/CHANGELOG.md)
+- [Commits](https://github.com/vitejs/vite/commits/v8.0.16/packages/vite)
+
+Updates `form-data` from 4.0.5 to 4.0.6
+- [Changelog](https://github.com/form-data/form-data/blob/master/CHANGELOG.md)
+- [Commits](https://github.com/form-data/form-data/compare/v4.0.5...v4.0.6)
+
+---
+updated-dependencies:
+- dependency-name: form-data
+  dependency-version: 4.0.6
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+- dependency-name: vite
+  dependency-version: 8.0.16
+  dependency-type: direct:development
+  dependency-group: npm_and_yarn
+- dependency-name: form-data
+  dependency-version: 4.0.6
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## 2394e8e — Bump shell-quote from 1.8.3 to 1.8.4 in the npm_and_yarn group across 1 directory (#71)
 
 **Author**: dependabot[bot] | **Date**: 2026-06-12 09:25:55 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/2394e8e9b70f52bd7c346adae670090e2f5f5f0a
