@@ -1,5 +1,56 @@
 # Changelog
 
+## c15b903 — Bump the npm_and_yarn group across 3 directories with 3 updates (#75)
+
+**Author**: dependabot[bot] | **Date**: 2026-06-22 13:07:23 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/c15b90323e6332898626dbd7289c8ce32d414dda
+
+Bumps the npm_and_yarn group with 1 update in the /backend directory: [ws](https://github.com/websockets/ws).
+Bumps the npm_and_yarn group with 1 update in the /frontend directory: [ws](https://github.com/websockets/ws).
+Bumps the npm_and_yarn group with 2 updates in the /launcher directory: [js-yaml](https://github.com/nodeca/js-yaml) and [tar](https://github.com/isaacs/node-tar).
+
+
+Updates `ws` from 8.20.1 to 8.21.0
+- [Release notes](https://github.com/websockets/ws/releases)
+- [Commits](https://github.com/websockets/ws/compare/8.20.1...8.21.0)
+
+Updates `ws` from 8.20.1 to 8.21.0
+- [Release notes](https://github.com/websockets/ws/releases)
+- [Commits](https://github.com/websockets/ws/compare/8.20.1...8.21.0)
+
+Updates `js-yaml` from 4.1.1 to 4.2.0
+- [Changelog](https://github.com/nodeca/js-yaml/blob/master/CHANGELOG.md)
+- [Commits](https://github.com/nodeca/js-yaml/compare/4.1.1...4.2.0)
+
+Updates `tar` from 7.5.13 to 7.5.16
+- [Release notes](https://github.com/isaacs/node-tar/releases)
+- [Changelog](https://github.com/isaacs/node-tar/blob/main/CHANGELOG.md)
+- [Commits](https://github.com/isaacs/node-tar/compare/v7.5.13...v7.5.16)
+
+---
+updated-dependencies:
+- dependency-name: ws
+  dependency-version: 8.21.0
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+- dependency-name: ws
+  dependency-version: 8.21.0
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+- dependency-name: js-yaml
+  dependency-version: 4.2.0
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+- dependency-name: tar
+  dependency-version: 7.5.16
+  dependency-type: indirect
+  dependency-group: npm_and_yarn
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+
+<!-- entry-separator -->
+
 ## b14e613 — Bump the npm_and_yarn group across 3 directories with 2 updates (#73)
 
 **Author**: dependabot[bot] | **Date**: 2026-06-22 12:18:11 +0200 | **Link**: https://github.com/Kitzunu/Dashboard/commit/b14e613ffc654727d021c8386ef1ca5c7b5d1efd
